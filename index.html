@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מדליק – כל מה שצריך לערב לביבות</title>
+<meta name="description" content="מדליק – כל מה שצריך לערב לביבות שמדליק שמחה בלבבות: משחקים, מיתוג להורדה, מתכונים וספקים.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bellefair&family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;700&family=Assistant:wght@400;600;700&family=Secular+One&family=Varela+Round&family=Suez+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=12">
+<link rel="stylesheet" href="css/poster.css?v=12">
+</head>
+<body>
+<div class="intro" id="intro" aria-hidden="true"><svg viewBox="0 0 40 48" class="intro-flame"><path d="M20 2c4 8 12 13 12 24a12 12 0 0 1-24 0c0-6 3-9 5-12 1 4 3 6 5 6-2-6 0-12 2-18z" fill="#ff6a00"/></svg><div class="intro-word">מדליק</div><div class="intro-line"></div></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="newsletter-bar" id="newsBar">
+  <span>רוצה לקבל ראשונה משחקים ותבניות חדשים לחנוכה?</span>
+  <form id="newsForm" class="news-form">
+    <input type="email" required placeholder="המייל שלך" aria-label="מייל">
+    <button class="btn btn-gold btn-sm">הצטרפי</button>
+  </form>
+  <button class="news-close" id="newsClose" aria-label="סגירה">×</button>
+</div>
+
+<header class="site-header">
+  <a href="#/" class="logo" aria-label="מדליק – לעמוד הבית">
+    <svg viewBox="0 0 40 48" class="logo-flame" aria-hidden="true">
+      <path d="M20 2c4 8 12 13 12 24a12 12 0 0 1-24 0c0-6 3-9 5-12 1 4 3 6 5 6-2-6 0-12 2-18z" fill="url(#fl)"/>
+      <defs><linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa34d"/><stop offset="1" stop-color="#ff6a00"/></linearGradient></defs>
+    </svg>
+    <span class="logo-text">מדליק<small>כל מה שצריך לערב לביבות</small></span>
+  </a>
+  <button class="menu-toggle" id="menuToggle" aria-label="תפריט">☰</button>
+  <nav class="main-nav" id="mainNav">
+    <a href="#/games">משחקים</a>
+    <a href="#/create">יצירת משחק</a>
+    <a href="#/studio">סטודיו מיתוג</a>
+    <a href="#/recipes">מתכונים</a>
+    <a href="#/ideas">השראה ורעיונות</a>
+    <a href="#/suppliers">ספקים</a>
+    <a href="#/me" class="nav-me">♡ האזור שלי</a>
+  </nav>
+</header>
+
+<main id="app" tabindex="-1"></main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <strong class="footer-logo">מדליק</strong>
+      <p>כל מה שצריך לערב לביבות שמדליק שמחה בלבבות</p>
+    </div>
+    <div class="footer-links">
+      <a href="#/games">משחקים</a><a href="#/studio">מיתוג</a><a href="#/recipes">מתכונים</a><a href="#/suppliers">ספקים</a>
+    </div>
+    <div class="footer-links">
+      <a href="#/submit">שליחת רעיון</a><a href="#/advertise">פרסום באתר</a><a href="#/admin">ניהול</a>
+    </div>
+  </div>
+  <div class="footer-mark" aria-hidden="true">מדליק</div>
+  <p class="copy">© מדליק · כל הזכויות שמורות</p>
+</footer>
+
+<button class="to-top" id="toTop" aria-label="חזרה למעלה">↑</button>
+<div class="wipe" id="wipe" aria-hidden="true">מדליק</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="print-root" id="printRoot"></div>
+
+<script src="js/data.js?v=12"></script>
+<script src="js/data-more.js?v=12"></script>
+<script src="js/stage.js?v=12"></script>
+<script src="js/app.js?v=12"></script>
+</body>
+</html>
