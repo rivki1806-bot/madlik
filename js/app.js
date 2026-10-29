@@ -10,7 +10,7 @@ const store = {
   set(k, v){ try{ localStorage.setItem('madlik_'+k, JSON.stringify(v)); }catch(e){} },
   push(k, item){ const a = store.get(k, []); a.unshift(Object.assign({id:Date.now().toString(36), date:new Date().toLocaleString('he-IL')}, item)); store.set(k, a); }
 };
-const GAS_CODE = "// מדליק – שרת קטן וחינמי בגוגל: שומר נרשמות בגיליון ושולח להן מיילים.\n// 1. החליפי את המפתח כאן במפתח סודי משלך (אותיות באנגלית ומספרים).\nconst SECRET = 'CHANGE-ME-123';\n\nconst SHEET = 'נרשמות';\n\nfunction sheet_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(SHEET);\n  if (!sh) { sh = ss.insertSheet(SHEET); sh.appendRow(['תאריך', 'מייל', 'שם', 'מקור', 'פעילה']); }\n  return sh;\n}\nfunction json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }\nfunction valid_(e) { return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(e); }\nfunction esc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\nfunction fmt_(d) { return d instanceof Date ? Utilities.formatDate(d, 'Asia/Jerusalem', 'dd/MM/yyyy HH:mm') : String(d); }\n\n// נרשמות חדשות, רשימה ושליחה\nfunction doPost(e) {\n  try {\n    const d = JSON.parse(e.postData.contents);\n    if (d.action === 'subscribe') {\n      const email = String(d.email || '').trim().toLowerCase();\n      if (!valid_(email)) return json_({ ok: false, error: 'מייל לא תקין' });\n      const sh = sheet_(), rows = sh.getDataRange().getValues();\n      for (let i = 1; i < rows.length; i++) {\n        if (String(rows[i][1]).toLowerCase() === email) {\n          if (rows[i][4] === 'לא') sh.getRange(i + 1, 5).setValue('כן');\n          return json_({ ok: true, dup: true });\n        }\n      }\n      sh.appendRow([new Date(), email, String(d.name || ''), String(d.source || ''), 'כן']);\n      return json_({ ok: true });\n    }\n    if (d.key !== SECRET) return json_({ ok: false, error: 'מפתח שגוי' });\n    if (d.action === 'list') {\n      const rows = sheet_().getDataRange().getValues(), out = [];\n      for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') out.push({ date: fmt_(rows[i][0]), email: rows[i][1], source: rows[i][3] });\n      return json_({ ok: true, subscribers: out });\n    }\n    if (d.action === 'send') return send_(d);\n    return json_({ ok: false, error: 'פעולה לא מוכרת' });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  }\n}\n\n// הסרה מהרשימה (הקישור שבסוף כל מייל)\nfunction doGet(e) {\n  const p = e.parameter || {};\n  if (p.action === 'unsub') {\n    const email = String(p.email || '').toLowerCase(), sh = sheet_(), rows = sh.getDataRange().getValues();\n    for (let i = 1; i < rows.length; i++) if (String(rows[i][1]).toLowerCase() === email) sh.getRange(i + 1, 5).setValue('לא');\n    return HtmlService.createHtmlOutput('<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;padding:48px;font-size:20px\">הוסרת מרשימת התפוצה של מדליק. תודה, ושיהיה חג אורים שמח.</div>');\n  }\n  return json_({ ok: true });\n}\n\nfunction send_(d) {\n  const rows = sheet_().getDataRange().getValues();\n  let to = [];\n  if (d.test) to = [String(d.test)];\n  else for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') to.push(rows[i][1]);\n  const subject = String(d.subject || '').trim(), body = String(d.body || '');\n  if (!subject || !body) return json_({ ok: false, error: 'חסר נושא או הודעה' });\n  const quota = MailApp.getRemainingDailyQuota();\n  let sent = 0, skipped = 0;\n  for (const email of to) {\n    if (sent >= quota) { skipped++; continue; }\n    const unsub = ScriptApp.getService().getUrl() + '?action=unsub&email=' + encodeURIComponent(email);\n    const html = '<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#071a38\">' + esc_(body).replace(/\\n/g, '<br>') +\n      '<hr style=\"margin-top:32px;border:0;border-top:1px solid #ddd\"><p style=\"font-size:12px;color:#666\">קיבלת מייל זה כי נרשמת לרשימת התפוצה של מדליק. <a href=\"' + unsub + '\">להסרה מהרשימה</a></p></div>';\n    MailApp.sendEmail({ to: email, subject: subject, htmlBody: html, body: body + '\\n\\nלהסרה מהרשימה: ' + unsub, name: 'מדליק' });\n    sent++;\n  }\n  return json_({ ok: true, sent: sent, skipped: skipped });\n}\n";
+const GAS_CODE = "// מדליק – שרת קטן וחינמי בגוגל.\n// שומר בגיליון: נרשמות לרשימת התפוצה, כל הטפסים מהאתר, ותוכן שנוסף מהאדמין. ושולח מיילים לנרשמות.\n// 1. החליפי את המפתח כאן במפתח סודי משלך (אותיות באנגלית ומספרים).\nconst SECRET = 'CHANGE-ME-123';\n\nconst KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לספקים', ads: 'בקשות פרסום', users: 'משתמשות' };\nconst CONTENT_KINDS = ['games', 'recipes', 'ideas', 'suppliers'];\n\nfunction tab_(name, head) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(name);\n  if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); }\n  return sh;\n}\nconst subsSheet_ = () => tab_('נרשמות', ['תאריך', 'מייל', 'שם', 'מקור', 'פעילה']);\nconst recSheet_ = kind => tab_(KINDS[kind], ['מזהה', 'תאריך', 'סטטוס', 'סיכום', 'נתונים']);\nconst conSheet_ = () => tab_('תוכן באתר', ['מזהה', 'תאריך', 'סוג', 'כותרת', 'נתונים']);\n\nfunction json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }\nfunction valid_(e) { return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(e); }\nfunction esc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\nfunction fmt_(d) { return d instanceof Date ? Utilities.formatDate(d, 'Asia/Jerusalem', 'dd/MM/yyyy HH:mm') : String(d); }\nfunction newId_() { return Utilities.getUuid().slice(0, 8); }\nfunction rowOf_(sh, id) { const ids = sh.getRange(1, 1, sh.getLastRow(), 1).getValues(); for (let i = 1; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 1; return 0; }\n\n// טופס מהאתר: רק טקסט, באורך מוגבל\nfunction clean_(o) {\n  const out = {};\n  Object.keys(o || {}).slice(0, 30).forEach(k => { out[String(k).slice(0, 40)] = String(o[k] == null ? '' : o[k]).slice(0, 3000); });\n  return out;\n}\n\nfunction doPost(e) {\n  try {\n    const d = JSON.parse(e.postData.contents);\n\n    // --- פעולות פתוחות לכל גולשת ---\n    if (d.action === 'subscribe') {\n      const email = String(d.email || '').trim().toLowerCase();\n      if (!valid_(email)) return json_({ ok: false, error: 'מייל לא תקין' });\n      const sh = subsSheet_(), rows = sh.getDataRange().getValues();\n      for (let i = 1; i < rows.length; i++) {\n        if (String(rows[i][1]).toLowerCase() === email) {\n          if (rows[i][4] === 'לא') sh.getRange(i + 1, 5).setValue('כן');\n          return json_({ ok: true, dup: true });\n        }\n      }\n      sh.appendRow([new Date(), email, String(d.name || '').slice(0, 100), String(d.source || '').slice(0, 50), 'כן']);\n      return json_({ ok: true });\n    }\n    if (d.action === 'submit') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const data = clean_(d.data);\n      const summary = ['name', 'biz', 'title', 'supplier', 'phone', 'email'].map(k => data[k]).filter(Boolean).join(' · ');\n      recSheet_(d.kind).appendRow([newId_(), new Date(), d.kind === 'subs' ? 'ממתין' : 'חדש', summary, JSON.stringify(data)]);\n      return json_({ ok: true });\n    }\n\n    // --- מכאן רק עם מפתח הניהול ---\n    if (d.key !== SECRET) return json_({ ok: false, error: 'מפתח שגוי' });\n\n    if (d.action === 'list') {\n      const rows = subsSheet_().getDataRange().getValues(), out = [];\n      for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') out.push({ date: fmt_(rows[i][0]), email: rows[i][1], source: rows[i][3] });\n      return json_({ ok: true, subscribers: out });\n    }\n    if (d.action === 'send') return send_(d);\n\n    if (d.action === 'records') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const rows = recSheet_(d.kind).getDataRange().getValues(), out = [];\n      for (let i = rows.length - 1; i >= 1; i--) {\n        let data = {}; try { data = JSON.parse(rows[i][4]); } catch (err) {}\n        out.push(Object.assign(data, { id: String(rows[i][0]), date: fmt_(rows[i][1]), status: rows[i][2] }));\n      }\n      return json_({ ok: true, records: out });\n    }\n    if (d.action === 'setStatus' || d.action === 'remove') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const sh = recSheet_(d.kind), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      if (d.action === 'remove') sh.deleteRow(r); else sh.getRange(r, 3).setValue(String(d.status || ''));\n      return json_({ ok: true });\n    }\n    if (d.action === 'addContent') {\n      if (CONTENT_KINDS.indexOf(d.kind) < 0) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const item = d.item || {}; item.id = String(item.id || newId_());\n      conSheet_().appendRow([item.id, new Date(), d.kind, String(item.title || item.name || ''), JSON.stringify(item)]);\n      return json_({ ok: true, id: item.id });\n    }\n    if (d.action === 'removeContent') {\n      const sh = conSheet_(), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      sh.deleteRow(r);\n      return json_({ ok: true });\n    }\n    return json_({ ok: false, error: 'פעולה לא מוכרת' });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  }\n}\n\nfunction doGet(e) {\n  const p = e.parameter || {};\n  // תוכן שנוסף מהאדמין – כל הגולשות רואות אותו\n  if (p.action === 'content') {\n    const rows = conSheet_().getDataRange().getValues(), items = {};\n    CONTENT_KINDS.forEach(k => items[k] = []);\n    for (let i = 1; i < rows.length; i++) {\n      try { const it = JSON.parse(rows[i][4]); if (items[rows[i][2]]) items[rows[i][2]].push(it); } catch (err) {}\n    }\n    return json_({ ok: true, items: items });\n  }\n  // הסרה מרשימת התפוצה (הקישור שבסוף כל מייל)\n  if (p.action === 'unsub') {\n    const email = String(p.email || '').toLowerCase(), sh = subsSheet_(), rows = sh.getDataRange().getValues();\n    for (let i = 1; i < rows.length; i++) if (String(rows[i][1]).toLowerCase() === email) sh.getRange(i + 1, 5).setValue('לא');\n    return HtmlService.createHtmlOutput('<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;padding:48px;font-size:20px\">הוסרת מרשימת התפוצה של מדליק. תודה, ושיהיה חג אורים שמח.</div>');\n  }\n  return json_({ ok: true });\n}\n\nfunction send_(d) {\n  const rows = subsSheet_().getDataRange().getValues();\n  let to = [];\n  if (d.test) to = [String(d.test)];\n  else for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') to.push(rows[i][1]);\n  const subject = String(d.subject || '').trim(), body = String(d.body || '');\n  if (!subject || !body) return json_({ ok: false, error: 'חסר נושא או הודעה' });\n  const quota = MailApp.getRemainingDailyQuota();\n  let sent = 0, skipped = 0;\n  for (const email of to) {\n    if (sent >= quota) { skipped++; continue; }\n    const unsub = ScriptApp.getService().getUrl() + '?action=unsub&email=' + encodeURIComponent(email);\n    const html = '<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#071a38\">' + esc_(body).replace(/\\n/g, '<br>') +\n      '<hr style=\"margin-top:32px;border:0;border-top:1px solid #ddd\"><p style=\"font-size:12px;color:#666\">קיבלת מייל זה כי נרשמת לרשימת התפוצה של מדליק. <a href=\"' + unsub + '\">להסרה מהרשימה</a></p></div>';\n    MailApp.sendEmail({ to: email, subject: subject, htmlBody: html, body: body + '\\n\\nלהסרה מהרשימה: ' + unsub, name: 'מדליק' });\n    sent++;\n  }\n  return json_({ ok: true, sent: sent, skipped: skipped });\n}\n";
 const API = () => String(window.MADLIK_API || '').trim();
 function subscribe(email, source, name){
   email = String(email||'').trim();
@@ -19,6 +19,29 @@ function subscribe(email, source, name){
   try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'subscribe', email, source, name:name||''})}).catch(()=>{}); }catch(e){}
 }
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
+// טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
+const adminKey = () => { try{ return (sessionStorage.getItem('madlik_key')||'').trim(); }catch(e){ return ''; } };
+function record(kind, data){
+  store.push(kind, Object.assign(kind==='subs' ? {status:'ממתין'} : {}, data));
+  if(!API()) return;
+  try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'submit', kind, data})}).catch(()=>{}); }catch(e){}
+}
+let remote = store.get('remote_content', null);
+function refreshRemote(){
+  if(!API()) return Promise.resolve();
+  return fetch(API()+'?action=content').then(r=>r.json()).then(r=>{ if(r.ok){ remote = r.items; store.set('remote_content', remote); } });
+}
+function loadRemote(){
+  const before = JSON.stringify(remote);
+  refreshRemote().then(()=>{ if(JSON.stringify(remote) !== before && !/^#\/admin/.test(location.hash)) render(); }).catch(()=>{});
+}
+const addedContent = k => API() ? ((remote && remote[k]) || []) : store.get('extra_'+k, []);
+const ADMIN_COLS = {
+  subs: [['date','תאריך'],['cat','קטגוריה'],['title','כותרת'],['text','תוכן'],['name','שם'],['email','מייל'],['status','סטטוס']],
+  leads: [['date','תאריך'],['supplier','ספק'],['name','שם'],['phone','טלפון'],['email','מייל'],['count','משתתפות'],['msg','פרטים']],
+  ads: [['date','תאריך'],['biz','עסק'],['name','קשר'],['phone','טלפון'],['pkg','חבילה'],['cat','תחום'],['region','אזור']],
+  users: [['date','תאריך'],['name','שם'],['email','מייל'],['marketing','דיוור']]
+};
 function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2600); }
 const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 const chunk = (a,n) => { const r=[]; for(let i=0;i<a.length;i+=n) r.push(a.slice(i,i+n)); return r; };
@@ -37,7 +60,7 @@ function printHTML(html){
 window.addEventListener('afterprint', ()=>{ document.getElementById('printRoot').innerHTML=''; });
 
 // תוכן = תוכן בסיס + מה שנוסף בניהול
-const content = k => (D[k]||[]).concat(store.get('extra_'+k, []));
+const content = k => (D[k]||[]).concat(addedContent(k));
 const findIn = (k,id) => content(k).find(x=>x.id===id);
 
 /* ---------- מועדפים ---------- */
@@ -508,7 +531,7 @@ pages.supplier = ([id]) => {
     <aside class="box"><ul class="meta-list"><li><span>תחום</span><b>${esc(s.cat)}</b></li><li><span>אזור</span><b>${esc(s.region)}</b></li><li><span>מחיר</span><b>${esc(s.price)}</b></li><li><span>טלפון</span><b><a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></b></li><li><span>מייל</span><b><a href="mailto:${esc(s.email)}">${esc(s.email)}</a></b></li></ul><div class="btn-row"><button class="btn btn-light" data-fav="suppliers|${esc(s.id)}">${isFav('suppliers',s.id)?'♥':'♡'} שמירה</button></div></aside>
   </div>`;
 };
-pages.supplier.after = ([id]) => { const f = document.getElementById('lf'); if(!f) return; f.onsubmit = e => { e.preventDefault(); store.push('leads', Object.assign({supplier:findIn('suppliers',id).name}, Object.fromEntries(new FormData(f)))); f.reset(); toast('הפנייה נשלחה! הספק יחזור אלייך בהקדם'); }; };
+pages.supplier.after = ([id]) => { const f = document.getElementById('lf'); if(!f) return; f.onsubmit = e => { e.preventDefault(); record('leads', Object.assign({supplier:findIn('suppliers',id).name}, Object.fromEntries(new FormData(f)))); f.reset(); toast('הפנייה נשלחה! הספק יחזור אלייך בהקדם'); }; };
 
 pages.advertise = () => pageHead('פרסום במדליק', 'מארגנות ערבי לביבות מחפשות כאן אולמות, קייטרינג, מפעילות ועוד. בואי שימצאו אותך.', 'פרסום') + `
   <div class="wrap">
@@ -519,7 +542,7 @@ pages.advertise = () => pageHead('פרסום במדליק', 'מארגנות ער
       <form class="form" id="af"><div class="two-col"><label>שם העסק<input name="biz" required></label><label>איש/אשת קשר<input name="name" required></label></div><div class="two-col"><label>טלפון<input name="phone" type="tel" required></label><label>מייל<input name="email" type="email"></label></div><div class="two-col"><label>תחום<input name="cat" placeholder="למשל: קייטרינג"></label><label>אזור<input name="region"></label></div><label>איזה פרסום מעניין אותך?<select name="pkg"><option>כרטיס עסק</option><option>כרטיס מומלץ</option><option>בעמוד הבית</option><option>כתבת תוכן</option><option>עוד לא יודעת</option></select></label><label>על העסק<textarea name="msg"></textarea></label><button class="btn btn-gold">שליחה</button></form>
     </div>
   </div>`;
-pages.advertise.after = () => { const f = document.getElementById('af'); f.onsubmit = e => { e.preventDefault(); store.push('ads', Object.fromEntries(new FormData(f))); f.reset(); toast('תודה! נחזור אלייך בקרוב'); }; };
+pages.advertise.after = () => { const f = document.getElementById('af'); f.onsubmit = e => { e.preventDefault(); record('ads', Object.fromEntries(new FormData(f))); f.reset(); toast('תודה! נחזור אלייך בקרוב'); }; };
 
 pages.submit = () => pageHead('שליחת רעיון', 'משחק, מתכון, רעיון לעיצוב או טיפ – אחרי אישור הוא יעלה לאתר, ואם תרצי נכתוב את שמך.', 'שליחת רעיון') + `
   <div class="wrap"><div class="box"><form class="form" id="sbf">
@@ -529,7 +552,7 @@ pages.submit = () => pageHead('שליחת רעיון', 'משחק, מתכון, ר
     <div class="two-col"><label>שם<input name="name"></label><label>מייל<input name="email" type="email"></label></div>
     <label class="check"><input type="checkbox" name="credit" checked> אשמח שיופיע קרדיט עם השם שלי</label>
     <button class="btn btn-gold">שליחה</button></form></div></div>`;
-pages.submit.after = () => { const f = document.getElementById('sbf'); f.onsubmit = e => { e.preventDefault(); store.push('subs', Object.assign({status:'ממתין'}, Object.fromEntries(new FormData(f)))); f.reset(); toast('תודה! הרעיון נשלח לאישור '); }; };
+pages.submit.after = () => { const f = document.getElementById('sbf'); f.onsubmit = e => { e.preventDefault(); record('subs', Object.fromEntries(new FormData(f))); f.reset(); toast('תודה! הרעיון נשלח לאישור '); }; };
 
 /* אזור אישי */
 pages.me = () => {
@@ -546,7 +569,7 @@ pages.me = () => {
 };
 pages.me.after = () => {
   const uf = document.getElementById('uf');
-  if(uf) uf.onsubmit = e => { e.preventDefault(); const v = Object.fromEntries(new FormData(uf)); store.set('user', {name:v.name, email:v.email}); store.push('users', {name:v.name, email:v.email, marketing:v.marketing?'כן':'לא'}); if(v.marketing) subscribe(v.email, 'אזור אישי', v.name); toast('האזור האישי נפתח '); render(); };
+  if(uf) uf.onsubmit = e => { e.preventDefault(); const v = Object.fromEntries(new FormData(uf)); store.set('user', {name:v.name, email:v.email}); record('users', {name:v.name, email:v.email, marketing:v.marketing?'כן':'לא'}); if(v.marketing) subscribe(v.email, 'אזור אישי', v.name); toast('האזור האישי נפתח '); render(); };
   app.onclick = e => {
     const d = e.target.closest('[data-del-saved]'); if(d){ store.set('saved', store.get('saved',[]).filter(x=>x.id!==d.dataset.delSaved)); render(); }
   };
@@ -556,29 +579,27 @@ pages.me.after = () => {
 };
 
 /* ניהול */
+function adminTable(tab, rows, cols){ return rows.length ? `<div style="overflow:auto"><table class="table"><tr>${cols.map(c=>`<th>${c[1]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c[0]])}</td>`).join('')}<td>${tab==='subs'&&r.status==='ממתין'?`<button class="btn btn-sm btn-gold" data-approve="${esc(r.id)}">אישור ופרסום</button> `:''}<button class="btn btn-sm btn-light" data-del="${tab}|${esc(r.id)}">מחיקה</button></td></tr>`).join('')}</table></div>` : '<div class="empty">אין עדיין נתונים.</div>'; }
 pages.admin = () => {
   if(!sessionStorage.getItem('madlik_admin')) return pageHead('ניהול', '', 'ניהול') + `<div class="wrap"><div class="box" style="max-width:420px;margin:auto"><form class="form" id="loginF"><label>סיסמת ניהול<input type="password" name="p" required></label><button class="btn btn-gold">כניסה</button><p class="hint">בגרסה הזו (הדגמה במחשב שלך) הסיסמה היא: madlik. בשלב הבא תהיה התחברות מאובטחת אמיתית.</p></form></div></div>`;
-  const tab = location.hash.split('tab=')[1] || 'subs';
+  const tab = location.hash.split('tab=')[1] || 'subs', live = !!API();
   const tabs = {subs:'רעיונות שנשלחו', leads:'פניות לספקים', ads:'בקשות פרסום', news:'רשימת תפוצה', users:'משתמשות', add:'הוספת תוכן'};
-  const tbl = (rows, cols) => rows.length ? `<div style="overflow:auto"><table class="table"><tr>${cols.map(c=>`<th>${c[1]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c[0]])}</td>`).join('')}<td>${tab==='subs'&&r.status==='ממתין'?`<button class="btn btn-sm btn-gold" data-approve="${esc(r.id)}">אישור ופרסום</button> `:''}<button class="btn btn-sm btn-light" data-del="${tab}|${esc(r.id)}">מחיקה</button></td></tr>`).join('')}</table></div>` : '<div class="empty">אין עדיין נתונים.</div>';
+  const tbl = (rows, cols) => adminTable(tab, rows, cols);
   let body = '';
-  if(tab==='subs') body = tbl(store.get('subs',[]), [['date','תאריך'],['cat','קטגוריה'],['title','כותרת'],['text','תוכן'],['name','שם'],['email','מייל'],['status','סטטוס']]);
-  if(tab==='leads') body = tbl(store.get('leads',[]), [['date','תאריך'],['supplier','ספק'],['name','שם'],['phone','טלפון'],['email','מייל'],['count','משתתפות'],['msg','פרטים']]);
-  if(tab==='ads') body = tbl(store.get('ads',[]), [['date','תאריך'],['biz','עסק'],['name','קשר'],['phone','טלפון'],['pkg','חבילה'],['cat','תחום'],['region','אזור']]);
   if(tab==='news') body = newsTabHTML();
-  if(tab==='users') body = tbl(store.get('users',[]), [['date','תאריך'],['name','שם'],['email','מייל'],['marketing','דיוור']]);
+  if(ADMIN_COLS[tab]) body = live ? '<div id="rList"><div class="empty">טוענת...</div></div>' : tbl(store.get(tab,[]), ADMIN_COLS[tab]);
   if(tab==='add') body = `<div class="two-col">
     <form class="box form" data-add="suppliers"><h3>ספק חדש</h3><label>שם<input name="name" required></label><div class="two-col"><label>תחום<input name="cat" required></label><label>אזור<select name="region"><option>צפון</option><option>חיפה</option><option>שרון</option><option>מרכז</option><option>ירושלים</option><option>שפלה</option><option>דרום</option></select></label></div><div class="two-col"><label>טלפון<input name="phone"></label><label>מייל<input name="email"></label></div><div class="two-col"><label>מחיר<select name="price"><option>₪</option><option>₪₪</option><option>₪₪₪</option></select></label><label>אייקון<input name="ico" value=""></label></div><label>תיאור<textarea name="text"></textarea></label><label class="check"><input type="checkbox" name="featured"> מומלץ (מופיע בעמוד הבית)</label><button class="btn btn-gold">הוספה</button></form>
     <form class="box form" data-add="games"><h3>משחק חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>סוג<input name="type" value="מילים"></label><label>גיל<input name="age" value="כל הגילאים"></label></div><div class="two-col"><label>מינימום משתתפות<input type="number" name="min" value="4"></label><label>מקסימום<input type="number" name="max" value="50"></label></div><label>תיאור קצר<input name="short"></label><label>איך משחקים<textarea name="how"></textarea></label><label>מילים (לא חובה, שורה לכל מילה)<textarea name="words"></textarea></label><button class="btn btn-gold">הוספה</button></form>
     <form class="box form" data-add="recipes"><h3>מתכון חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>קטגוריה<input name="cat" value="לביבות"></label><label>כשרות<select name="diet"><option>פרווה</option><option>חלבי</option><option>בשרי</option></select></label></div><div class="two-col"><label>זמן (דקות)<input type="number" name="time" value="30"></label><label>סועדות<input type="number" name="serves" value="6"></label></div><label>רמה<select name="level"><option>קל</option><option>בינוני</option><option>מאתגר</option></select></label><label>מצרכים <span class="hint">שורה לכל מצרך: כמות | יחידה | שם</span><textarea name="ing" placeholder="2 | כוסות | קמח"></textarea></label><label>שלבי הכנה <span class="hint">שורה לכל שלב</span><textarea name="steps"></textarea></label><button class="btn btn-gold">הוספה</button></form>
     <form class="box form" data-add="ideas"><h3>רעיון / השראה</h3><label>כותרת<input name="title" required></label><label>קטגוריה<select name="cat"><option>עיצוב שולחן</option><option>מתנות ומזכרות</option><option>מגשי אירוח</option><option>הקרנה ומוזיקה</option><option>טיפים למארגנות</option></select></label><label>אייקון<input name="ico" value=""></label><label>תוכן<textarea name="text"></textarea></label><label>קרדיט<input name="credit"></label><button class="btn btn-gold">הוספה</button></form>
   </div>
-  <div class="box"><h3>תוכן שהוספת</h3>${['games','recipes','ideas','suppliers'].map(k=>store.get('extra_'+k,[]).map(x=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span>${esc(x.title||x.name)} <span class="muted">(${k})</span></span><button class="btn btn-sm btn-light" data-del-extra="${k}|${esc(x.id)}">מחיקה</button></div>`).join('')).join('') || '<p class="muted">עוד לא הוספת.</p>'}</div>`;
-  return pageHead('ניהול האתר', '', 'ניהול') + `<div class="wrap"><div class="notice" style="margin-bottom:16px">גרסת הדגמה: הנתונים נשמרים רק בדפדפן הזה. כשנעלה את האתר לאוויר, הכול יישמר בשרת מאובטח.</div><div class="tabs">${Object.entries(tabs).map(([k,v])=>`<a class="chip ${k===tab?'on':''}" href="#/admin?tab=${k}">${v}</a>`).join('')}<button class="chip" id="logout">יציאה</button></div>${body}</div>`;
+  <div class="box"><h3>תוכן שהוספת</h3>${['games','recipes','ideas','suppliers'].map(k=>addedContent(k).map(x=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span>${esc(x.title||x.name)} <span class="muted">(${k})</span></span><button class="btn btn-sm btn-light" data-del-extra="${k}|${esc(x.id)}">מחיקה</button></div>`).join('')).join('') || '<p class="muted">עוד לא הוספת.</p>'}</div>`;
+  return pageHead('ניהול האתר', '', 'ניהול') + `<div class="wrap">${live ? `<div class="notice" style="margin-bottom:16px">מחובר לשרת של גוגל: כל הטפסים, הנרשמות והתוכן נשמרים בגיליון שלך.</div><div class="box form" style="margin-bottom:20px;max-width:480px"><label>מפתח ניהול<input type="password" id="akey" placeholder="המפתח הסודי שקבעת בסקריפט" autocomplete="off"></label><p class="hint" style="margin:0">נשמר עד שסוגרים את הדפדפן.</p></div>` : `<div class="notice" style="margin-bottom:16px">עדיין לא מחובר לשרת: מה שמופיע כאן נשמר רק בדפדפן הזה. כדי שכל הטפסים והנרשמות יגיעו אלייך, חברי את השרת של גוגל (ההוראות בלשונית "רשימת תפוצה").</div>`}<div class="tabs">${Object.entries(tabs).map(([k,v])=>`<a class="chip ${k===tab?'on':''}" href="#/admin?tab=${k}">${v}</a>`).join('')}<button class="chip" id="logout">יציאה</button></div>${body}</div>`;
 };
 function newsTabHTML(){
   const setup = API() ? '' : `<div class="box" id="nSetup"><h2>חיבור חד־פעמי של רשימת התפוצה</h2>
-    <p>כדי שנרשמות מכל מקום יישמרו אצלך, וההודעות ייצאו מהג׳ימייל שלך, צריך שרת קטן וחינמי של גוגל. 5 דקות, פעם אחת:</p>
+    <p>כדי שכל מה שנשלח באתר יגיע אלייך (נרשמות, פניות לספקים, בקשות פרסום, רעיונות ומשתמשות), שהתוכן שתוסיפי יופיע לכל הגולשות, ושההודעות ייצאו מהג׳ימייל שלך, צריך שרת קטן וחינמי של גוגל. 5 דקות, פעם אחת:</p>
     <ol>
       <li>פתחי גיליון חדש בגוגל שיטס: <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a>.</li>
       <li>בתפריט למעלה: <b>תוספים</b> ← <b>Apps Script</b>.</li>
@@ -592,7 +613,6 @@ function newsTabHTML(){
   return `${setup}<div class="two-col" style="margin-top:20px;align-items:start">
     <div class="box"><h2>הנרשמות</h2>
       <p id="nCount" class="muted">טוענת...</p>
-      <div class="form"><label>מפתח ניהול<input type="password" id="nkey" placeholder="המפתח שקבעת בסקריפט" autocomplete="off"></label></div>
       <div class="btn-row"><button class="btn btn-sm" id="nReload">רענון</button><button class="btn btn-sm" id="nCopy">העתקת כתובות</button><button class="btn btn-sm" id="nCsv">הורדה ל־CSV</button></div>
       <div id="nList" style="max-height:340px;overflow:auto"></div></div>
     <form class="box form" id="nf" style="margin-top:0"><h2>הודעה חדשה</h2>
@@ -606,9 +626,8 @@ function newsTabHTML(){
 }
 function initNews(){
   const $ = id => document.getElementById(id);
-  const cnt = $('nCount'), list = $('nList'), keyIn = $('nkey'), st = $('nStatus'), f = $('nf');
+  const cnt = $('nCount'), list = $('nList'), keyIn = $('akey') || {value:''}, st = $('nStatus'), f = $('nf');
   let subs = [];
-  keyIn.value = sessionStorage.getItem('madlik_key') || '';
   const draw = () => {
     cnt.textContent = subs.length + ' נרשמות' + (API() ? '' : ' (רק מהדפדפן הזה, עד שתחברי את השרת)');
     list.innerHTML = subs.length ? `<table class="table"><tr><th>מייל</th><th>תאריך</th><th>מקור</th></tr>${subs.slice(0,300).map(s=>`<tr><td>${esc(s.email)}</td><td>${esc(s.date)}</td><td>${esc(s.source)}</td></tr>`).join('')}</table>` : '<p class="muted">עוד אין נרשמות.</p>';
@@ -616,12 +635,11 @@ function initNews(){
   const load = () => {
     if(!API()){ subs = store.get('subscribers',[]).map(x=>({email:x.email, date:x.date, source:x.source})); draw(); return; }
     const k = keyIn.value.trim();
-    if(!k){ cnt.textContent = 'כתבי את מפתח הניהול כדי לראות את הרשימה'; list.innerHTML = ''; return; }
+    if(!k){ cnt.textContent = 'כתבי למעלה את מפתח הניהול כדי לראות את הרשימה'; list.innerHTML = ''; return; }
     cnt.textContent = 'טוענת...';
     apiPost({action:'list', key:k}).then(r => { if(!r.ok) throw new Error(r.error||'שגיאה'); subs = r.subscribers; draw(); })
       .catch(e => { cnt.textContent = 'לא הצלחתי לטעון: ' + e.message; });
   };
-  keyIn.onchange = () => { sessionStorage.setItem('madlik_key', keyIn.value.trim()); load(); };
   $('nReload').onclick = load;
   $('nCopy').onclick = () => { if(!subs.length) return toast('אין כתובות'); (navigator.clipboard ? navigator.clipboard.writeText(subs.map(s=>s.email).join(', ')) : Promise.reject()).then(()=>toast('הכתובות הועתקו'), ()=>toast('לא הצלחתי להעתיק')); };
   $('nCsv').onclick = () => { const txt = '﻿מייל,תאריך,מקור\n' + subs.map(r=>[r.email,r.date,r.source].map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt],{type:'text/csv'})); a.download = 'madlik-subscribers.csv'; a.click(); };
@@ -644,24 +662,53 @@ function initNews(){
 pages.admin.after = () => {
   const lf = document.getElementById('loginF');
   if(lf){ lf.onsubmit = e => { e.preventDefault(); if(lf.p.value==='madlik'){ sessionStorage.setItem('madlik_admin','1'); render(); } else toast('סיסמה שגויה'); }; return; }
-  if((location.hash.split('tab=')[1]||'') === 'news') initNews();
+  const tab = location.hash.split('tab=')[1] || 'subs', live = !!API();
   document.getElementById('logout').onclick = () => { sessionStorage.removeItem('madlik_admin'); location.hash = '#/'; };
-  const csv = document.getElementById('csv'); if(csv) csv.onclick = () => { const rows = store.get('subscribers',[]); const txt = '﻿תאריך,מייל,מקור\n' + rows.map(r=>[r.date,r.email,r.source].map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt],{type:'text/csv'})); a.download = 'madlik-subscribers.csv'; a.click(); };
+  const ak = document.getElementById('akey');
+  if(ak){ ak.value = adminKey(); ak.onchange = () => { try{ sessionStorage.setItem('madlik_key', ak.value.trim()); }catch(e){} render(); }; }
+  if(tab === 'news') initNews();
+  const fail = e => toast('שגיאה: ' + e.message);
+  const call = body => apiPost(Object.assign({key:adminKey()}, body)).then(r => { if(!r.ok) throw new Error(r.error||'שגיאה'); return r; });
+
+  // טבלאות מהשרת
+  let rows = [];
+  const rl = document.getElementById('rList');
+  if(rl && live){
+    if(!adminKey()) rl.innerHTML = '<div class="empty">כתבי למעלה את מפתח הניהול כדי לראות את הנתונים.</div>';
+    else call({action:'records', kind:tab}).then(r => { rows = r.records; rl.innerHTML = adminTable(tab, rows, ADMIN_COLS[tab]); })
+      .catch(e => { rl.innerHTML = '<div class="empty">לא הצלחתי לטעון: '+esc(e.message)+'</div>'; });
+  }
+
   app.onclick = e => {
-    const d = e.target.closest('[data-del]'); if(d && confirm('למחוק את הרשומה?')){ const [k,id] = d.dataset.del.split('|'); store.set(k, store.get(k,[]).filter(x=>x.id!==id)); render(); }
-    const x = e.target.closest('[data-del-extra]'); if(x && confirm('למחוק מהאתר?')){ const [k,id] = x.dataset.delExtra.split('|'); store.set('extra_'+k, store.get('extra_'+k,[]).filter(i=>i.id!==id)); render(); }
+    const d = e.target.closest('[data-del]');
+    if(d && confirm('למחוק את הרשומה?')){
+      const [k,id] = d.dataset.del.split('|');
+      if(live) call({action:'remove', kind:k, id}).then(()=>{ toast('נמחק'); render(); }).catch(fail);
+      else { store.set(k, store.get(k,[]).filter(x=>x.id!==id)); render(); }
+    }
+    const x = e.target.closest('[data-del-extra]');
+    if(x && confirm('למחוק מהאתר?')){
+      const [k,id] = x.dataset.delExtra.split('|');
+      if(live) call({action:'removeContent', id}).then(refreshRemote).then(()=>{ toast('הוסר מהאתר'); render(); }).catch(fail);
+      else { store.set('extra_'+k, store.get('extra_'+k,[]).filter(i=>i.id!==id)); render(); }
+    }
     const a = e.target.closest('[data-approve]');
-    if(a){ const subs = store.get('subs',[]); const s = subs.find(i=>i.id===a.dataset.approve); s.status = 'אושר';
-      const credit = s.credit ? s.name : '';
-      const ex = store.get('extra_ideas',[]); ex.push({id:'u'+s.id, title:s.title, text:s.text, cat:s.cat, ico:'', credit}); store.set('extra_ideas', ex);
-      store.set('subs', subs); toast('פורסם במדור ההשראה'); render(); }
+    if(a){
+      const list = live ? rows : store.get('subs',[]); const s = list.find(i=>i.id===a.dataset.approve); if(!s) return;
+      const idea = {id:'u'+s.id, title:s.title, text:s.text, cat:s.cat, ico:'', credit: s.credit ? s.name : ''};
+      if(live) call({action:'setStatus', kind:'subs', id:s.id, status:'אושר'}).then(()=>call({action:'addContent', kind:'ideas', item:idea})).then(refreshRemote).then(()=>{ toast('פורסם במדור ההשראה'); render(); }).catch(fail);
+      else { s.status = 'אושר'; const ex = store.get('extra_ideas',[]); ex.push(idea); store.set('extra_ideas', ex); store.set('subs', list); toast('פורסם במדור ההשראה'); render(); }
+    }
   };
+
+  // הוספת תוכן לאתר
   document.querySelectorAll('[data-add]').forEach(f => f.onsubmit = e => {
     e.preventDefault(); const k = f.dataset.add, v = Object.fromEntries(new FormData(f)); v.id = 'x'+Date.now().toString(36);
     if(k==='suppliers') v.featured = !!v.featured;
     if(k==='games'){ v.min = +v.min; v.max = +v.max; v.ico = ''; v.format = ['בעל פה']; v.time = ''; v.equip = false; if(v.words) v.words = lines(v.words); else delete v.words; }
     if(k==='recipes'){ v.ico = ''; v.time = +v.time; v.serves = +v.serves||1; v.ing = lines(v.ing).map(l=>{ const p = l.split('|').map(x=>x.trim()); return p.length>=3 ? [parseFloat(p[0])||0, p[1], p[2]] : [0,'',l]; }); v.steps = lines(v.steps); }
-    const ex = store.get('extra_'+k, []); ex.push(v); store.set('extra_'+k, ex); toast('נוסף לאתר ✔'); render();
+    if(live) call({action:'addContent', kind:k, item:v}).then(refreshRemote).then(()=>{ toast('נוסף לאתר ✔'); render(); }).catch(fail);
+    else { const ex = store.get('extra_'+k, []); ex.push(v); store.set('extra_'+k, ex); toast('נוסף לאתר ✔'); render(); }
   });
 };
 
@@ -713,4 +760,5 @@ document.getElementById('newsForm').onsubmit = e => {
 };
 
 (window.MadlikIntro || Promise.resolve()).then(render);
+loadRemote();
 })();
