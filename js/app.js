@@ -88,11 +88,9 @@ pages.home = () => {
   return `
   <section class="hero" id="hero">
     <div class="hero-top"><span>חנוכה תשפ״ז</span><span>הכול בחינם</span><span>גללי ותראי מה קורה ↓</span></div>
-    <h1 class="hero-word" aria-label="מדליק"><span data-split>מדליק</span></h1>
+    <h1 class="hero-word"><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
     <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות ✦ שמדליק שמחה בלבבות ✦ ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
-    ${fx?fx.dreidel('d1')+fx.dreidel('d2',['ש','נ','ג','ה']):''}
-    <div class="hero-stage">${fx?fx.menorah():''}</div>
-    <div class="hero-copy">
+        <div class="hero-copy">
       <p class="tagline">כל מה שצריך לערב לביבות<br><em>שמדליק שמחה בלבבות</em></p>
       <form class="search-big" id="heroSearch"><input type="search" name="q" placeholder="מה מחפשות? למשל: משחק לקבוצה גדולה" aria-label="חיפוש"><button class="btn btn-gold">חיפוש</button></form>
     </div>

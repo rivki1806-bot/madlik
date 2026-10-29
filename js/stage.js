@@ -30,7 +30,6 @@ function menorah(o){
   return `<svg class="menorah${o.scroll?' scroll':''}" viewBox="0 0 600 560" aria-hidden="true" style="${o.vars||''}">
     <path d="${arms}" fill="none" style="stroke:var(--mb)" stroke-width="12" stroke-linecap="round"/>
     <rect x="${cx-7}" y="${cupY-50}" width="14" height="${470-cupY+50}" style="fill:var(--mb)"/>
-    ${star(cx,330,34)}
     <path d="M${cx-18} 470 Q${cx} 455 ${cx+18} 470 L${cx+70} 528 Q${cx} 546 ${cx-70} 528Z" style="fill:var(--mb)"/>
     <rect x="${cx-76}" y="526" width="152" height="12" rx="6" style="fill:var(--mb)"/>
     ${list.map(candle).join('')}
@@ -168,6 +167,104 @@ function cursor(){
   persistent.push(()=>{ x += (tx-x)*.35; y += (ty-y)*.35; c.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`; });
 }
 
+/* ---------- סצנה בתחתית הדף: חנוכיית פליז, שולחן עץ וסביבוני נייר ---------- */
+function sceneSVG(){
+  const cx = 300, cupY = 210, radii = [55,110,165,220];
+  const arms = radii.map(r=>`M${cx-r} ${cupY} A${r} ${r} 0 0 0 ${cx+r} ${cupY}`).join(' ');
+  const xs = [cx-220,cx-165,cx-110,cx-55,cx+55,cx+110,cx+165,cx+220];
+  const cs = [{x:cx, y:cupY-50, i:0}].concat(xs.map((x,k)=>({x, y:cupY, i:8-k})));
+  const dly = c => (c.i===0 ? .3 : .9+(c.i-1)*.3).toFixed(2);
+  const cup = c => `<path d="M${c.x-15} ${c.y-7} L${c.x+15} ${c.y-7} L${c.x+9} ${c.y+11} Q${c.x} ${c.y+14} ${c.x-9} ${c.y+11}Z" fill="url(#cupG)"/><ellipse cx="${c.x}" cy="${c.y-7}" rx="15" ry="3.6" fill="#e9c673"/><ellipse cx="${c.x}" cy="${c.y-7.4}" rx="10" ry="2.1" fill="#5d3c0e"/>`;
+  const candle = c => { const top = c.y-72; return `<rect x="${c.x-8}" y="${top}" width="16" height="68" rx="2" fill="url(#waxG)"/><ellipse cx="${c.x}" cy="${top}" rx="8" ry="2.6" fill="#ffeaa3"/><path d="M${c.x} ${top} v-7" stroke="#2a1a08" stroke-width="2" stroke-linecap="round"/>`; };
+  const flame = c => { const top = c.y-78; return `<g transform="translate(${c.x} ${top})"><g class="flame" style="--d:${dly(c)}s" filter="url(#fblur)"><path d="M0 0 C10 -9 10 -24 0 -50 C-10 -24 -10 -9 0 0Z" fill="url(#flameG)"/><path d="M0 -1 C4.5 -6 4.5 -14 0 -26 C-4.5 -14 -4.5 -6 0 -1Z" fill="#fffbe6" opacity=".92"/><ellipse cx="0" cy="-3" rx="3.2" ry="4.5" fill="#4d7cff" opacity=".5"/></g></g>`; };
+  const halo = c => `<circle class="halo" style="--d:${dly(c)}s" cx="${c.x}" cy="${c.y-104}" r="66" fill="url(#haloG)"/>`;
+  const knop = y => `<ellipse cx="${cx}" cy="${y}" rx="14" ry="8.5" fill="url(#knopG)"/><ellipse cx="${cx-4}" cy="${y-3}" rx="5" ry="2" fill="#fff4cf" opacity=".7"/>`;
+
+  /* סביבון נייר מקופל: קובייה איזומטרית עם ידית */
+  const P = a => a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const faces = (a, c, warm) => {
+    const T=[0,0], R=[.866*a,.5*a], B=[0,a], L=[-.866*a,.5*a], Bb=[0,2*a], Lb=[-.866*a,1.5*a], Rb=[.866*a,1.5*a];
+    return `<polygon points="${P([L,B,Bb,Lb])}" fill="${c[1]}"/><polygon points="${P([B,R,Rb,Bb])}" fill="${c[2]}"/><polygon points="${P([T,R,B,L])}" fill="${c[0]}"/>`
+      + (warm==='r' ? `<polygon points="${P([B,R,Rb,Bb])}" fill="rgba(255,150,50,.22)"/>` : '')
+      + (warm==='l' ? `<polygon points="${P([L,B,Bb,Lb])}" fill="rgba(255,150,50,.22)"/>` : '')
+      + `<line x1="${T[0]}" y1="${T[1]}" x2="${B[0]}" y2="${B[1]}" stroke="rgba(0,0,0,.08)" stroke-width="1"/><line x1="${B[0]}" y1="${B[1]}" x2="${Bb[0]}" y2="${Bb[1]}" stroke="rgba(0,0,0,.22)" stroke-width="1.2"/><polyline points="${P([L,B,R])}" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1"/>`;
+  };
+  const cube = (x, y, a, c, rot, letter, warm, d) => {
+    const h = a*.2, hy = .5*a - 2*h;
+    const txt = letter ? `<text transform="matrix(.866 .5 0 1 ${(-.866*a).toFixed(1)} ${(.5*a).toFixed(1)})" x="${(a*.18).toFixed(1)}" y="${(a*.8).toFixed(1)}" font-size="${(a*.66).toFixed(1)}" font-family="Suez One,serif" fill="rgba(7,26,56,.22)">${letter}</text>` : '';
+    return `<g class="drop" style="--d:${d}s"><ellipse cx="${x+a*.12}" cy="${y+1}" rx="${(a*1.2).toFixed(1)}" ry="${(a*.3).toFixed(1)}" fill="#000" opacity=".42" filter="url(#sblur)"/>
+      <g transform="translate(${x} ${y-2*a}) rotate(${rot} 0 ${2*a})" filter="url(#paper)">${faces(a,c,warm)}${txt}<g transform="translate(0 ${hy.toFixed(1)})">${faces(h,c,warm)}</g></g></g>`;
+  };
+  const cream = ['#f4ecd8','#ddd0b4','#bdae8e'], blue = ['#aed6ec','#88bad8','#5f94b8'], mint = ['#c9e5d2','#a2ceb2','#79ad90'], pale = ['#e8f2f8','#c8dde9','#a1bfd2'], sky = ['#92c7e6','#6aa8d0','#4887b2'];
+
+  return `<svg viewBox="0 0 1200 560" preserveAspectRatio="xMidYMax slice" role="img" aria-label="חנוכייה דולקת וסביבוני נייר על שולחן עץ">
+  <defs>
+    <linearGradient id="brass" gradientUnits="userSpaceOnUse" x1="60" y1="0" x2="540" y2="0"><stop offset="0" stop-color="#5a3a0e"/><stop offset=".16" stop-color="#b98228"/><stop offset=".34" stop-color="#f0cf7a"/><stop offset=".5" stop-color="#c28d2e"/><stop offset=".68" stop-color="#8d5f18"/><stop offset=".84" stop-color="#d7a444"/><stop offset="1" stop-color="#5a3a0e"/></linearGradient>
+    <linearGradient id="stemG" x1="0" x2="1"><stop offset="0" stop-color="#6d4710"/><stop offset=".3" stop-color="#f0cf7a"/><stop offset=".55" stop-color="#b98228"/><stop offset="1" stop-color="#4f3209"/></linearGradient>
+    <radialGradient id="knopG" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff0c0"/><stop offset=".45" stop-color="#d6a23e"/><stop offset="1" stop-color="#5a3a0e"/></radialGradient>
+    <linearGradient id="cupG" x1="0" x2="1"><stop offset="0" stop-color="#7a5114"/><stop offset=".35" stop-color="#f0cf7a"/><stop offset=".7" stop-color="#b98228"/><stop offset="1" stop-color="#5a3a0e"/></linearGradient>
+    <linearGradient id="baseG" x1="0" x2="1"><stop offset="0" stop-color="#5a3a0e"/><stop offset=".25" stop-color="#e2b95a"/><stop offset=".45" stop-color="#fbe5a0"/><stop offset=".65" stop-color="#b98228"/><stop offset="1" stop-color="#4f3209"/></linearGradient>
+    <linearGradient id="waxG" x1="0" x2="1"><stop offset="0" stop-color="#cf9208"/><stop offset=".4" stop-color="#ffe07a"/><stop offset="1" stop-color="#e0a812"/></linearGradient>
+    <radialGradient id="flameG" cx=".5" cy=".82" r=".75"><stop offset="0" stop-color="#fff6c8"/><stop offset=".3" stop-color="#ffd25a"/><stop offset=".65" stop-color="#ff8f1a"/><stop offset="1" stop-color="#ff5a00" stop-opacity=".15"/></radialGradient>
+    <radialGradient id="haloG"><stop offset="0" stop-color="#ffb347" stop-opacity=".55"/><stop offset=".45" stop-color="#ff8a1f" stop-opacity=".16"/><stop offset="1" stop-color="#ff8a1f" stop-opacity="0"/></radialGradient>
+    <radialGradient id="wallGlow" gradientUnits="userSpaceOnUse" cx="600" cy="230" r="540" gradientTransform="translate(0 230) scale(1 .62) translate(0 -230)"><stop offset="0" stop-color="#ffb060" stop-opacity=".30"/><stop offset=".6" stop-color="#ff9a40" stop-opacity=".08"/><stop offset="1" stop-color="#ff9a40" stop-opacity="0"/></radialGradient>
+    <radialGradient id="tableGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffa850" stop-opacity=".42"/><stop offset="1" stop-color="#ff9a40" stop-opacity="0"/></radialGradient>
+    <linearGradient id="tableShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".05"/><stop offset=".55" stop-color="#000" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></linearGradient>
+    <linearGradient id="wallContact" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></linearGradient>
+    <linearGradient id="sideShade" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".5"/><stop offset=".18" stop-color="#000" stop-opacity="0"/><stop offset=".82" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></linearGradient>
+    <filter id="wood" x="0" y="0" width="1" height="1"><feTurbulence type="fractalNoise" baseFrequency="0.005 0.2" numOctaves="4" seed="9"/><feColorMatrix values="0.55 0 0 0 .26  0.34 0 0 0 .12  0.18 0 0 0 .05  0 0 0 0 1"/></filter>
+    <filter id="paper" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .28 -.07" result="g"/><feComposite in="g" in2="SourceAlpha" operator="in" result="gi"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="gi"/></feMerge></filter>
+    <filter id="fblur" x="-60%" y="-30%" width="220%" height="160%"><feGaussianBlur stdDeviation=".7"/></filter>
+    <filter id="sblur" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="3.5"/></filter>
+  </defs>
+
+
+  <rect x="0" y="396" width="1200" height="32" fill="url(#wallContact)"/>
+  <rect x="0" y="428" width="1200" height="132" fill="#6b4023"/>
+  <rect x="0" y="428" width="1200" height="132" filter="url(#wood)"/>
+  <rect x="0" y="428" width="1200" height="132" fill="url(#tableShade)"/>
+  <rect x="0" y="428" width="1200" height="2.5" fill="#d3a070" opacity=".7"/>
+  <rect x="0" y="428" width="1200" height="132" fill="url(#sideShade)"/>
+  <ellipse class="glow" cx="600" cy="492" rx="430" ry="46" fill="url(#tableGlow)"/>
+
+  ${cube(205,505,64,cream,-3,'נ','r',.15)}
+  ${cube(199,409,52,blue,5,'ג','r',.3)}
+  ${cube(194,331,40,mint,-7,'ה','r',.45)}
+
+  <ellipse cx="600" cy="474" rx="108" ry="13" fill="#000" opacity=".5" filter="url(#sblur)"/>
+  <g transform="translate(330 -14) scale(.9)">
+    <path d="${arms}" fill="none" stroke="#2c1a05" stroke-width="19" stroke-linecap="round" transform="translate(3 4)" opacity=".5"/>
+    <path d="${arms}" fill="none" stroke="url(#brass)" stroke-width="15" stroke-linecap="round"/>
+    <path d="${arms}" fill="none" stroke="#f6dc9a" stroke-width="5" stroke-linecap="round" transform="translate(-2.5 -2.5)" opacity=".7"/>
+    <path d="${arms}" fill="none" stroke="#fff8dc" stroke-width="1.6" stroke-linecap="round" transform="translate(-4 -4)" opacity=".9"/>
+    <rect x="${cx-8}" y="${cupY-50}" width="16" height="${470-(cupY-50)}" fill="url(#stemG)"/>
+    ${[292,347,402].map(knop).join('')}
+    <path d="M${cx-18} 470 Q${cx} 452 ${cx+18} 470 L${cx+72} 528 Q${cx} 550 ${cx-72} 528Z" fill="url(#baseG)"/>
+    <ellipse cx="${cx}" cy="528" rx="76" ry="12" fill="url(#baseG)"/>
+    <path d="M${cx-14} 470 L${cx-62} 524" stroke="#fff0c0" stroke-width="2" opacity=".6" stroke-linecap="round"/>
+    ${knop(452)}
+    ${cs.map(cup).join('')}
+    ${cs.map(candle).join('')}
+    ${cs.map(flame).join('')}
+    ${cs.map(halo).join('')}
+  </g>
+
+  ${cube(985,500,58,pale,9,'פ','l',.55)}
+  ${cube(1088,514,46,sky,-11,'ש','l',.7)}
+  ${cube(900,541,34,cream,15,'נ','l',.85)}
+  </svg>`;
+}
+function mountScene(){
+  const sc = document.getElementById('scene'); if(!sc) return;
+  sc.innerHTML = sceneSVG();
+  const svg = sc.querySelector('svg');
+  const fit = () => svg.setAttribute('viewBox', innerWidth < 700 ? '150 0 900 560' : '0 0 1200 560');
+  fit(); addEventListener('resize', fit);
+  if(reduce || !('IntersectionObserver' in window)){ sc.classList.add('in'); return; }
+  const o = new IntersectionObserver(es => { if(es[0].isIntersecting){ sc.classList.add('in'); o.disconnect(); } }, {threshold:.3});
+  o.observe(sc);
+}
+
 /* ---------- מסך פתיחה ---------- */
 window.MadlikIntro = new Promise(res => {
   const el = document.getElementById('intro');
@@ -227,7 +324,7 @@ function onRender(main){
 }
 
 function init(){
-  cursor(); magnetic();
+  cursor(); magnetic(); mountScene();
   const h = document.querySelector('.site-header'), bar = document.getElementById('progress'), top = document.getElementById('toTop');
   const onScroll = () => {
     h.classList.toggle('scrolled', scrollY > 30);

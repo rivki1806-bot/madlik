@@ -290,3 +290,59 @@ html.has-cursor input,html.has-cursor textarea{cursor:text}
   .mask>span,.reveal{transform:none;opacity:1}
 }
 @media print{.wipe,.cur{display:none!important}}
+
+
+/* ============ הלוגו ============ */
+.logo-img{display:block;height:64px;width:auto;transition:height .3s var(--ease),transform .3s var(--ease)}
+.logo:hover .logo-img{transform:rotate(-2deg) scale(1.04)}
+.site-header.scrolled .logo-img{height:46px}
+.site-header{padding-block:8px}
+.hero-word{font-size:0;line-height:0;text-shadow:none;padding-top:10px;display:flex;justify-content:center}
+.hero-logo{display:block;width:min(54vw,740px);height:auto;filter:drop-shadow(8px 8px 0 var(--ink));transform-origin:50% 100%;animation:logoPop 1s cubic-bezier(.2,1.5,.4,1) .15s both}
+@keyframes logoPop{from{opacity:0;transform:scale(.55) rotate(-5deg)}to{opacity:1;transform:none}}
+.intro-logo{width:min(78vw,560px);height:auto;animation:logoPop .9s cubic-bezier(.2,1.5,.4,1) .15s both}
+.intro-line{margin-top:6px}
+.footer-logo-img{display:block;height:130px;width:auto;margin-bottom:12px}
+.footer-inner>div:first-child{max-width:420px}
+@media (max-width:980px){
+  .hero-logo{width:min(86vw,560px)}
+  .logo-img{height:50px}
+  .footer-logo-img{height:100px}
+}
+
+/* הלוגו מימין, החנוכייה משמאל – בלי חפיפה */
+.hero-word{justify-content:flex-start;padding-right:3vw}
+.hero-logo{width:min(50vw,700px)}
+.hero-stage{width:min(40vw,500px)}
+.hero .dreidel-wrap.d1{top:110px;right:auto;left:41vw}
+@media (max-width:980px){
+  .hero-word{justify-content:center;padding-right:0}
+  .hero-logo{width:min(86vw,560px)}
+  .hero-stage{width:78%}
+  .hero .dreidel-wrap.d1{top:78px;left:auto;right:2vw}
+}
+
+
+/* ============ הירו בלי חנוכייה, והסצנה בתחתית ============ */
+.hero{justify-content:flex-start;padding-bottom:20px}
+.hero-word{justify-content:center;padding-right:0;padding-top:34px}
+.hero-logo{width:min(64vw,880px)}
+.hero-copy{position:relative;right:auto;bottom:auto;width:min(92vw,640px);margin:14px auto 30px;text-align:center}
+.hero .badge{top:auto;bottom:14%;left:8vw}
+.scene{position:relative;margin-top:90px;line-height:0;overflow:hidden}
+.scene svg{display:block;width:100%;height:auto;aspect-ratio:1200/560}
+.scene .flame{transform-box:fill-box;transform-origin:50% 100%;opacity:0;transform:scale(0)}
+.scene.in .flame{animation:ignite .7s var(--d,0s) cubic-bezier(.3,1.5,.5,1) forwards,flick 1.9s calc(var(--d,0s) + .7s) ease-in-out infinite}
+.scene .halo{opacity:0;transition:opacity 1.4s ease;transition-delay:var(--d,0s)}
+.scene.in .halo{opacity:1}
+.scene .glow{opacity:0;transition:opacity 2.4s ease 1s}
+.scene.in .glow{opacity:1}
+.scene .drop{opacity:0;transform:translateY(-170px)}
+.scene.in .drop{animation:dropIn .9s var(--d,0s) cubic-bezier(.25,1.35,.5,1) forwards}
+@keyframes dropIn{from{opacity:0;transform:translateY(-170px)}to{opacity:1;transform:none}}
+.site-footer{margin-top:0}
+@media (max-width:980px){
+  .hero-logo{width:min(86vw,560px)}
+  .hero .badge{bottom:auto;top:66px;left:2vw;width:86px;height:86px}
+}
+@media (max-width:700px){.scene svg{aspect-ratio:900/560}}
