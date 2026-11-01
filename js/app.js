@@ -787,6 +787,7 @@ function render(){
   app.innerHTML = name ? pages[name](params, q) : notFound();
   if(name && pages[name].after) pages[name].after(params, q);
   if(window.MadlikFX) window.MadlikFX.onRender(app);
+  if(window.MadlikWorlds) window.MadlikWorlds.apply(name, app);
   document.querySelectorAll('.main-nav a').forEach(a=>a.classList.toggle('active', path!=='/' && ('#'+path).startsWith(a.getAttribute('href'))));
   document.getElementById('mainNav').classList.remove('open');
 }

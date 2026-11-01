@@ -108,7 +108,7 @@ function setup(root){
   if(nights){
     const stage = nights.querySelector('.nights-stage');
     const panels = [...nights.querySelectorAll('.n-panel')], candles = [...nights.querySelectorAll('.candle')], ticks = [...nights.querySelectorAll('.n-ticks i')];
-    const themes = ['orange','cream','blue','orange','cream','blue','orange','ink'];
+    const themes = ['games','create','studio','recipes','ideas','biz','submit','me'];
     let top = 0, h = 1, cur = 0;
     const m = () => { const a = abs(nights); top = a.top; h = Math.max(1, a.h - innerHeight); }; relayouts.push(m); m();
     const set = n => {
