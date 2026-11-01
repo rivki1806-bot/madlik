@@ -346,3 +346,51 @@ html.has-cursor input,html.has-cursor textarea{cursor:text}
   .hero .badge{bottom:auto;top:66px;left:2vw;width:86px;height:86px}
 }
 @media (max-width:700px){.scene svg{aspect-ratio:900/560}}
+
+
+/* ============ בעלי עסקים ופרסום ============ */
+.page-head h1.long{font-size:clamp(2.4rem,6.2vw,5.4rem);line-height:1}
+.n-panel h2.long{font-size:clamp(2rem,3.8vw,3.6rem)}
+.ad-strip{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:var(--orange);color:var(--ink);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:14px 22px;margin:0 0 26px;font-family:var(--f-poster);font-size:clamp(1.4rem,3vw,2.2rem);line-height:1.1;transition:transform .18s var(--ease),box-shadow .18s var(--ease)}
+.ad-strip b{font-weight:400}
+.ad-strip span{background:var(--ink);color:var(--cream);padding:.1em .6em}
+.ad-strip i{font-style:normal}
+.ad-strip:hover{transform:translate(-3px,-3px);box-shadow:10px 10px 0 var(--cream)}
+.ad-block{margin:70px 0 20px}
+.ad-title{font-size:clamp(3rem,8vw,7rem);line-height:.9;margin:0 0 28px;text-shadow:.04em .04em 0 var(--ink)}
+.ad-title span{color:var(--orange)}
+.ad-form{max-width:820px}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:34px}
+.plan{font:inherit;text-align:right;display:flex;flex-direction:column;gap:10px;padding:26px 24px;border:3px solid var(--ink);box-shadow:8px 8px 0 var(--ink);cursor:pointer;color:var(--ink);transition:transform .18s var(--ease),box-shadow .18s var(--ease)}
+.plan:hover{transform:translate(-4px,-4px);box-shadow:12px 12px 0 var(--orange)}
+.plan.p1{background:var(--cream)}
+.plan.p2{background:var(--orange)}
+.plan.p3{background:var(--blue);color:var(--cream)}
+.plan-name{font-family:var(--f-poster);font-size:2.6rem;line-height:1}
+.plan-price{font-family:var(--f-poster);font-weight:400;font-size:clamp(2rem,3.6vw,3rem);line-height:1}
+.plan-text{font-size:1.1rem;flex:1}
+.plan-cta{font-weight:700;border-top:2px solid currentColor;padding-top:10px}
+
+/* מודעות בעמוד הראשי, בצד שמאל */
+.ad-rail{position:absolute;left:3vw;top:150px;width:min(24vw,300px);z-index:4}
+.ad-label{display:block;font-weight:700;font-size:.8rem;letter-spacing:.3em;margin-bottom:10px;color:var(--cream);opacity:.8}
+.ad-stack{position:relative;min-height:250px}
+.ad-card{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:20px 20px 16px;background:var(--orange);color:var(--ink);border:3px solid var(--ink);box-shadow:8px 8px 0 var(--ink);transform:rotate(-2deg) translateY(14px);opacity:0;visibility:hidden;transition:opacity .5s,transform .5s var(--ease),visibility 0s .5s,box-shadow .18s}
+.ad-card.on{opacity:1;visibility:visible;transform:rotate(-2deg);transition:opacity .5s,transform .5s var(--ease),visibility 0s,box-shadow .18s}
+.ad-card.on:hover{transform:rotate(0) translate(-3px,-3px);box-shadow:12px 12px 0 var(--cream)}
+.ad-card b{font-family:var(--f-poster);font-weight:400;font-size:2.3rem;line-height:1}
+.ad-card span{font-size:1.05rem;line-height:1.35;font-weight:500}
+.ad-card em{font-style:normal;font-weight:700;font-size:.9rem;border-top:2px solid var(--ink);padding-top:8px}
+.ad-cta{background:var(--cream)}
+.ad-dots{display:flex;gap:6px;margin-top:22px}
+.ad-dots i{width:22px;height:5px;background:var(--cream);opacity:.35;transition:opacity .3s}
+.ad-dots i.on{opacity:1;background:var(--orange)}
+@media (min-width:981px){
+  .hero-word{justify-content:flex-start;padding-right:4vw}
+  .hero-logo{width:min(54vw,740px)}
+  .hero-copy{margin:14px 4vw 30px auto;width:min(54vw,740px)}
+}
+@media (max-width:980px){
+  .ad-rail{position:relative;left:auto;top:auto;width:100%;max-width:420px;margin:0 auto 34px}
+  .plans{grid-template-columns:1fr}
+}

@@ -3,7 +3,7 @@
 // 1. החליפי את המפתח כאן במפתח סודי משלך (אותיות באנגלית ומספרים).
 const SECRET = 'CHANGE-ME-123';
 
-const KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לספקים', ads: 'בקשות פרסום', users: 'משתמשות' };
+const KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לבעלי עסקים', ads: 'בקשות פרסום', users: 'משתמשות' };
 const CONTENT_KINDS = ['games', 'recipes', 'ideas', 'suppliers'];
 
 function tab_(name, head) {
