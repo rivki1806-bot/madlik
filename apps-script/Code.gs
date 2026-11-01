@@ -4,7 +4,7 @@
 const SECRET = 'CHANGE-ME-123';
 
 const KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לבעלי עסקים', ads: 'בקשות פרסום', users: 'משתמשות' };
-const CONTENT_KINDS = ['games', 'recipes', 'ideas', 'suppliers'];
+const CONTENT_KINDS = ['games', 'recipes', 'suppliers'];
 
 function tab_(name, head) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();

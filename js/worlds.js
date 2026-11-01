@@ -2,8 +2,8 @@
 window.MadlikWorlds = (function(){
 'use strict';
 const SEC = {home:'home', games:'games', game:'games', create:'create', creator:'create', studio:'studio', design:'studio',
-  recipes:'recipes', recipe:'recipes', ideas:'ideas', suppliers:'biz', supplier:'biz', advertise:'biz', me:'me', submit:'submit', admin:'admin', search:'search'};
-const WORLDS = ['games','create','studio','recipes','ideas','biz','me','submit'];
+  recipes:'recipes', recipe:'recipes', suppliers:'biz', supplier:'biz', advertise:'biz', me:'me', submit:'submit', admin:'admin', edit:'edit', search:'search'};
+const WORLDS = ['games','create','studio','recipes','biz','me','submit'];
 
 /* ---------- איורים לראש כל עמוד ---------- */
 const art = {
@@ -45,10 +45,6 @@ const art = {
     const cols = ['#00b7eb','#ec008c','#ffed00','#f4f4f8','#262a38'], nm = ['C','M','Y','W','K'];
     return `<div class="fan">${cols.map((c,i)=>`<i class="sw" style="--i:${i};--c:${c}"><span>${nm[i]}</span></i>`).join('')}<u class="rivet"></u></div><div class="regmark"></div>`;
   },
-  ideas(){
-    const ph = ['#e8c3cc','#b9cdb8','#ead9b4'];
-    return [0,1,2].map(i=>`<div class="pol" style="--i:${i}"><span class="pin"></span><div class="ph" style="background:${ph[i]}"><svg viewBox="0 0 100 80"><circle cx="72" cy="24" r="10" fill="#fff" opacity=".85"/><path d="M0 80 L30 38 L52 66 L70 48 L100 80Z" fill="rgba(67,45,56,.26)"/></svg></div></div>`).join('');
-  },
   biz(){
     const n = 28, w = 1400/n; let st = '';
     for(let i=0;i<n;i++){ const x = i*w, c = i%2 ? '#fdf3df' : '#ff6f59'; st += `<rect x="${x.toFixed(1)}" y="0" width="${(w+.5).toFixed(1)}" height="56" fill="${c}"/><path d="M${x.toFixed(1)} 56 a${(w/2).toFixed(1)} ${(w/2).toFixed(1)} 0 0 0 ${w.toFixed(1)} 0z" fill="${c}"/>`; }
@@ -69,8 +65,7 @@ const AMB = {
   games:  {n:18, cls:'confetti fall', colors:['#ffd23f','#ff6b6b','#3ddc97','#4cc9f0','#ffffff'], size:[10,20], dur:[14,26]},
   recipes:{n:14, cls:'leaf fall',     colors:['#6b8f3a','#8fb04f','#e4572e','#f6c453'], size:[16,30], dur:[16,28]},
   create: {n:14, cls:'star rise',     colors:['#ffd23f','#ff8fab','#2f6bff','#4cc9a0'], size:[16,30], dur:[16,28]},
-  studio: {n:18, cls:'dot pulse',     colors:['#ec008c','#00b7eb','#ffed00'], size:[18,70], dur:[5,10]},
-  ideas:  {n:14, cls:'petal fall',    colors:['#d9788f','#e8a6b6','#9bb59a','#e8c98f'], size:[14,28], dur:[16,28]},
+  studio: {n:18, cls:'dot pulse',     colors:['#ec008c','#00b7eb','#ffed00'], size:[10,34], dur:[6,11]},
   biz:    {n:10, cls:'balloon rise',  colors:['#ff6f59','#ffd166','#fdf3df','#06d6a0'], size:[26,46], dur:[18,30]},
   me:     {n:16, cls:'heart rise',    colors:['#ffb4c8','#7b57c9','#ff8fab','#b9e4d0'], size:[16,34], dur:[14,24]},
   submit: {n:10, cls:'plane glide',   colors:['#d6403a','#1b4fb3','#ffffff','#1b2b55'], size:[22,40], dur:[14,24]}
@@ -104,5 +99,5 @@ function apply(name, root){
   root.querySelectorAll('.ing-list').forEach(ul => { ul.onclick = e => { const li = e.target.closest('li'); if(li) li.classList.toggle('done'); }; });
 }
 
-return {apply};
+return {apply, art:sec => art[sec] ? art[sec]() : ''};
 })();
