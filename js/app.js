@@ -81,7 +81,7 @@ const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn
 const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
 const supCard = (s,i=0) => `<a class="card sup-card" href="#/supplier/${esc(s.id)}">${s.featured?'<span class="badge-featured">מומלץ</span>':''}${favBtn('suppliers',s.id)}<div class="card-top" style="--bg:${bgs[(i+3)%5]}">${art(s)}</div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.text)}</p><div class="tags"><span class="tag">${esc(s.cat)}</span><span class="tag"> ${esc(s.region)}</span><span class="tag">${esc(s.price)}</span></div></div></a>`;
 const tplCard = t => `<a class="card" href="#/studio/${esc(t.id)}"><div class="card-top" style="--bg:#f3e9da">${art(t)}</div><div class="card-body"><h3>${esc(t.title)}</h3><p>${t.w}×${t.h} מ״מ</p></div></a>`;
-const creatorCard = c => `<a class="card" href="#/create/${esc(c.id)}"><div class="card-top" style="--bg:#fff3d6">${art(c)}</div><div class="card-body"><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p><div class="tags"><span class="tag tag-gold">חינם</span></div></div></a>`;
+const creatorCard = c => `<a class="card" href="#/create/${esc(c.id)}"><div class="card-top" style="--bg:#fff3d6">${art(c)}</div><div class="card-body"><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p><div class="tags">${c.isNew?'<span class="tag tag-new">חדש!</span>':''}<span class="tag tag-gold">חינם</span></div></div></a>`;
 const art = x => { const n = String(x.title||x.name||'').replace(/["'״׳]/g,'').trim(); return `<span class="card-letter">${esc(n[0]||'✦')}</span>`; };
 const pageHead = (title, text, crumb) => `<div class="page-head"><div class="wrap">${crumb?`<div class="breadcrumb"><a href="#/">ראשי</a> › ${crumb}</div>`:''}<h1${String(title).length>22?' class="long"':''}>${title}</h1>${text?`<p>${text}</p>`:''}</div></div>`;
 
@@ -216,6 +216,7 @@ pages.game = ([id]) => {
   if(g.words) play = `<a class="btn btn-gold" href="#/create/${g.creator||(g.id.startsWith('bingo')?'bingo':g.id.startsWith('memory')?'memory':'elias')}?d=${enc({title:g.title, words:g.words.join('\n'), size:g.size||5, count:10})}"> להדפסה / לשחק על המסך</a>`;
   if(g.quartets) play = `<a class="btn btn-gold" href="#/create/quartets?d=${enc({title:g.title, groups:g.quartets.map(q=>q.t+': '+q.i.join(', ')).join('\n')})}"> להדפסת הקלפים</a>`;
   if(g.qa) play = `<button class="btn btn-gold" id="triviaPlay"> מצב הקרנה</button>`;
+  if(g.battle) play = `<a class="btn btn-gold" href="#/create/battle">⚔️ לשחק עכשיו</a>`;
   return pageHead(esc(g.title), esc(g.short), `<a href="#/games">משחקים</a> › ${esc(g.title)}`) + `
   <div class="wrap detail">
     <div>
@@ -261,6 +262,9 @@ const creatorDefaults = {
   memory:{title:'זיכרון חנוכה', words:'סביבון\nלביבה\nסופגנייה\nחנוכייה\nשמש\nפך שמן\nמכבים\nנר'},
   wordsearch:{title:'תפזורת חנוכה', words:'סביבון\nלביבה\nסופגניה\nחנוכיה\nשמש\nמכבים\nשמן\nנס', size:12}
 };
+const GP = window.GamesPro || {DEFAULTS:{}, NEW:[], PLAYABLE:[], fields:()=>null, autoRules(){}};
+Object.assign(creatorDefaults, GP.DEFAULTS);
+const canPlay = type => ['memory','cards'].includes(type) || GP.PLAYABLE.includes(type);
 pages.create = () => pageHead('יצירת משחק אישי', 'בוחרות סוג משחק, מכניסות מילים – ומקבלות משחק מעוצב להדפסה, לשיתוף או לשחק ישר באתר. הכול בחינם.', 'יצירת משחק') + `<div class="wrap"><div class="cards">${D.creators.map(creatorCard).join('')}</div></div>`;
 
 function getGameState(type, q){
@@ -270,12 +274,13 @@ function getGameState(type, q){
 pages.creator = ([type], q) => {
   const c = D.creators.find(x=>x.id===type); if(!c) return notFound();
   const s = getGameState(type, q);
-  const wordsField = type==='quartets'
+  const wordsField = GP.fields(type, s) || (type==='quartets'
     ? `<label>רביעיות <span class="hint">שורה לכל רביעייה: נושא: פריט, פריט, פריט, פריט</span><textarea name="groups" rows="8">${esc(s.groups)}</textarea></label>`
-    : `<label>${type==='cards'?'שאלות':'מילים'} <span class="hint">אחת בכל שורה</span><textarea name="words" rows="10">${esc(s.words)}</textarea></label>`;
+    : `<label>${type==='cards'?'שאלות':'מילים'} <span class="hint">אחת בכל שורה</span><textarea name="words" rows="10">${esc(s.words)}</textarea></label>`);
   return pageHead(esc(c.title), esc(c.text), `<a href="#/create">יצירת משחק</a> › ${esc(c.title)}`) + `
   <div class="wrap builder">
     <form class="box form builder-panel" id="cf">
+      ${GP.RULES && GP.RULES[type]?'<button type="button" class="rules-btn" id="doRules"><span class="q">?</span><span>איך משחקים? הוראות מלאות<small>כל החוקים, שלב אחר שלב</small></span></button>':''}
       <label>כותרת<input name="title" value="${esc(s.title)}"></label>
       ${wordsField}
       ${type==='bingo'?`<div class="two-col"><label>מספר לוחות<input type="number" name="count" min="1" max="200" value="${esc(s.count)}"></label><label>גודל<select name="size"><option value="4" ${s.size==4?'selected':''}>4×4</option><option value="5" ${s.size==5?'selected':''}>5×5</option></select></label></div>`:''}
@@ -284,7 +289,7 @@ pages.creator = ([type], q) => {
       <label>גופן<select name="font">${D.fonts.map(f=>`<option value="${f.id}" ${s.font===f.id?'selected':''}>${f.name}</option>`).join('')}</select></label>
       <div class="btn-row">
         <button type="button" class="btn btn-gold" id="doPrint"> הדפסה / PDF</button>
-        ${['elias','memory','cards'].includes(type)?'<button type="button" class="btn" id="doPlay"> לשחק על המסך</button>':''}
+        ${canPlay(type)?'<button type="button" class="btn" id="doPlay"> לשחק על המסך</button>':''}
         <button type="button" class="btn btn-light" id="doShare"> קישור לשיתוף</button>
         <button type="button" class="btn btn-light" id="doSave">♡ שמירה</button>
       </div>
@@ -297,7 +302,7 @@ pages.creator.after = ([type], q) => {
   const f = document.getElementById('cf'), pv = document.getElementById('pv');
   const s = getGameState(type, q);
   let cache = null; // כדי שהבינגו/תפזורת לא יתערבבו בכל הקלדה
-  const read = () => { const v = Object.fromEntries(new FormData(f)); Object.assign(s, v); return s; };
+  const read = () => { const v = Object.fromEntries(new FormData(f)); f.querySelectorAll('input[type=checkbox][name]').forEach(cb => v[cb.name] = cb.checked); Object.assign(s, v); return s; };
   const draw = (reshuffle) => { read(); if(reshuffle || !cache) cache = null; pv.innerHTML = renderGame(type, s, cache || (cache = {})); };
   f.oninput = () => draw(false);
   f.onclick = e => { const b = e.target.closest('[data-pal]'); if(!b) return; s.palette = +b.dataset.pal; f.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on', x===b)); draw(false); };
@@ -306,14 +311,20 @@ pages.creator.after = ([type], q) => {
   document.getElementById('doPrint').onclick = () => printHTML(pv.innerHTML);
   document.getElementById('doShare').onclick = () => copyLink(link());
   document.getElementById('doSave').onclick = () => { store.push('saved', {kind:'משחק', title:s.title, link:link()}); toast('נשמר באזור האישי ♡'); };
+  const startPlay = () => { read(); if(GP.PLAYABLE.includes(type) && window.GamesPlay) return GamesPlay.start(type, s, cache || (cache = {})); type==='memory' ? playMemory(lines(s.words)) : playCards(lines(s.words), false); };
   const play = document.getElementById('doPlay');
-  if(play) play.onclick = () => { read(); type==='memory' ? playMemory(lines(s.words)) : playCards(lines(s.words), type==='elias'); };
+  if(play) play.onclick = startPlay;
+  pv.addEventListener('click', e => { if(e.target.closest('[data-play]')) startPlay(); });
+  const rb = document.getElementById('doRules');
+  if(rb) rb.onclick = () => GP.showRules(type, {onPlay: canPlay(type) ? startPlay : null});
+  GP.autoRules(type, canPlay(type) ? startPlay : null);
 };
 
 function gameVars(s){ const p = gPalettes[s.palette||0], fnt = (D.fonts.find(x=>x.id===s.font)||D.fonts[0]).css; return `--gc1:${p.c};--gbg:${p.bg};--gf:${fnt}`; }
 function renderGame(type, s, cache){
   const v = gameVars(s), title = `<div class="sheet-title">${esc(s.title)}</div>`, foot = '<small>מדליק</small>';
   const sheets = (items, per, cols, cellFn) => chunk(items, per).map(pg=>`<div class="sheet" style="${v}">${title}<div class="g-cards" style="grid-template-columns:repeat(${cols},1fr)">${pg.map(cellFn).join('')}</div></div>`).join('') || '<div class="empty">הכניסי מילים כדי לראות תצוגה</div>';
+  if(GP.NEW.includes(type)) return GP.render(type, s, cache, v, title);
   const words = lines(s.words);
   if(type==='elias' || type==='cards') return sheets(words, 12, 3, w=>`<div class="g-card" style="${type==='cards'?'font-size:1rem':''}">${esc(w)}${foot}</div>`);
   if(type==='whoami') return sheets(words, 4, 2, w=>`<div class="g-card" style="font-size:2rem;aspect-ratio:1/1.1">${esc(w)}${foot}</div>`);
