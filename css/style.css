@@ -473,3 +473,7 @@ main.enter{animation:pageIn .7s var(--ease)}
 
 @media (max-width:560px){.card-letter{font-size:6rem}.to-top{bottom:16px;left:16px}}
 @media print{.intro,.progress,.to-top{display:none!important}}
+
+/* ניהול: עמודות כניסות */
+.stats-t td:first-child{min-width:170px}
+.st-bar{display:block;height:6px;margin-top:6px;border-radius:999px;background:linear-gradient(90deg,#ff6a00,#ffd23f);width:var(--w);min-width:2px}

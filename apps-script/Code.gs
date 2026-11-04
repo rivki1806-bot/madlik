@@ -15,6 +15,24 @@ function tab_(name, head) {
 const subsSheet_ = () => tab_('נרשמות', ['תאריך', 'מייל', 'שם', 'מקור', 'פעילה']);
 const recSheet_ = kind => tab_(KINDS[kind], ['מזהה', 'תאריך', 'סטטוס', 'סיכום', 'נתונים']);
 const conSheet_ = () => tab_('תוכן באתר', ['מזהה', 'תאריך', 'סוג', 'כותרת', 'נתונים']);
+const hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה', 'מבקרת']);
+
+// סיכום הכניסות: סה"כ, היום, 7 ימים, ומבקרות שונות – לכל מדור ולכל בעל עסק
+function stats_() {
+  const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;
+  const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
+  const out = { sec: {}, sup: {} }, seen = {};
+  for (let i = 1; i < rows.length; i++) {
+    const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);
+    if (!out[type]) continue;
+    const o = out[type][id] = out[type][id] || { total: 0, today: 0, week: 0, uniq: 0 };
+    o.total++;
+    if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++;
+    if (now - d.getTime() < 7 * DAY) o.week++;
+    const k = type + '|' + id + '|' + v; if (v && !seen[k]) { seen[k] = 1; o.uniq++; }
+  }
+  return out;
+}
 
 function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 function valid_(e) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e); }
@@ -56,8 +74,16 @@ function doPost(e) {
       return json_({ ok: true });
     }
 
+    if (d.action === 'hit') {
+      const type = d.type === 'sup' ? 'sup' : 'sec';
+      hitSheet_().appendRow([new Date(), type, String(d.id || '').slice(0, 60), String(d.v || '').slice(0, 20)]);
+      return json_({ ok: true });
+    }
+
     // --- מכאן רק עם מפתח הניהול ---
     if (d.key !== SECRET) return json_({ ok: false, error: 'מפתח שגוי' });
+
+    if (d.action === 'stats') return json_({ ok: true, stats: stats_() });
 
     if (d.action === 'list') {
       const rows = subsSheet_().getDataRange().getValues(), out = [];

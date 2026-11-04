@@ -150,22 +150,8 @@ function setup(root){
 }
 
 /* ---------- סמן מותאם ---------- */
-function cursor(){
-  if(!fine || reduce) return;
-  const c = document.createElement('div'); c.className = 'cur'; document.body.appendChild(c);
-  document.documentElement.classList.add('has-cursor');
-  let tx = -100, ty = -100, x = tx, y = ty;
-  addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; }, {passive:true});
-  document.addEventListener('pointerover', e => {
-    const big = e.target.closest('[data-cursor], .card, .poster, .index a, .big-link');
-    const mid = !big && e.target.closest('a, button, .chip, label, select');
-    c.classList.toggle('big', !!big); c.classList.toggle('mid', !!mid);
-    c.textContent = big ? (big.dataset.cursor || 'פתחי') : '';
-  });
-  document.addEventListener('pointerdown', ()=>c.classList.add('down'));
-  document.addEventListener('pointerup', ()=>c.classList.remove('down'));
-  persistent.push(()=>{ x += (tx-x)*.35; y += (ty-y)*.35; c.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`; });
-}
+// הסמן הוא עכשיו סמן אמיתי של הדפדפן בצורת הנר (ב־poster.css), כדי שיזוז בלי השהיה
+function cursor(){}
 
 /* ---------- סצנה בתחתית הדף: חנוכיית פליז, שולחן עץ וסביבוני נייר ---------- */
 function sceneSVG(){

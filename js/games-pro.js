@@ -86,6 +86,8 @@ function showRules(type, o){
   d.innerHTML = `<div class="rules-in">
     <button class="rules-x" data-r="close" aria-label="סגירת ההוראות">×</button>
     <div class="rules-head"><span class="rules-badge">הוראות המשחק</span><h2 id="rulesT">${R.title}</h2><p>${R.intro}</p></div>
+    ${R.promo ? `<div class="rules-promo"><span class="rp-ico" aria-hidden="true">✨</span><div><b>${R.promo.title}</b><p>${R.promo.text}</p>
+      <div class="rp-btns"><button type="button" data-r="words">✍️ כותבות מילים משלכן</button><button type="button" data-r="print">🖨️ גרסה להדפסה</button>${o.onPlay ? '<button type="button" data-r="play">🎮 אינטרקטיבי על המסך</button>' : ''}</div></div></div>` : ''}
     <div class="rules-grid">
       ${R.need ? `<section class="r-need"><h3><i>✦</i>מה צריך</h3><ul>${li(R.need)}</ul></section>` : ''}
       <section class="r-steps"><h3><i>➜</i>מהלך המשחק</h3><ol>${li(R.steps)}</ol></section>
@@ -101,7 +103,10 @@ function showRules(type, o){
   document.body.appendChild(d);
   const close = () => { const h = d.querySelector('#rulesHide'); setHidden(type, h && h.checked); d.classList.add('out'); setTimeout(() => { if(d.open) d.close(); d.remove(); }, 220); };
   d.addEventListener('cancel', e => { e.preventDefault(); close(); });
-  d.addEventListener('click', e => { if(e.target === d){ close(); return; } const b = e.target.closest('[data-r]'); if(!b) return; if(b.dataset.r === 'close') close(); if(b.dataset.r === 'play'){ close(); setTimeout(o.onPlay, 240); } });
+  d.addEventListener('click', e => { if(e.target === d){ close(); return; } const b = e.target.closest('[data-r]'); if(!b) return; if(b.dataset.r === 'close') close(); if(b.dataset.r === 'play'){ close(); setTimeout(o.onPlay, 240); }
+    if(b.dataset.r === 'words' || b.dataset.r === 'print'){ close(); const f = document.getElementById('cf');
+      if(!f){ location.hash = '#/create/' + type; return; }
+      setTimeout(() => { if(b.dataset.r === 'print'){ const p = document.getElementById('doPrint'); if(p) p.click(); return; } const t = f.querySelector('textarea'); if(t){ t.scrollIntoView({block:'center', behavior:'smooth'}); t.focus({preventScroll:true}); t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 1600); } }, 260); } });
   d.showModal(); const first = d.querySelector('.rules-btns .btn'); if(first) first.focus();
 }
 function autoRules(type, onPlay){ if(RULES[type] && !isHidden(type)) setTimeout(() => { if(document.querySelector('#cf')) showRules(type, {onPlay}); }, 420); }

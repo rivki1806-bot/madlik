@@ -1,0 +1,78 @@
+// מדליק – איורים לכרטיסי המשחקים (בלי דמויות). כל משחק מקבל איור שקשור אליו.
+window.MadlikArt = (function(){
+'use strict';
+const N = '#10264d', O = '#ff6a00', G = '#ffd23f', C = '#fff8e7', B = '#2f80ed', P = '#ff5c8a', T = '#3ddc97', W = '#ffffff', R = '#e4572e';
+const st = `stroke="${N}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
+const flame = (x, y, s) => `<path d="M${x} ${y-14*s}c${5*s} ${6*s} ${7*s} ${10*s} ${7*s} ${14*s}a${7*s} ${7*s} 0 0 1-${14*s} 0c0-${4*s} ${2*s}-${8*s} ${7*s}-${14*s}z" fill="${O}" ${st}/><path d="M${x} ${y-6*s}c${2*s} ${3*s} ${3*s} ${5*s} ${3*s} ${7*s}a${3*s} ${3*s} 0 0 1-${6*s} 0c0-${2*s} ${1*s}-${4*s} ${3*s}-${7*s}z" fill="${G}"/>`;
+const spark = (x, y, s, c) => `<path d="M${x} ${y-8*s}L${x+2*s} ${y-2*s}L${x+8*s} ${y}L${x+2*s} ${y+2*s}L${x} ${y+8*s}L${x-2*s} ${y+2*s}L${x-8*s} ${y}L${x-2*s} ${y-2*s}z" fill="${c||G}"/>`;
+const donut = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#e8a15a" ${st}/><path d="M${x-r*.8} ${y-r*.3}a${r*.85} ${r*.75} 0 0 1 ${r*1.6} 0" fill="none" stroke="${P}" stroke-width="${r*.5}" stroke-linecap="round"/><circle cx="${x}" cy="${y+r*.1}" r="${r*.22}" fill="#c0392b"/>${[[-.45,-.5,B],[.1,-.62,G],[.5,-.4,T]].map(([a,b,c]) => `<rect x="${x+a*r}" y="${y+b*r}" width="${r*.22}" height="${r*.08}" rx="1" fill="${c}" transform="rotate(${a*80} ${x+a*r} ${y+b*r})"/>`).join('')}`;
+const dreidel = (x, y, s, rot) => `<g transform="rotate(${rot||0} ${x} ${y})"><rect x="${x-2*s}" y="${y-30*s}" width="${4*s}" height="${10*s}" rx="${2*s}" fill="${N}"/><path d="M${x-14*s} ${y-20*s}h${28*s}v${16*s}l-${14*s} ${18*s}l-${14*s}-${18*s}z" fill="${B}" ${st}/><path d="M${x} ${y-20*s}v${34*s}" stroke="${N}" stroke-width="2" opacity=".35"/><text x="${x-7*s}" y="${y-6*s}" font-size="${11*s}" font-weight="800" fill="${W}" text-anchor="middle" font-family="Assistant,sans-serif">נ</text></g>`;
+
+const S = {
+  battle: () => `<path d="M30 30h70a14 14 0 0 1 14 14v26a14 14 0 0 1-14 14H58l-16 14v-14H30a14 14 0 0 1-14-14V44a14 14 0 0 1 14-14z" fill="${G}" ${st}/>
+    <path d="M110 46h62a12 12 0 0 1 12 12v24a12 12 0 0 1-12 12h-8v14l-16-14h-38a12 12 0 0 1-12-12V58a12 12 0 0 1 12-12z" fill="${P}" ${st}/>
+    <path d="M100 18l-14 34h14l-10 32 28-42h-15l11-24z" fill="${O}" ${st}/>
+    <circle cx="44" cy="57" r="5" fill="${N}"/><circle cx="62" cy="57" r="5" fill="${N}"/><circle cx="80" cy="57" r="5" fill="${N}"/>
+    <path d="M128 70h40M128 80h26" stroke="${W}" stroke-width="5" stroke-linecap="round"/>${spark(176,24,1)}${spark(22,104,.8,W)}`,
+  elias: () => `<g transform="rotate(-10 70 70)"><rect x="34" y="30" width="62" height="80" rx="10" fill="${W}" ${st}/></g><g transform="rotate(4 90 66)"><rect x="56" y="24" width="62" height="80" rx="10" fill="${G}" ${st}/><path d="M70 52h34M70 64h26M70 76h30" stroke="${N}" stroke-width="5" stroke-linecap="round"/></g>
+    <path d="M140 26h34M140 106h34M144 26c0 26 26 26 26 40s-26 14-26 40M170 26c0 26-26 26-26 40s26 14 26 40" fill="${C}" ${st}/><path d="M149 44h16l-8 12zM146 100c4-10 18-10 22 0z" fill="${O}"/>${spark(30,26,.9,W)}`,
+  quiz: () => `<rect x="26" y="16" width="148" height="96" rx="14" fill="${N}" ${st}/><rect x="36" y="26" width="128" height="30" rx="8" fill="${W}"/><text x="100" y="50" font-size="26" font-weight="800" text-anchor="middle" fill="${N}" font-family="Secular One,sans-serif">?</text>
+    <rect x="36" y="62" width="61" height="20" rx="6" fill="${P}"/><rect x="103" y="62" width="61" height="20" rx="6" fill="#4cc9f0"/><rect x="36" y="86" width="61" height="20" rx="6" fill="${G}"/><rect x="103" y="86" width="61" height="20" rx="6" fill="${T}"/>
+    <path d="M82 112l-8 12h52l-8-12" fill="${N}" ${st}/>${spark(182,18,1)}`,
+  crossword: () => { const cells = [[0,1],[1,1],[2,1],[3,1],[4,1],[2,0],[2,2],[2,3],[4,2],[4,3],[0,3],[1,3],[3,3]]; return `<g transform="translate(40 14) rotate(-4 60 50)"><rect x="-6" y="-6" width="132" height="112" rx="10" fill="${W}" ${st}/>${cells.map(([c, r]) => `<rect x="${c*24}" y="${r*24+4}" width="24" height="24" fill="${(c+r)%3 ? C : G}" stroke="${N}" stroke-width="2.5"/>`).join('')}<circle cx="4" cy="34" r="2" fill="${N}"/><circle cx="52" cy="10" r="2" fill="${N}"/></g>
+    <g transform="rotate(38 150 70)"><rect x="140" y="20" width="16" height="84" rx="3" fill="${O}" ${st}/><path d="M140 104l8 16l8-16z" fill="${C}" ${st}/><rect x="140" y="14" width="16" height="10" rx="3" fill="${P}" ${st}/></g>`; },
+  wheel: () => { const cols = [O, G, B, P, T, W, O, G]; return `<g transform="translate(100 68)">${cols.map((c, i) => { const a1 = i*Math.PI/4, a2 = (i+1)*Math.PI/4, r = 50; return `<path d="M0 0L${(r*Math.cos(a1)).toFixed(1)} ${(r*Math.sin(a1)).toFixed(1)}A${r} ${r} 0 0 1 ${(r*Math.cos(a2)).toFixed(1)} ${(r*Math.sin(a2)).toFixed(1)}z" fill="${c}" stroke="${N}" stroke-width="2.5"/>`; }).join('')}<circle r="50" fill="none" ${st}/><circle r="9" fill="${N}"/></g>
+    <path d="M90 8h20l-10 18z" fill="${R}" ${st}/>${spark(30,30,1)}${spark(170,104,.9,W)}<path d="M100 118v6M76 124h48" ${st}/>`; },
+  cipher: () => `<rect x="24" y="44" width="92" height="62" rx="8" fill="${W}" ${st}/><path d="M24 50l46 32l46-32" fill="none" ${st}/>
+    <path d="M136 56v-12a20 20 0 0 1 40 0v12" fill="none" stroke="${N}" stroke-width="7" stroke-linecap="round"/><rect x="128" y="54" width="56" height="50" rx="10" fill="${G}" ${st}/><circle cx="156" cy="74" r="6" fill="${N}"/><path d="M156 78v12" stroke="${N}" stroke-width="5" stroke-linecap="round"/>
+    <text x="70" y="40" font-size="20" font-weight="800" text-anchor="middle" fill="${O}" font-family="monospace">✦ ✱ ◆</text>${spark(186,24,.9)}`,
+  menorah: () => { const xs = [40,56,72,88,112,128,144,160]; return `<path d="M100 104v-60" ${st}/>${[24,48,60].map(r => `<path d="M${100-r} 50a${r} ${r} 0 0 0 ${2*r} 0" fill="none" stroke="${G}" stroke-width="6"/>`).join('')}
+    <path d="M100 50h-60M100 50h60" stroke="${G}" stroke-width="6" stroke-linecap="round"/><path d="M72 112h56l-10-10h-36z" fill="${G}" ${st}/>
+    ${xs.map((x, i) => `<rect x="${x-4}" y="30" width="8" height="20" rx="2" fill="${[B,W,P,T][i%4]}" ${st} stroke-width="2"/>${i < 6 ? flame(x, 28, .7) : ''}`).join('')}<rect x="96" y="18" width="8" height="26" rx="2" fill="${W}" ${st} stroke-width="2"/>${flame(100, 16, .8)}`; },
+  quartets: () => { const ic = [donut(0,0,10), dreidel(0,14,.7), `<rect x="-4" y="-8" width="8" height="18" rx="2" fill="${W}" ${st} stroke-width="2"/>${flame(0,-10,.6)}`, spark(0,0,1.4,O)]; return [-27,-9,9,27].map((r, i) => `<g transform="rotate(${r} 100 130)"><rect x="76" y="22" width="48" height="70" rx="8" fill="${[W,C,G,W][i]}" ${st}/><g transform="translate(100 56)">${ic[i]}</g></g>`).join('') + spark(30,24,.9) + spark(172,30,.8,W); },
+  bingo: () => { let s = `<g transform="rotate(-5 100 66)"><rect x="46" y="10" width="108" height="108" rx="10" fill="${W}" ${st}/><rect x="46" y="10" width="108" height="20" rx="10" fill="${O}" ${st}/>`; const m = [0,6,12,18,24,3,16,21]; for(let i = 0; i < 25; i++){ const x = 54 + (i%5)*19, y = 36 + Math.floor(i/5)*16; s += `<rect x="${x}" y="${y}" width="15" height="12" rx="3" fill="${C}"/>` + (m.includes(i) ? `<circle cx="${x+7.5}" cy="${y+6}" r="7" fill="${i%2 ? P : B}" opacity=".9"/>` : ''); } return s + `</g>${spark(30,30,1)}${spark(174,100,.9)}`; },
+  whoami: () => `<g transform="rotate(6 100 64)"><path d="M48 18h104v88l-18 14H48z" fill="${G}" ${st}/><path d="M134 106v14l18-14z" fill="#e8b800" ${st}/><rect x="80" y="8" width="40" height="16" rx="2" fill="${W}" opacity=".8" transform="rotate(-6 100 16)"/>
+    <text x="100" y="92" font-size="68" text-anchor="middle" fill="${N}" font-family="Secular One,sans-serif">?</text></g>${spark(28,40,1,W)}${spark(176,26,.8)}`,
+  qcards: () => `<g transform="rotate(-8 80 70)"><rect x="30" y="30" width="86" height="60" rx="10" fill="${W}" ${st}/></g><g transform="rotate(5 110 64)"><rect x="66" y="22" width="96" height="66" rx="10" fill="${C}" ${st}/><text x="114" y="68" font-size="40" text-anchor="middle" fill="${O}" font-family="Secular One,sans-serif">?</text></g>
+    <path d="M140 92h34a8 8 0 0 1 8 8v12a8 8 0 0 1-8 8h-6l-8 8v-8h-20a8 8 0 0 1-8-8v-12a8 8 0 0 1 8-8z" fill="${P}" ${st}/>${spark(26,26,.9)}`,
+  memory: () => { let s = ''; const open = [1, 6]; for(let i = 0; i < 8; i++){ const x = 30 + (i%4)*38, y = 14 + Math.floor(i/4)*54; s += `<rect x="${x}" y="${y}" width="32" height="46" rx="6" fill="${open.includes(i) ? C : B}" ${st}/>` + (open.includes(i) ? `<g>${donut(x+16, y+23, 9)}</g>` : `<circle cx="${x+16}" cy="${y+23}" r="5" fill="${G}"/>`); } return s + spark(180,18,.9); },
+  wordsearch: () => { let s = `<rect x="30" y="14" width="110" height="104" rx="10" fill="${W}" ${st}/>`; for(let r = 0; r < 6; r++) for(let c = 0; c < 6; c++) s += `<circle cx="${44+c*16.5}" cy="${28+r*16}" r="3" fill="${N}" opacity=".35"/>`; return s + `<rect x="36" y="54" width="94" height="16" rx="8" fill="none" stroke="${O}" stroke-width="4"/><rect x="62" y="20" width="16" height="82" rx="8" fill="none" stroke="${P}" stroke-width="4"/>
+    <circle cx="150" cy="86" r="20" fill="#bfe4ff" fill-opacity=".7" stroke="${N}" stroke-width="5"/><path d="M164 100l18 18" stroke="${N}" stroke-width="9" stroke-linecap="round"/>${spark(176,24,1)}`; },
+  dreidel: () => `${dreidel(70, 76, 1.5, -14)}${dreidel(140, 84, 1.1, 18)}<path d="M40 112c20 6 50 6 70 0M114 116c14 4 34 4 50 0" stroke="${N}" stroke-width="3" fill="none" stroke-dasharray="4 6" stroke-linecap="round"/>
+    ${[[160,30],[176,46],[30,30]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="10" fill="${G}" ${st}/><circle cx="${x}" cy="${y}" r="4" fill="none" stroke="${O}" stroke-width="2"/>`).join('')}`,
+  story: () => `<path d="M100 34c-20-10-50-12-70-6v84c20-6 50-4 70 6c20-10 50-12 70-6V28c-20-6-50-4-70 6z" fill="${W}" ${st}/><path d="M100 34v84" ${st}/>
+    <path d="M42 50h44M42 62h38M42 74h44M42 86h30M114 50h44M114 62h36M114 74h42" stroke="${B}" stroke-width="4" stroke-linecap="round"/><path d="M150 18v-4" ${st}/>${flame(160, 30, .9)}<rect x="155" y="30" width="10" height="20" rx="2" fill="${G}" ${st} stroke-width="2"/>${spark(26,22,.9)}`,
+  truefalse: () => `<circle cx="66" cy="66" r="38" fill="${T}" ${st}/><path d="M48 66l12 13l24-26" fill="none" stroke="${W}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="138" cy="66" r="38" fill="${R}" ${st}/><path d="M124 52l28 28M152 52l-28 28" stroke="${W}" stroke-width="10" stroke-linecap="round"/>${spark(102,18,1)}${spark(100,118,.7,W)}`,
+  emoji: () => `<path d="M100 14a34 34 0 0 1 20 62v12h-40v-12a34 34 0 0 1 20-62z" fill="${G}" ${st}/><rect x="82" y="90" width="36" height="10" rx="3" fill="${W}" ${st}/><rect x="86" y="102" width="28" height="10" rx="3" fill="${W}" ${st}/><path d="M92 50l8 8l8-8M100 58v18" fill="none" stroke="${O}" stroke-width="4" stroke-linecap="round"/>
+    <g>${donut(34, 40, 14)}</g><g transform="translate(166 46)">${dreidel(0, 10, .9, 12)}</g><path d="M40 92a10 10 0 0 1 14 14" fill="none" stroke="${W}" stroke-width="3"/>${spark(160,104,1)}${spark(30,100,.8,P)}`,
+  potato: () => `<path d="M60 70c-4-26 20-40 46-36c30 4 48 20 44 44c-4 22-30 34-58 30c-22-4-30-18-32-38z" fill="#d9a066" ${st}/><circle cx="84" cy="62" r="3" fill="${N}" opacity=".5"/><circle cx="120" cy="80" r="3" fill="${N}" opacity=".5"/><circle cx="100" cy="96" r="3" fill="${N}" opacity=".5"/>
+    ${flame(80, 36, 1.1)}${flame(108, 30, 1.4)}${flame(134, 40, 1)}<circle cx="168" cy="28" r="16" fill="${W}" ${st}/><path d="M168 18v10l7 5" fill="none" ${st}/><path d="M24 54h18M18 70h22M26 86h16" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`,
+  pan: () => `<ellipse cx="88" cy="72" rx="62" ry="34" fill="#3a4a6b" ${st}/><ellipse cx="88" cy="68" rx="52" ry="26" fill="#56688f"/><path d="M148 66l40-12" stroke="${N}" stroke-width="12" stroke-linecap="round"/><path d="M148 66l40-12" stroke="#8b5a2b" stroke-width="6" stroke-linecap="round"/>
+    ${[[66,64],[100,60],[86,80],[118,76]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="17" ry="11" fill="#e0a44a" ${st}/><path d="M${x-9} ${y-2}c4-4 12-4 16 0" stroke="#b5731d" stroke-width="2.5" fill="none"/>`).join('')}
+    <path d="M70 30c-4-6 4-10 0-16M92 28c-4-6 4-10 0-16M114 30c-4-6 4-10 0-16" stroke="${W}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>`,
+  donut: () => `<ellipse cx="100" cy="104" rx="76" ry="14" fill="${W}" ${st}/>${donut(64, 76, 26)}${donut(130, 70, 30)}<path d="M150 10v30" stroke="${N}" stroke-width="2.5" stroke-dasharray="3 4"/>${spark(32,30,1)}${spark(180,90,.8,P)}`,
+  checklist: () => `<rect x="54" y="18" width="92" height="104" rx="10" fill="${W}" ${st}/><rect x="80" y="10" width="40" height="18" rx="6" fill="${O}" ${st}/>
+    ${[44,66,88].map((y, i) => `<rect x="66" y="${y}" width="16" height="16" rx="4" fill="${i < 2 ? T : C}" ${st} stroke-width="2.5"/>${i < 2 ? `<path d="M69 ${y+8}l4 4l7-8" fill="none" stroke="${W}" stroke-width="3" stroke-linecap="round"/>` : ''}<path d="M92 ${y+8}h42" stroke="${B}" stroke-width="5" stroke-linecap="round"/>`).join('')}${spark(170,30,1)}${spark(30,96,.9,P)}`,
+  truths: () => [[-14, T, 1], [0, T, 1], [14, R, 0]].map(([r, c, ok], i) => `<g transform="rotate(${r} 100 120)"><rect x="76" y="20" width="48" height="70" rx="8" fill="${W}" ${st}/><circle cx="100" cy="55" r="15" fill="${c}"/>${ok ? '<path d="M93 55l5 5l10-11" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>' : '<path d="M94 49l12 12M106 49l-12 12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>'}</g>`).join('') + spark(30,30,1) + spark(172,26,.8),
+  stage: () => `<path d="M14 10h172v12H14z" fill="${R}" ${st}/><path d="M20 22c0 40 6 70 24 100H14V22zM180 22c0 40-6 70-24 100h30V22z" fill="${P}" ${st}/>
+    <path d="M100 22l-40 100h80z" fill="${G}" opacity=".5"/><ellipse cx="100" cy="116" rx="44" ry="8" fill="${G}" ${st}/>${spark(100,70,1.6,W)}${spark(74,48,.7,W)}${spark(128,52,.8,W)}`,
+  draw: () => `<path d="M60 120l26-96M140 120l-26-96M100 24v96" ${st}/><rect x="46" y="16" width="108" height="78" rx="6" fill="${W}" ${st}/>
+    <g transform="translate(100 64) scale(.9)">${dreidel(0, 0, 1, -8).replace(/fill="#2f80ed"/, `fill="none"`)}</g><path d="M58 84c10-6 20 4 30-2" stroke="${O}" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <g transform="rotate(30 166 48)"><rect x="160" y="18" width="12" height="56" rx="3" fill="${P}" ${st}/><path d="M160 74l6 12l6-12z" fill="${C}" ${st}/></g>`
+};
+const MAP = {battle:'battle', 'word-battle':'battle', elias:'elias', 'elias-hanukkah':'elias', quiz:'quiz', 'trivia-hanukkah':'quiz', 'trivia-kids':'quiz', 'trivia-adults':'quiz',
+  crossword:'crossword', wheel:'wheel', cipher:'cipher', candles:'menorah', 'candle-relay':'menorah', quartets:'quartets', 'quartets-hanukkah':'quartets',
+  bingo:'bingo', 'bingo-hanukkah':'bingo', 'bingo-kids':'bingo', whoami:'whoami', 'who-am-i':'whoami', cards:'qcards', memory:'memory', 'memory-hanukkah':'memory',
+  wordsearch:'wordsearch', 'dreidel-race':'dreidel', 'dreidel-classic':'dreidel', 'family-story':'story', 'true-false':'truefalse', 'emoji-quiz':'emoji',
+  'hot-potato':'potato', 'latke-chef':'pan', 'sufgania-no-hands':'donut', 'find-someone':'checklist', 'two-truths':'truths', pantomime:'stage', 'draw-guess':'draw'};
+// משחק שנוסף מהניהול: בוחרות איור לפי סוג המשחק
+const BY_TYPE = {'מילים':'elias', 'קלפים':'quartets', 'הדפסה':'bingo', 'חידון':'quiz', 'ילדות':'memory', 'היכרות וגיבוש':'checklist', 'קבוצות גדולות':'dreidel'};
+const cache = {};
+function get(x){
+  const k = MAP[x.id] || BY_TYPE[x.type]; if(!k) return '';
+  if(!cache[k]) cache[k] = `<svg class="card-art" viewBox="0 0 200 130" aria-hidden="true" focusable="false">${S[k]()}</svg>`;
+  return cache[k];
+}
+return {get, keys:Object.keys(S)};
+})();

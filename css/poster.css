@@ -14,14 +14,10 @@ main{overflow-x:clip}
 ::selection{background:var(--orange);color:var(--ink)}
 h1,h2,h3{font-family:var(--f-poster);font-weight:400;letter-spacing:0;color:var(--cream)}
 .gold-text{background:none;color:var(--orange);-webkit-text-fill-color:currentColor;animation:none}
-html.has-cursor,html.has-cursor a,html.has-cursor button,html.has-cursor label,html.has-cursor select,html.has-cursor summary{cursor:none}
-html.has-cursor input,html.has-cursor textarea{cursor:text}
-
-/* ---------- סמן ---------- */
-.cur{position:fixed;left:0;top:0;z-index:2000;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--orange);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font:700 .85rem/1 'Heebo',sans-serif;color:var(--ink);transition:width .25s var(--ease),height .25s var(--ease),margin .25s var(--ease),background .2s}
-.cur.mid{width:34px;height:34px;margin:-17px 0 0 -17px;background:transparent;border-color:var(--orange)}
-.cur.big{width:88px;height:88px;margin:-44px 0 0 -44px}
-.cur.down{transform-origin:center;scale:.8}
+/* ---------- סמן: הנר של הלוגו, סמן אמיתי של הדפדפן (בלי השהיה) ---------- */
+html{cursor:url('../img/cursor-32.png') 16 3,auto}
+:where(a,button,label,select,summary,[role=button],.card,.chip,.swatch){cursor:url('../img/cursor-40.png') 20 3,pointer}
+:where(input:not([type=checkbox]):not([type=radio]):not([type=color]),textarea,[contenteditable]){cursor:text}
 
 /* ---------- כותרת ---------- */
 .site-header{background:var(--ink);backdrop-filter:none;border-bottom:2px solid var(--cream);padding:14px 28px}

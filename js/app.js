@@ -10,7 +10,7 @@ const store = {
   set(k, v){ try{ localStorage.setItem('madlik_'+k, JSON.stringify(v)); }catch(e){} },
   push(k, item){ const a = store.get(k, []); a.unshift(Object.assign({id:Date.now().toString(36), date:new Date().toLocaleString('he-IL')}, item)); store.set(k, a); }
 };
-const GAS_CODE = "// מדליק – שרת קטן וחינמי בגוגל.\n// שומר בגיליון: נרשמות לרשימת התפוצה, כל הטפסים מהאתר, ותוכן שנוסף מהאדמין. ושולח מיילים לנרשמות.\n// 1. החליפי את המפתח כאן במפתח סודי משלך (אותיות באנגלית ומספרים).\nconst SECRET = 'CHANGE-ME-123';\n\nconst KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לבעלי עסקים', ads: 'בקשות פרסום', users: 'משתמשות' };\nconst CONTENT_KINDS = ['games', 'recipes', 'suppliers'];\n\nfunction tab_(name, head) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(name);\n  if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); }\n  return sh;\n}\nconst subsSheet_ = () => tab_('נרשמות', ['תאריך', 'מייל', 'שם', 'מקור', 'פעילה']);\nconst recSheet_ = kind => tab_(KINDS[kind], ['מזהה', 'תאריך', 'סטטוס', 'סיכום', 'נתונים']);\nconst conSheet_ = () => tab_('תוכן באתר', ['מזהה', 'תאריך', 'סוג', 'כותרת', 'נתונים']);\n\nfunction json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }\nfunction valid_(e) { return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(e); }\nfunction esc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\nfunction fmt_(d) { return d instanceof Date ? Utilities.formatDate(d, 'Asia/Jerusalem', 'dd/MM/yyyy HH:mm') : String(d); }\nfunction newId_() { return Utilities.getUuid().slice(0, 8); }\nfunction rowOf_(sh, id) { const ids = sh.getRange(1, 1, sh.getLastRow(), 1).getValues(); for (let i = 1; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 1; return 0; }\n\n// טופס מהאתר: רק טקסט, באורך מוגבל\nfunction clean_(o) {\n  const out = {};\n  Object.keys(o || {}).slice(0, 30).forEach(k => { out[String(k).slice(0, 40)] = String(o[k] == null ? '' : o[k]).slice(0, 3000); });\n  return out;\n}\n\nfunction doPost(e) {\n  try {\n    const d = JSON.parse(e.postData.contents);\n\n    // --- פעולות פתוחות לכל גולשת ---\n    if (d.action === 'subscribe') {\n      const email = String(d.email || '').trim().toLowerCase();\n      if (!valid_(email)) return json_({ ok: false, error: 'מייל לא תקין' });\n      const sh = subsSheet_(), rows = sh.getDataRange().getValues();\n      for (let i = 1; i < rows.length; i++) {\n        if (String(rows[i][1]).toLowerCase() === email) {\n          if (rows[i][4] === 'לא') sh.getRange(i + 1, 5).setValue('כן');\n          return json_({ ok: true, dup: true });\n        }\n      }\n      sh.appendRow([new Date(), email, String(d.name || '').slice(0, 100), String(d.source || '').slice(0, 50), 'כן']);\n      return json_({ ok: true });\n    }\n    if (d.action === 'submit') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const data = clean_(d.data);\n      const summary = ['name', 'biz', 'title', 'supplier', 'phone', 'email'].map(k => data[k]).filter(Boolean).join(' · ');\n      recSheet_(d.kind).appendRow([newId_(), new Date(), d.kind === 'subs' ? 'ממתין' : 'חדש', summary, JSON.stringify(data)]);\n      return json_({ ok: true });\n    }\n\n    // --- מכאן רק עם מפתח הניהול ---\n    if (d.key !== SECRET) return json_({ ok: false, error: 'מפתח שגוי' });\n\n    if (d.action === 'list') {\n      const rows = subsSheet_().getDataRange().getValues(), out = [];\n      for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') out.push({ date: fmt_(rows[i][0]), email: rows[i][1], source: rows[i][3] });\n      return json_({ ok: true, subscribers: out });\n    }\n    if (d.action === 'send') return send_(d);\n\n    if (d.action === 'records') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const rows = recSheet_(d.kind).getDataRange().getValues(), out = [];\n      for (let i = rows.length - 1; i >= 1; i--) {\n        let data = {}; try { data = JSON.parse(rows[i][4]); } catch (err) {}\n        out.push(Object.assign(data, { id: String(rows[i][0]), date: fmt_(rows[i][1]), status: rows[i][2] }));\n      }\n      return json_({ ok: true, records: out });\n    }\n    if (d.action === 'setStatus' || d.action === 'remove') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const sh = recSheet_(d.kind), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      if (d.action === 'remove') sh.deleteRow(r); else sh.getRange(r, 3).setValue(String(d.status || ''));\n      return json_({ ok: true });\n    }\n    if (d.action === 'addContent') {\n      if (CONTENT_KINDS.indexOf(d.kind) < 0) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const item = d.item || {}; item.id = String(item.id || newId_());\n      conSheet_().appendRow([item.id, new Date(), d.kind, String(item.title || item.name || ''), JSON.stringify(item)]);\n      return json_({ ok: true, id: item.id });\n    }\n    if (d.action === 'removeContent') {\n      const sh = conSheet_(), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      sh.deleteRow(r);\n      return json_({ ok: true });\n    }\n    return json_({ ok: false, error: 'פעולה לא מוכרת' });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  }\n}\n\nfunction doGet(e) {\n  const p = e.parameter || {};\n  // תוכן שנוסף מהאדמין – כל הגולשות רואות אותו\n  if (p.action === 'content') {\n    const rows = conSheet_().getDataRange().getValues(), items = {};\n    CONTENT_KINDS.forEach(k => items[k] = []);\n    for (let i = 1; i < rows.length; i++) {\n      try { const it = JSON.parse(rows[i][4]); if (items[rows[i][2]]) items[rows[i][2]].push(it); } catch (err) {}\n    }\n    return json_({ ok: true, items: items });\n  }\n  // הסרה מרשימת התפוצה (הקישור שבסוף כל מייל)\n  if (p.action === 'unsub') {\n    const email = String(p.email || '').toLowerCase(), sh = subsSheet_(), rows = sh.getDataRange().getValues();\n    for (let i = 1; i < rows.length; i++) if (String(rows[i][1]).toLowerCase() === email) sh.getRange(i + 1, 5).setValue('לא');\n    return HtmlService.createHtmlOutput('<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;padding:48px;font-size:20px\">הוסרת מרשימת התפוצה של מדליק. תודה, ושיהיה חג אורים שמח.</div>');\n  }\n  return json_({ ok: true });\n}\n\nfunction send_(d) {\n  const rows = subsSheet_().getDataRange().getValues();\n  let to = [];\n  if (d.test) to = [String(d.test)];\n  else for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') to.push(rows[i][1]);\n  const subject = String(d.subject || '').trim(), body = String(d.body || '');\n  if (!subject || !body) return json_({ ok: false, error: 'חסר נושא או הודעה' });\n  const quota = MailApp.getRemainingDailyQuota();\n  let sent = 0, skipped = 0;\n  for (const email of to) {\n    if (sent >= quota) { skipped++; continue; }\n    const unsub = ScriptApp.getService().getUrl() + '?action=unsub&email=' + encodeURIComponent(email);\n    const html = '<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#071a38\">' + esc_(body).replace(/\\n/g, '<br>') +\n      '<hr style=\"margin-top:32px;border:0;border-top:1px solid #ddd\"><p style=\"font-size:12px;color:#666\">קיבלת מייל זה כי נרשמת לרשימת התפוצה של מדליק. <a href=\"' + unsub + '\">להסרה מהרשימה</a></p></div>';\n    MailApp.sendEmail({ to: email, subject: subject, htmlBody: html, body: body + '\\n\\nלהסרה מהרשימה: ' + unsub, name: 'מדליק' });\n    sent++;\n  }\n  return json_({ ok: true, sent: sent, skipped: skipped });\n}\n";
+const GAS_CODE = "// מדליק – שרת קטן וחינמי בגוגל.\n// שומר בגיליון: נרשמות לרשימת התפוצה, כל הטפסים מהאתר, ותוכן שנוסף מהאדמין. ושולח מיילים לנרשמות.\n// 1. החליפי את המפתח כאן במפתח סודי משלך (אותיות באנגלית ומספרים).\nconst SECRET = 'CHANGE-ME-123';\n\nconst KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לבעלי עסקים', ads: 'בקשות פרסום', users: 'משתמשות' };\nconst CONTENT_KINDS = ['games', 'recipes', 'suppliers'];\n\nfunction tab_(name, head) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(name);\n  if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); }\n  return sh;\n}\nconst subsSheet_ = () => tab_('נרשמות', ['תאריך', 'מייל', 'שם', 'מקור', 'פעילה']);\nconst recSheet_ = kind => tab_(KINDS[kind], ['מזהה', 'תאריך', 'סטטוס', 'סיכום', 'נתונים']);\nconst conSheet_ = () => tab_('תוכן באתר', ['מזהה', 'תאריך', 'סוג', 'כותרת', 'נתונים']);\nconst hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה', 'מבקרת']);\n\n// סיכום הכניסות: סה\"כ, היום, 7 ימים, ומבקרות שונות – לכל מדור ולכל בעל עסק\nfunction stats_() {\n  const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;\n  const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');\n  const out = { sec: {}, sup: {} }, seen = {};\n  for (let i = 1; i < rows.length; i++) {\n    const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);\n    if (!out[type]) continue;\n    const o = out[type][id] = out[type][id] || { total: 0, today: 0, week: 0, uniq: 0 };\n    o.total++;\n    if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++;\n    if (now - d.getTime() < 7 * DAY) o.week++;\n    const k = type + '|' + id + '|' + v; if (v && !seen[k]) { seen[k] = 1; o.uniq++; }\n  }\n  return out;\n}\n\nfunction json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }\nfunction valid_(e) { return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(e); }\nfunction esc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\nfunction fmt_(d) { return d instanceof Date ? Utilities.formatDate(d, 'Asia/Jerusalem', 'dd/MM/yyyy HH:mm') : String(d); }\nfunction newId_() { return Utilities.getUuid().slice(0, 8); }\nfunction rowOf_(sh, id) { const ids = sh.getRange(1, 1, sh.getLastRow(), 1).getValues(); for (let i = 1; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 1; return 0; }\n\n// טופס מהאתר: רק טקסט, באורך מוגבל\nfunction clean_(o) {\n  const out = {};\n  Object.keys(o || {}).slice(0, 30).forEach(k => { out[String(k).slice(0, 40)] = String(o[k] == null ? '' : o[k]).slice(0, 3000); });\n  return out;\n}\n\nfunction doPost(e) {\n  try {\n    const d = JSON.parse(e.postData.contents);\n\n    // --- פעולות פתוחות לכל גולשת ---\n    if (d.action === 'subscribe') {\n      const email = String(d.email || '').trim().toLowerCase();\n      if (!valid_(email)) return json_({ ok: false, error: 'מייל לא תקין' });\n      const sh = subsSheet_(), rows = sh.getDataRange().getValues();\n      for (let i = 1; i < rows.length; i++) {\n        if (String(rows[i][1]).toLowerCase() === email) {\n          if (rows[i][4] === 'לא') sh.getRange(i + 1, 5).setValue('כן');\n          return json_({ ok: true, dup: true });\n        }\n      }\n      sh.appendRow([new Date(), email, String(d.name || '').slice(0, 100), String(d.source || '').slice(0, 50), 'כן']);\n      return json_({ ok: true });\n    }\n    if (d.action === 'submit') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const data = clean_(d.data);\n      const summary = ['name', 'biz', 'title', 'supplier', 'phone', 'email'].map(k => data[k]).filter(Boolean).join(' · ');\n      recSheet_(d.kind).appendRow([newId_(), new Date(), d.kind === 'subs' ? 'ממתין' : 'חדש', summary, JSON.stringify(data)]);\n      return json_({ ok: true });\n    }\n\n    if (d.action === 'hit') {\n      const type = d.type === 'sup' ? 'sup' : 'sec';\n      hitSheet_().appendRow([new Date(), type, String(d.id || '').slice(0, 60), String(d.v || '').slice(0, 20)]);\n      return json_({ ok: true });\n    }\n\n    // --- מכאן רק עם מפתח הניהול ---\n    if (d.key !== SECRET) return json_({ ok: false, error: 'מפתח שגוי' });\n\n    if (d.action === 'stats') return json_({ ok: true, stats: stats_() });\n\n    if (d.action === 'list') {\n      const rows = subsSheet_().getDataRange().getValues(), out = [];\n      for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') out.push({ date: fmt_(rows[i][0]), email: rows[i][1], source: rows[i][3] });\n      return json_({ ok: true, subscribers: out });\n    }\n    if (d.action === 'send') return send_(d);\n\n    if (d.action === 'records') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const rows = recSheet_(d.kind).getDataRange().getValues(), out = [];\n      for (let i = rows.length - 1; i >= 1; i--) {\n        let data = {}; try { data = JSON.parse(rows[i][4]); } catch (err) {}\n        out.push(Object.assign(data, { id: String(rows[i][0]), date: fmt_(rows[i][1]), status: rows[i][2] }));\n      }\n      return json_({ ok: true, records: out });\n    }\n    if (d.action === 'setStatus' || d.action === 'remove') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const sh = recSheet_(d.kind), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      if (d.action === 'remove') sh.deleteRow(r); else sh.getRange(r, 3).setValue(String(d.status || ''));\n      return json_({ ok: true });\n    }\n    if (d.action === 'addContent') {\n      if (CONTENT_KINDS.indexOf(d.kind) < 0) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const item = d.item || {}; item.id = String(item.id || newId_());\n      conSheet_().appendRow([item.id, new Date(), d.kind, String(item.title || item.name || ''), JSON.stringify(item)]);\n      return json_({ ok: true, id: item.id });\n    }\n    if (d.action === 'removeContent') {\n      const sh = conSheet_(), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      sh.deleteRow(r);\n      return json_({ ok: true });\n    }\n    return json_({ ok: false, error: 'פעולה לא מוכרת' });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  }\n}\n\nfunction doGet(e) {\n  const p = e.parameter || {};\n  // תוכן שנוסף מהאדמין – כל הגולשות רואות אותו\n  if (p.action === 'content') {\n    const rows = conSheet_().getDataRange().getValues(), items = {};\n    CONTENT_KINDS.forEach(k => items[k] = []);\n    for (let i = 1; i < rows.length; i++) {\n      try { const it = JSON.parse(rows[i][4]); if (items[rows[i][2]]) items[rows[i][2]].push(it); } catch (err) {}\n    }\n    return json_({ ok: true, items: items });\n  }\n  // הסרה מרשימת התפוצה (הקישור שבסוף כל מייל)\n  if (p.action === 'unsub') {\n    const email = String(p.email || '').toLowerCase(), sh = subsSheet_(), rows = sh.getDataRange().getValues();\n    for (let i = 1; i < rows.length; i++) if (String(rows[i][1]).toLowerCase() === email) sh.getRange(i + 1, 5).setValue('לא');\n    return HtmlService.createHtmlOutput('<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;padding:48px;font-size:20px\">הוסרת מרשימת התפוצה של מדליק. תודה, ושיהיה חג אורים שמח.</div>');\n  }\n  return json_({ ok: true });\n}\n\nfunction send_(d) {\n  const rows = subsSheet_().getDataRange().getValues();\n  let to = [];\n  if (d.test) to = [String(d.test)];\n  else for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') to.push(rows[i][1]);\n  const subject = String(d.subject || '').trim(), body = String(d.body || '');\n  if (!subject || !body) return json_({ ok: false, error: 'חסר נושא או הודעה' });\n  const quota = MailApp.getRemainingDailyQuota();\n  let sent = 0, skipped = 0;\n  for (const email of to) {\n    if (sent >= quota) { skipped++; continue; }\n    const unsub = ScriptApp.getService().getUrl() + '?action=unsub&email=' + encodeURIComponent(email);\n    const html = '<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#071a38\">' + esc_(body).replace(/\\n/g, '<br>') +\n      '<hr style=\"margin-top:32px;border:0;border-top:1px solid #ddd\"><p style=\"font-size:12px;color:#666\">קיבלת מייל זה כי נרשמת לרשימת התפוצה של מדליק. <a href=\"' + unsub + '\">להסרה מהרשימה</a></p></div>';\n    MailApp.sendEmail({ to: email, subject: subject, htmlBody: html, body: body + '\\n\\nלהסרה מהרשימה: ' + unsub, name: 'מדליק' });\n    sent++;\n  }\n  return json_({ ok: true, sent: sent, skipped: skipped });\n}\n";
 const API = () => String(window.MADLIK_API || '').trim();
 function subscribe(email, source, name){
   email = String(email||'').trim();
@@ -25,6 +25,25 @@ function record(kind, data){
   store.push(kind, Object.assign(kind==='subs' ? {status:'ממתין'} : {}, data));
   if(!API()) return;
   try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'submit', kind, data})}).catch(()=>{}); }catch(e){}
+}
+// ספירת כניסות: לכל מדור ולכל בעל עסק. נשלח לשרת כשהוא מחובר, ותמיד נשמר גם בדפדפן הזה
+const SECTIONS = {home:'עמוד הבית', games:'משחקים על המסך', game:'משחקים על המסך', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'בעלי עסקים', supplier:'בעלי עסקים', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
+const visitorId = () => { let v = store.get('vid', ''); if(!v){ v = Math.random().toString(36).slice(2, 12); store.set('vid', v); } return v; };
+let lastHit = '';
+function countHit(name, params, path){
+  if(!SECTIONS[name] || path === lastHit) return; lastHit = path;
+  let sec = SECTIONS[name];
+  if(name === 'creator') sec = canPlay(params[0]) ? 'משחקים על המסך' : 'פעילויות להדפסה';
+  if(name === 'game'){ const g = findIn('games', params[0]); if(g && !isScreenGame(g)) sec = 'פעילויות להדפסה'; }
+  const hits = [['sec', sec]]; if(name === 'supplier' && params[0]) hits.push(['sup', params[0]]);
+  const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10);
+  hits.forEach(([type, id]) => {
+    const o = st[type][id] = st[type][id] || {total:0, today:0, day:today, week:[]};
+    if(o.day !== today){ o.day = today; o.today = 0; }
+    o.total++; o.today++; o.week = (o.week||[]).filter(t => Date.now()-t < 7*864e5).concat(Date.now()).slice(-500);
+    if(API()) try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'hit', type, id, v:visitorId()})}).catch(()=>{}); }catch(e){}
+  });
+  store.set('stats', st);
 }
 let remote = store.get('remote_content', null);
 function refreshRemote(){
@@ -77,11 +96,15 @@ document.addEventListener('click', e=>{
 
 /* ---------- כרטיסים ---------- */
 const bgs = ['#d6e4ee','#e4f0e2','#fff3d6','#f3e9da','#e8eef7'];
-const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn('games',g.id)}<div class="card-top" style="--bg:${bgs[i%5]}">${art(g)}</div><div class="card-body"><h3>${esc(g.title)}</h3><p>${esc(g.short)}</p><div class="tags"><span class="tag">${esc(g.type)}</span><span class="tag">${esc(g.min)}–${esc(g.max)} משתתפות</span>${(g.format||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div></a>`;
+// משחק על המסך = אפשר לשחק בו באתר. כל השאר: פעילויות להדפסה
+const isScreenGame = g => !!g.battle || (g.format||[]).includes('על המסך');
+const customRib = '<span class="cust-rib" aria-label="אפשר להתאים אישית"><i>✨</i> התאמה אישית</span>';
+const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn('games',g.id)}${(g.battle||g.words||g.quartets)?customRib:''}<div class="card-top" style="--bg:${bgs[i%5]}">${gameArt(g)}</div><div class="card-body"><h3>${esc(g.title)}</h3><p>${esc(g.short)}</p><div class="tags"><span class="tag">${esc(g.type)}</span><span class="tag">${esc(g.min)}–${esc(g.max)} משתתפות</span>${(g.format||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div></a>`;
 const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
 const supCard = (s,i=0) => `<a class="card sup-card" href="#/supplier/${esc(s.id)}">${s.featured?'<span class="badge-featured">מומלץ</span>':''}${favBtn('suppliers',s.id)}<div class="card-top" style="--bg:${bgs[(i+3)%5]}">${art(s)}</div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.text)}</p><div class="tags"><span class="tag">${esc(s.cat)}</span><span class="tag"> ${esc(s.region)}</span><span class="tag">${esc(s.price)}</span></div></div></a>`;
 const tplCard = t => `<a class="card" href="#/studio/${esc(t.id)}"><div class="card-top" style="--bg:#f3e9da">${art(t)}</div><div class="card-body"><h3>${esc(t.title)}</h3><p>${t.w}×${t.h} מ״מ</p></div></a>`;
-const creatorCard = c => `<a class="card" href="#/create/${esc(c.id)}"><div class="card-top" style="--bg:#fff3d6">${art(c)}</div><div class="card-body"><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p><div class="tags">${c.isNew?'<span class="tag tag-new">חדש!</span>':''}<span class="tag tag-gold">חינם</span></div></div></a>`;
+const creatorCard = c => `<a class="card" href="#/create/${esc(c.id)}">${customRib}<div class="card-top" style="--bg:#fff3d6">${gameArt(c)}</div><div class="card-body"><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p><div class="tags">${c.isNew?'<span class="tag tag-new">חדש!</span>':''}<span class="tag tag-gold">חינם</span></div></div></a>`;
+const gameArt = x => (window.MadlikArt && MadlikArt.get(x)) || art(x);
 const art = x => { const n = String(x.title||x.name||'').replace(/["'״׳]/g,'').trim(); return `<span class="card-letter">${esc(n[0]||'✦')}</span>`; };
 const pageHead = (title, text, crumb) => `<div class="page-head"><div class="wrap">${crumb?`<div class="breadcrumb"><a href="#/">ראשי</a> › ${crumb}</div>`:''}<h1${String(title).length>22?' class="long"':''}>${title}</h1>${text?`<p>${text}</p>`:''}</div></div>`;
 
@@ -157,8 +180,8 @@ pages.home = () => {
       <div class="n-ticks">${nights.map(()=>'<i></i>').join('')}</div>
     </div>
   </section>
-  ${wshow('games','משחקים','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, חידון טלוויזיה ועוד. מקרינים או מדפיסים, ויוצאים לדרך.','#/games','לכל המשחקים',content('games').slice(0,3).map(gameCard).join(''))}
-  ${wshow('create','יצירת משחק','משחק משלך','מכניסים מילים ומקבלים משחק מעוצב, עם טיימר ובלי הרשמה.','#/create','ליצירת משחק',D.creators.slice(0,3).map(creatorCard).join(''))}
+  ${wshow('games','משחקים על המסך','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון טלוויזיה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
+  ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכן ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
   ${wshow('biz','בעלי עסקים','בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילות ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
@@ -185,9 +208,13 @@ pages.search = (p,q) => {
 
 /* משחקים */
 pages.games = () => {
-  const types = [...new Set(content('games').map(g=>g.type))], formats = [...new Set(content('games').flatMap(g=>g.format||[]))], ages = [...new Set(content('games').map(g=>g.age))];
-  return pageHead('משחקים דיגיטליים אטרקטיביים על המסך', 'משחקים להקרנה, להדפסה ולהפעלה בעל פה. סנני לפי מה שמתאים לערב שלך.', 'משחקים') + `
+  const all = content('games').filter(isScreenGame);
+  const types = [...new Set(all.map(g=>g.type))], formats = [...new Set(all.flatMap(g=>g.format||[]))], ages = [...new Set(all.map(g=>g.age))];
+  return pageHead('משחקים דיגיטליים אטרקטיביים על המסך', 'מקרינים על המסך ומשחקים: קבוצות, טיימר, צלילים וניקוד. ובכל משחק אפשר לשים את המילים שלכן.', 'משחקים על המסך') + `
   <div class="wrap">
+    <h2 class="sec-h">בונות משחק משלכן ומשחקות על המסך</h2>
+    <div class="cards">${D.creators.filter(c=>canPlay(c.id)).map(creatorCard).join('')}</div>
+    <h2 class="sec-h">משחקים מוכנים על המסך</h2>
     <form class="filters" id="gf" onsubmit="return false">
       <input type="search" name="q" placeholder="חיפוש משחק...">
       <select name="type"><option value="">כל הסוגים</option>${types.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
@@ -197,14 +224,14 @@ pages.games = () => {
       <label class="check" style="display:flex;align-items:center;gap:6px"><input type="checkbox" name="noequip"> בלי ציוד</label>
     </form>
     <div class="cards" id="gl"></div>
-    <div class="box center" style="margin-top:30px"><h3>רוצה משחק עם המילים שלך?</h3><a class="btn btn-gold" href="#/create">ליצירת משחק אישי</a></div>
+    <div class="box center" style="margin-top:30px"><h3>מחפשות משהו להדפיס?</h3><a class="btn btn-gold" href="#/create">לפעילויות להדפסה בהתאמה אישית</a></div>
   </div>`;
 };
 pages.games.after = () => {
   const f = document.getElementById('gf'), l = document.getElementById('gl');
   const run = () => {
     const v = Object.fromEntries(new FormData(f)); const n = +v.n;
-    const res = content('games').filter(g => (!v.q || JSON.stringify(g).includes(v.q)) && (!v.type || g.type===v.type) && (!v.format || (g.format||[]).includes(v.format)) && (!v.age || g.age===v.age) && (!n || (n>=g.min && n<=g.max)) && (!v.noequip || !g.equip));
+    const res = content('games').filter(isScreenGame).filter(g => (!v.q || JSON.stringify(g).includes(v.q)) && (!v.type || g.type===v.type) && (!v.format || (g.format||[]).includes(v.format)) && (!v.age || g.age===v.age) && (!n || (n>=g.min && n<=g.max)) && (!v.noequip || !g.equip));
     l.innerHTML = res.length ? res.map(gameCard).join('') : '<div class="empty">אין משחק שמתאים לכל המסננים. נסי להוריד אחד.</div>';
   };
   f.oninput = run; run();
@@ -217,7 +244,7 @@ pages.game = ([id]) => {
   if(g.quartets) play = `<a class="btn btn-gold" href="#/create/quartets?d=${enc({title:g.title, groups:g.quartets.map(q=>q.t+': '+q.i.join(', ')).join('\n')})}"> להדפסת הקלפים</a>`;
   if(g.qa) play = `<button class="btn btn-gold" id="triviaPlay"> מצב הקרנה</button>`;
   if(g.battle) play = `<a class="btn btn-gold" href="#/create/battle">⚔️ לשחק עכשיו</a>`;
-  return pageHead(esc(g.title), esc(g.short), `<a href="#/games">משחקים</a> › ${esc(g.title)}`) + `
+  return pageHead(esc(g.title), esc(g.short), `${isScreenGame(g)?'<a href="#/games">משחקים על המסך</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(g.title)}`) + `
   <div class="wrap detail">
     <div>
       <div class="box"><h2>איך משחקים?</h2><p>${esc(g.how)}</p><div class="btn-row">${play}<button class="btn btn-light" id="printHow">הדפסת ההוראות</button><button class="btn btn-light" data-fav="games|${esc(g.id)}">${isFav('games',g.id)?'♥':'♡'} שמירה</button><button class="btn btn-light" id="share"> שיתוף</button></div></div>
@@ -265,7 +292,10 @@ const creatorDefaults = {
 const GP = window.GamesPro || {DEFAULTS:{}, NEW:[], PLAYABLE:[], fields:()=>null, autoRules(){}};
 Object.assign(creatorDefaults, GP.DEFAULTS);
 const canPlay = type => ['memory','cards'].includes(type) || GP.PLAYABLE.includes(type);
-pages.create = () => pageHead('יצירת משחק אישי', 'בוחרות סוג משחק, מכניסות מילים – ומקבלות משחק מעוצב להדפסה, לשיתוף או לשחק ישר באתר. הכול בחינם.', 'יצירת משחק') + `<div class="wrap"><div class="cards">${D.creators.map(creatorCard).join('')}</div></div>`;
+pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרות פעילות, מכניסות את המילים שלכן, ומקבלות דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + `<div class="wrap">
+  <h2 class="sec-h">מעצבות פעילות משלכן</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)).map(creatorCard).join('')}</div>
+  <h2 class="sec-h">פעילויות מוכנות</h2><div class="cards">${content('games').filter(g=>!isScreenGame(g)).map(gameCard).join('')}</div>
+  <div class="box center" style="margin-top:30px"><h3>רוצות לשחק על המסך?</h3><a class="btn btn-gold" href="#/games">למשחקים הדיגיטליים על המסך</a></div></div>`;
 
 function getGameState(type, q){
   const s = Object.assign({palette:0, font:'frank'}, creatorDefaults[type], q.d ? dec(q.d) : {});
@@ -277,7 +307,7 @@ pages.creator = ([type], q) => {
   const wordsField = GP.fields(type, s) || (type==='quartets'
     ? `<label>רביעיות <span class="hint">שורה לכל רביעייה: נושא: פריט, פריט, פריט, פריט</span><textarea name="groups" rows="8">${esc(s.groups)}</textarea></label>`
     : `<label>${type==='cards'?'שאלות':'מילים'} <span class="hint">אחת בכל שורה</span><textarea name="words" rows="10">${esc(s.words)}</textarea></label>`);
-  return pageHead(esc(c.title), esc(c.text), `<a href="#/create">יצירת משחק</a> › ${esc(c.title)}`) + `
+  return pageHead(esc(c.title), esc(c.text), `${canPlay(type)?'<a href="#/games">משחקים על המסך</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(c.title)}`) + `
   <div class="wrap builder">
     <form class="box form builder-panel" id="cf">
       ${GP.RULES && GP.RULES[type]?'<button type="button" class="rules-btn" id="doRules"><span class="q">?</span><span>איך משחקים? הוראות מלאות<small>כל החוקים, שלב אחר שלב</small></span></button>':''}
@@ -655,11 +685,12 @@ pages.me.after = () => {
 function adminTable(tab, rows, cols){ return rows.length ? `<div style="overflow:auto"><table class="table"><tr>${cols.map(c=>`<th>${c[1]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c[0]])}</td>`).join('')}<td>${tab==='subs'&&r.status==='ממתין'?`<button class="btn btn-sm btn-gold" data-approve="${esc(r.id)}">סימון כמאושר</button> `:''}<button class="btn btn-sm btn-light" data-del="${tab}|${esc(r.id)}">מחיקה</button></td></tr>`).join('')}</table></div>` : '<div class="empty">אין עדיין נתונים.</div>'; }
 pages.admin = () => {
   if(!sessionStorage.getItem('madlik_admin')) return pageHead('ניהול', '', 'ניהול') + `<div class="wrap"><div class="box" style="max-width:420px;margin:auto"><form class="form" id="loginF"><label>סיסמת ניהול<input type="password" name="p" required></label><button class="btn btn-gold">כניסה</button><p class="hint">בגרסה הזו (הדגמה במחשב שלך) הסיסמה היא: madlik. בשלב הבא תהיה התחברות מאובטחת אמיתית.</p></form></div></div>`;
-  const tab = location.hash.split('tab=')[1] || 'subs', live = !!API();
-  const tabs = {subs:'רעיונות שנשלחו', leads:'פניות לבעלי עסקים', ads:'בקשות פרסום', news:'רשימת תפוצה', users:'משתמשות', add:'הוספת תוכן'};
+  const tab = location.hash.split('tab=')[1] || 'stats', live = !!API();
+  const tabs = {stats:'כניסות', subs:'רעיונות שנשלחו', leads:'פניות לבעלי עסקים', ads:'בקשות פרסום', news:'רשימת תפוצה', users:'משתמשות', add:'הוספת תוכן'};
   const tbl = (rows, cols) => adminTable(tab, rows, cols);
   let body = '';
   if(tab==='news') body = newsTabHTML();
+  if(tab==='stats') body = live ? '<div id="sList"><div class="empty">טוענת...</div></div>' : statsHTML(localStats(), store.get('leads',[]), false);
   if(ADMIN_COLS[tab]) body = live ? '<div id="rList"><div class="empty">טוענת...</div></div>' : tbl(store.get(tab,[]), ADMIN_COLS[tab]);
   if(tab==='add') body = `<div class="two-col">
     <form class="box form" data-add="suppliers"><h3>עסק חדש</h3><label>שם<input name="name" required></label><div class="two-col"><label>תחום<input name="cat" required></label><label>אזור<select name="region"><option>צפון</option><option>חיפה</option><option>שרון</option><option>מרכז</option><option>ירושלים</option><option>שפלה</option><option>דרום</option></select></label></div><div class="two-col"><label>טלפון<input name="phone"></label><label>מייל<input name="email"></label></div><div class="two-col"><label>מחיר<select name="price"><option>₪</option><option>₪₪</option><option>₪₪₪</option></select></label><label>אייקון<input name="ico" value=""></label></div><label>תיאור<textarea name="text"></textarea></label><label class="check"><input type="checkbox" name="featured"> מומלץ (מופיע ראשון ברשימה)</label><label class="check"><input type="checkbox" name="homeAd"> מודעה בהרצה בעמוד הראשי (Premium / Pro)</label><button class="btn btn-gold">הוספה</button></form>
@@ -669,6 +700,27 @@ pages.admin = () => {
   <div class="box"><h3>תוכן שהוספת</h3>${['games','recipes','suppliers'].map(k=>addedContent(k).map(x=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span>${esc(x.title||x.name)} <span class="muted">(${k})</span></span><button class="btn btn-sm btn-light" data-del-extra="${k}|${esc(x.id)}">מחיקה</button></div>`).join('')).join('') || '<p class="muted">עוד לא הוספת.</p>'}</div>`;
   return pageHead('ניהול האתר', '', 'ניהול') + `<div class="wrap">${live ? `<div class="notice" style="margin-bottom:16px">מחובר לשרת של גוגל: כל הטפסים, הנרשמות והתוכן נשמרים בגיליון שלך.</div><div class="box form" style="margin-bottom:20px;max-width:480px"><label>מפתח ניהול<input type="password" id="akey" placeholder="המפתח הסודי שקבעת בסקריפט" autocomplete="off"></label><p class="hint" style="margin:0">נשמר עד שסוגרים את הדפדפן.</p></div>` : `<div class="notice" style="margin-bottom:16px">עדיין לא מחובר לשרת: מה שמופיע כאן נשמר רק בדפדפן הזה. כדי שכל הטפסים והנרשמות יגיעו אלייך, חברי את השרת של גוגל (ההוראות בלשונית "רשימת תפוצה").</div>`}<div class="tabs">${Object.entries(tabs).map(([k,v])=>`<a class="chip ${k===tab?'on':''}" href="#/admin?tab=${k}">${v}</a>`).join('')}<button class="chip" id="logout">יציאה</button></div>${body}</div>`;
 };
+// לשונית הכניסות: טבלת מדורים וטבלת בעלי עסקים
+function localStats(){
+  const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10), out = {sec:{}, sup:{}};
+  ['sec','sup'].forEach(t => Object.entries(st[t]||{}).forEach(([id,o]) => out[t][id] = {total:o.total, today:o.day===today?o.today:0, week:(o.week||[]).filter(x=>Date.now()-x<7*864e5).length, uniq:null}));
+  return out;
+}
+function statsHTML(st, leads, live){
+  const n = x => x==null ? '–' : Number(x).toLocaleString('he-IL');
+  const table = (rows, first, extra) => {
+    const max = Math.max(1, ...rows.map(r=>r.o.total));
+    return `<div style="overflow:auto"><table class="table stats-t"><tr><th>${first}</th><th>כניסות</th><th>היום</th><th>7 ימים</th>${live?'<th>מבקרות שונות</th>':''}${extra?`<th>${extra}</th>`:''}</tr>${rows.map(r=>`<tr><td><b>${esc(r.name)}</b><span class="st-bar" style="--w:${Math.round(r.o.total/max*100)}%"></span></td><td><b>${n(r.o.total)}</b></td><td>${n(r.o.today)}</td><td>${n(r.o.week)}</td>${live?`<td>${n(r.o.uniq)}</td>`:''}${extra?`<td>${n(r.leads)}</td>`:''}</tr>`).join('')}</table></div>`;
+  };
+  const zero = {total:0, today:0, week:0, uniq:0};
+  const secNames = [...new Set(Object.values(SECTIONS))];
+  const secs = secNames.map(name => ({name, o:st.sec[name]||zero})).sort((a,b)=>b.o.total-a.o.total);
+  const sups = content('suppliers').map(s => ({name:s.name, o:st.sup[s.id]||zero, leads:leads.filter(l=>l.supplier===s.name).length})).sort((a,b)=>b.o.total-a.o.total);
+  const sum = secs.reduce((a,r)=>a+r.o.total, 0);
+  return `${live?'':'<div class="notice" style="margin-bottom:16px">המספרים כאן הם רק מהדפדפן הזה. כשמחברים את השרת של גוגל (בלשונית "רשימת תפוצה"), כאן יופיעו הכניסות של כל הגולשות.</div>'}
+    <div class="box"><h2>כניסות לפי מדור</h2><p class="muted">סה"כ ${n(sum)} כניסות לעמודים באתר. כניסות שלך מהניהול לא נספרות.</p>${table(secs, 'מדור')}</div>
+    <div class="box" style="margin-top:20px"><h2>כניסות לכל בעל עסק</h2><p class="muted">כמה פעמים נכנסו לעמוד של כל עסק, וכמה פניות נשלחו אליו מהאתר.</p>${table(sups, 'עסק', 'פניות')}</div>`;
+}
 function newsTabHTML(){
   const setup = API() ? '' : `<div class="box" id="nSetup"><h2>חיבור חד־פעמי של רשימת התפוצה</h2>
     <p>כדי שכל מה שנשלח באתר יגיע אלייך (נרשמות, פניות לבעלי עסקים, בקשות פרסום, רעיונות ומשתמשות), שהתוכן שתוסיפי יופיע לכל הגולשות, ושההודעות ייצאו מהג׳ימייל שלך, צריך שרת קטן וחינמי של גוגל. 5 דקות, פעם אחת:</p>
@@ -742,6 +794,14 @@ pages.admin.after = () => {
   const fail = e => toast('שגיאה: ' + e.message);
   const call = body => apiPost(Object.assign({key:adminKey()}, body)).then(r => { if(!r.ok) throw new Error(r.error||'שגיאה'); return r; });
 
+  const sl = document.getElementById('sList');
+  if(sl){
+    if(!adminKey()) sl.innerHTML = '<div class="empty">כתבי למעלה את מפתח הניהול כדי לראות את הכניסות.</div>';
+    else Promise.all([call({action:'stats'}), call({action:'records', kind:'leads'}).catch(()=>({records:[]}))])
+      .then(([s, l]) => { sl.innerHTML = statsHTML(s.stats, l.records, true); })
+      .catch(e => { sl.innerHTML = '<div class="empty">לא הצלחתי לטעון: '+esc(e.message)+'</div>'; });
+  }
+
   // טבלאות מהשרת
   let rows = [];
   const rl = document.getElementById('rList');
@@ -802,6 +862,8 @@ function render(){
   app.onclick = null; app.onchange = null;
   app.innerHTML = name ? pages[name](params, q) : notFound();
   if(name && pages[name].after) pages[name].after(params, q);
+  let isAdmin = false; try{ isAdmin = !!sessionStorage.getItem('madlik_admin'); }catch(e){}
+  if(!isAdmin) countHit(name, params, path);
   if(window.MadlikFX) window.MadlikFX.onRender(app);
   if(window.MadlikWorlds) window.MadlikWorlds.apply(name, app);
   document.querySelectorAll('.main-nav a').forEach(a=>a.classList.toggle('active', path!=='/' && ('#'+path).startsWith(a.getAttribute('href'))));
