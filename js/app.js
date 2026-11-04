@@ -157,7 +157,7 @@ pages.home = () => {
       <div class="n-ticks">${nights.map(()=>'<i></i>').join('')}</div>
     </div>
   </section>
-  ${wshow('games','משחקים','משחקים מוכנים לכל קבוצה','אליאס, רביעיות, בינגו וטריוויה. מדפיסים או מקרינים, ויוצאים לדרך.','#/games','לכל המשחקים',content('games').slice(0,3).map(gameCard).join(''))}
+  ${wshow('games','משחקים','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, חידון טלוויזיה ועוד. מקרינים או מדפיסים, ויוצאים לדרך.','#/games','לכל המשחקים',content('games').slice(0,3).map(gameCard).join(''))}
   ${wshow('create','יצירת משחק','משחק משלך','מכניסים מילים ומקבלים משחק מעוצב, עם טיימר ובלי הרשמה.','#/create','ליצירת משחק',D.creators.slice(0,3).map(creatorCard).join(''))}
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
@@ -186,7 +186,7 @@ pages.search = (p,q) => {
 /* משחקים */
 pages.games = () => {
   const types = [...new Set(content('games').map(g=>g.type))], formats = [...new Set(content('games').flatMap(g=>g.format||[]))], ages = [...new Set(content('games').map(g=>g.age))];
-  return pageHead('משחקים מוכנים', 'משחקים להדפסה, להקרנה ולהפעלה בעל פה. סנני לפי מה שמתאים לערב שלך.', 'משחקים') + `
+  return pageHead('משחקים דיגיטליים אטרקטיביים על המסך', 'משחקים להקרנה, להדפסה ולהפעלה בעל פה. סנני לפי מה שמתאים לערב שלך.', 'משחקים') + `
   <div class="wrap">
     <form class="filters" id="gf" onsubmit="return false">
       <input type="search" name="q" placeholder="חיפוש משחק...">
