@@ -260,3 +260,7 @@ dialog.rules::backdrop{background:radial-gradient(ellipse at 50% 100%,rgba(255,1
 .mm-stars span.on{filter:none;opacity:1;text-shadow:none;animation:countPop .6s var(--d) cubic-bezier(.2,1.5,.4,1) both}
 .bump .mm-burst b{color:#ffb800!important;text-shadow:0 0 10px #ffd45a!important}
 .mm-plus{font-family:'Suez One','Secular One',sans-serif;font-size:2.6rem;-webkit-text-stroke:2.5px #c2410c}
+
+/* חידון: שאלה גדולה ובולטת (צהוב-זהב עם קו כהה), ושלוש תשובות זו מתחת לזו */
+html .gp-ov .qz-qt{color:#ffe14d!important;font-size:clamp(2.4rem,6.2vw,4.6rem)!important;line-height:1.2;-webkit-text-stroke:2px #0b1a4d;paint-order:stroke fill;text-shadow:0 5px 0 #0b1a4d,0 9px 18px rgba(0,0,0,.45),0 0 34px rgba(255,214,90,.45)!important}
+html .gp-ov .qz-tiles{grid-template-columns:1fr}
