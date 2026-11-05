@@ -154,7 +154,6 @@ pages.home = () => {
     <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
     <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות • שמדליק שמחה בלבבות • ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
         <aside class="ad-rail" aria-label="מודעות">
-      <span class="ad-label">מודעות</span>
       <div class="ad-stack">${ads.join('')}</div>
       ${ads.length>1?`<div class="ad-dots">${ads.map(()=>'<i></i>').join('')}</div>`:''}
     </aside>
