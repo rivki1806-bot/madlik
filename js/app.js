@@ -164,6 +164,8 @@ pages.home = () => {
     <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
     <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות • שמדליק שמחה בלבבות • ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
         <aside class="ad-rail" aria-label="מודעות">
+      <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button><img class="ad-logo" src="img/logo-mark.png" alt="">
+      ${Date.now() < BIZ_NOTICE_UNTIL ? '<div class="ad-open" role="note" aria-label="פתיחת פרסום ביום שלישי 10.11.26"><b>פתיחת פרסום</b><span>ביום שלישי</span><i>10.11.26</i></div>' : ''}
       <div class="ad-stack">${ads.join('')}</div>
       ${ads.length>1?`<div class="ad-dots">${ads.map(()=>'<i></i>').join('')}</div>`:''}
     </aside>
@@ -189,6 +191,8 @@ pages.home.after = () => {
   const show = n => { k = n; cards.forEach((c,i)=>c.classList.toggle('on', i===n)); dots.forEach((d,i)=>d.classList.toggle('on', i===n)); };
   show(0); clearInterval(window.__adTimer);
   const rail = document.querySelector('.ad-rail');
+  try{ if(rail && sessionStorage.getItem('madlik_ad_closed') === '1') rail.remove(); }catch(e){}
+  const xb = document.querySelector('.ad-x'); if(xb) xb.onclick = () => { clearInterval(window.__adTimer); try{ sessionStorage.setItem('madlik_ad_closed', '1'); }catch(e){} const r = document.querySelector('.ad-rail'); if(r){ r.classList.add('gone'); setTimeout(() => r.remove(), 450); } };
   if(rail && 'IntersectionObserver' in window){ const io = new IntersectionObserver(es => es.forEach(e => rail.classList.toggle('in', e.isIntersecting)), {threshold:.35}); io.observe(rail); } else if(rail) rail.classList.add('in');
   if(cards.length > 1) window.__adTimer = setInterval(()=>show((k+1)%cards.length), 5000);
 };
