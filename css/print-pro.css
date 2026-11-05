@@ -62,3 +62,22 @@
 .sheet-labels .design{box-shadow:none}
 .design.round{background-clip:padding-box}
 #dv>.design,#dv>.d-pair{flex:none}
+
+/* סטודיו: בחירת שפה, דף מלא כפי שיודפס */
+.st-img{aspect-ratio:1.414}
+.st-h3{margin:26px 0 6px;font-size:1.25rem}
+.tpl-top.has-bg{background-size:cover;background-position:center}
+.tpl-top.has-bg .card-letter{color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.65)}
+.st-pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.stp{padding:0;width:74px;height:52px;border-radius:10px;border:3px solid transparent;overflow:hidden;cursor:pointer;background:#fff;font:700 .85rem 'Heebo',sans-serif;color:#3d2a1f;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.stp img{width:100%;height:100%;object-fit:cover;display:block}
+.stp.on{border-color:#ff7a2e;box-shadow:0 0 0 3px rgba(255,122,46,.3)}
+#dv{display:flex;overflow:auto;max-height:82vh;align-items:flex-start}
+.pv-page{background:#fff;box-sizing:border-box;display:flex;align-items:center;justify-content:center;margin:auto;flex:none;box-shadow:0 14px 34px -10px rgba(0,0,0,.45);overflow:hidden}
+.pv-page.rep{align-items:flex-start}
+.pv-page .sheet-labels{gap:4mm;align-content:start;justify-content:center}
+.design.styled{box-shadow:none}
+.design .d-plate{display:flex;flex-direction:column;align-items:center;text-align:center;max-width:90%;box-sizing:border-box}
+.design.styled .d-foot{position:static;margin-top:.5em;color:var(--d-acc)}
+.design.styled .d-pre{color:var(--d-acc);font-weight:700}
+@media print{.pv-page{box-shadow:none;margin:0;overflow:hidden}}

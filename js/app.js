@@ -150,7 +150,7 @@ const supPic = s => safeImg(s.img) ? `<img class="biz-img" src="${esc(safeImg(s.
 const supCard = (s,i=0) => { const id = esc(s.id), site = safeUrl(s.site);
   const go = site ? `<a class="sup-go" href="${esc(site)}" target="_blank" rel="noopener noreferrer sponsored" data-web="${id}">לאתר שלנו <i>←</i></a>` : `<a class="sup-go" href="#/supplier/${id}">לטופס פנייה <i>←</i></a>`;
   return `<article class="card sup-card">${s.featured?'<span class="badge-featured">מומלץ</span>':''}${favBtn('suppliers',s.id)}<a class="card-top" href="#/supplier/${id}" style="--bg:${bgs[(i+3)%5]}" aria-label="${esc(s.name)}">${supPic(s) || (window.MadlikBizArt && MadlikBizArt.get(s)) || art(s)}</a><div class="card-body"><a class="sup-name" href="#/supplier/${id}"><h3>${esc(s.name)}</h3></a><p>${esc(s.text)}</p><div class="tags"><span class="tag">${esc(s.cat)}</span><span class="tag"> ${esc(s.region)}</span><span class="tag">${esc(s.price)}</span></div></div><div class="sup-actions">${s.phone ? `<button type="button" class="sup-tel" data-tel="${id}">הטלפון שלנו</button>` : ''}${go}</div></article>`; };
-const tplCard = t => `<a class="card" href="#/studio/${esc(t.id)}"><div class="card-top" style="--bg:#f3e9da">${art(t)}</div><div class="card-body"><h3>${esc(t.title)}</h3><p>${t.w}×${t.h} מ״מ</p></div></a>`;
+const tplCard = t => `<a class="card" href="#/studio/${esc(t.id)}" data-tpl="${esc(t.id)}"><div class="card-top tpl-top" style="--bg:#f3e9da">${art(t)}</div><div class="card-body"><h3>${esc(t.title)}</h3><p>${t.w}×${t.h} מ״מ</p></div></a>`;
 const creatorCard = c => `<a class="card" href="#/create/${esc(c.id)}">${customRib}<div class="card-top" style="--bg:#fff3d6">${gameArt(c)}</div><div class="card-body"><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p><div class="tags">${c.isNew?'<span class="tag tag-new">חדש!</span>':''}<span class="tag tag-gold">חינם</span></div></div></a>`;
 const gameArt = x => (window.MadlikArt && MadlikArt.get(x)) || art(x);
 const art = x => { const n = String(x.title||x.name||'').replace(/["'״׳]/g,'').trim(); return `<span class="card-letter">${esc(n[0]||'•')}</span>`; };
@@ -466,31 +466,40 @@ function playMemory(words){
 
 const styleCard = s => `<a class="card" href="#/studio/edit?style=${esc(s.id)}&fmt=invite"><div class="card-top style-top"><img src="${esc(s.img)}" alt="" loading="lazy"></div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="tags"><span class="tag tag-gold">שפה עיצובית</span></div></div></a>`;
 pages.studio = () => {
-  const styles = D.styles || [], fmts = window.MadlikEditor.FORMATS, mine = store.get('designs', []);
-  return pageHead('סטודיו מיתוג', 'בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים. הכול בחינם.', 'סטודיו מיתוג') + `
+  const styles = (D.styles || []).filter(s => !s.legacy), fmts = window.MadlikEditor.FORMATS, mine = store.get('designs', []);
+  const T = D.templates, by = ids => ids.map(i => T.find(t => t.id === i)).filter(Boolean), used = new Set();
+  const grp = (h, p, ids) => { const l = by(ids); l.forEach(x => used.add(x.id)); return l.length ? `<div class="st-grp"><h3 class="st-h3">${h}</h3>${p ? `<p class="muted" style="margin:0 0 14px">${p}</p>` : ''}<div class="cards">${l.map(tplCard).join('')}</div></div>` : ''; };
+  const products = grp('מדבקות עגולות, 3 גדלים', 'מקבלים דף שלם של מדבקות, מוכנות לגזירה.', ['sticker-s','sticker','sticker-l'])
+    + grp('מדבקות מלבניות, 3 גדלים', 'דף שלם של מדבקות מלבניות.', ['rect-s','rect-m','rect-l'])
+    + grp('דגלונים לקיסם', 'שני עיגולים עם קו קיפול: מדפיסים, גוזרים ומקפלים סביב הקיסם.', ['pick-flag'])
+    + grp('בקבוקים וכוסות', 'מדבקות לבקבוק גדול וקטן, ותבנית להדבקה על כוס קרטון.', ['bottle','bottle-small','cup-wrap','oil-label'])
+    + grp('הזמנה, תכניה, פלייסמנט ושילוט', 'דפים להדפסה על A4 או A5.', ['invite','schedule','placemat','entrance-sign','sign','menu','poster','certificate'])
+    + grp('עוד כרטיסים ותוויות', '', T.filter(t => t.repeat && !used.has(t.id)).map(t => t.id));
+  return pageHead('סטודיו מיתוג', 'בוחרים שפה עיצובית, בוחרים מה להדפיס, עורכים את הטקסט, ורואים את הדף בדיוק כמו בהדפסה.', 'סטודיו מיתוג') + `
   <div class="wrap">
     <section class="st-sec"><h2 class="st-h"><i>1</i>איזו שפה עיצובית מדברת אליך?</h2>
       <div class="st-styles" role="radiogroup" aria-label="שפה עיצובית">
-        ${styles.map((s,i)=>`<label class="st-card"><input type="radio" name="stl" value="${esc(s.id)}" ${i===0?'checked':''}><span class="st-img"><img src="${esc(s.img)}" alt="תצוגה של הסגנון ${esc(s.name)}"></span><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></label>`).join('')}
-        <label class="st-card"><input type="radio" name="stl" value="plain" ${styles.length?'':'checked'}><span class="st-img plain-img"><i></i></span><b>דף חלק</b><small>בוחרים צבע רקע ומתחילים מאפס</small></label>
+        ${styles.map((s,i)=>`<label class="st-card"><input type="radio" name="stl" value="${esc(s.id)}" ${i===0?'checked':''}><span class="st-img"><img src="${esc(s.thumb||s.img)}" loading="lazy" alt="תצוגה של הסגנון ${esc(s.name)}"></span><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></label>`).join('')}
+        <label class="st-card"><input type="radio" name="stl" value="plain" ${styles.length?'':'checked'}><span class="st-img plain-img"><i></i></span><b>צבע אחד, בלי תמונה</b><small>בוחרים ערכת צבעים פשוטה</small></label>
       </div></section>
-    <section class="st-sec"><h2 class="st-h"><i>2</i>מה מעצבים?</h2>
-      <div class="st-fmts" role="radiogroup" aria-label="גודל">${fmts.map(f=>`<label class="st-fmt"><input type="radio" name="fmt" value="${f.id}" ${f.id==='invite'?'checked':''}><span>${f.n}</span></label>`).join('')}</div></section>
-    <div class="st-go"><a class="btn btn-gold" id="stGo" href="#/studio/edit?style=${styles[0]?esc(styles[0].id):'plain'}&fmt=invite">פותחים את העורך ←</a></div>
+    <section class="st-sec"><h2 class="st-h"><i>2</i>מה רוצים להדפיס?</h2>${products}</section>
+    <section class="st-sec"><h2 class="st-h">עורך חופשי</h2><p class="muted" style="margin:0 0 14px">רוצים להזיז כל דבר בעצמכם? פותחים דף ריק בשפה שבחרתם.</p>
+      <div class="st-fmts" role="radiogroup" aria-label="גודל">${fmts.map(f=>`<label class="st-fmt"><input type="radio" name="fmt" value="${f.id}" ${f.id==='invite'?'checked':''}><span>${f.n}</span></label>`).join('')}</div>
+      <div class="st-go"><a class="btn btn-gold" id="stGo" href="#/studio/edit?style=${styles[0]?esc(styles[0].id):'plain'}&fmt=invite">פותחים את העורך ←</a></div></section>
     ${mine.length ? `<section class="st-sec"><h2 class="st-h">העיצובים שלי</h2><div class="st-mine">${mine.map(d=>`<a href="#/studio/edit?load=${esc(d.id)}">${esc(d.title)}</a>`).join('')}</div></section>` : ''}
-    ${(() => { const T = D.templates, by = ids => ids.map(i => T.find(t => t.id === i)).filter(Boolean), used = new Set();
-      const grp = (h, p, ids) => { const l = by(ids); l.forEach(x => used.add(x.id)); return l.length ? `<section class="st-sec"><h2 class="st-h">${h}</h2>${p ? `<p class="muted" style="margin:0 0 18px">${p}</p>` : ''}<div class="cards">${l.map(tplCard).join('')}</div></section>` : ''; };
-      const main = grp('מדבקות עגולות, 3 גדלים', 'להדפסה על דף שלם, מוכנות לגזירה.', ['sticker-s','sticker','sticker-l'])
-        + grp('מדבקות מלבניות, 3 גדלים', 'להדפסה על דף שלם, מוכנות לגזירה.', ['rect-s','rect-m','rect-l'])
-        + grp('דגלונים לקיסם', 'מדפיסים, גוזרים ומקפלים סביב הקיסם.', ['pick-flag'])
-        + grp('בקבוקים וכוסות', 'מדבקות לבקבוק גדול וקטן, ותבנית להדבקה על כוס קרטון.', ['bottle','bottle-small','cup-wrap','oil-label'])
-        + grp('הזמנה, תכניה, פלייסמנט ושילוט', 'להדפסה על דף A4 או A5.', ['invite','schedule','placemat','entrance-sign','sign','menu','poster','certificate']);
-      return main + grp('עוד כרטיסים ותוויות', '', T.filter(t => t.repeat && !used.has(t.id)).map(t => t.id)); })()}
   </div>`;
 };
 pages.studio.after = () => {
-  const go = document.getElementById('stGo');
-  const upd = () => { const s = document.querySelector('[name=stl]:checked'), f = document.querySelector('[name=fmt]:checked'); go.setAttribute('href', `#/studio/edit?style=${s?s.value:'plain'}&fmt=${f?f.value:'invite'}`); };
+  const go = document.getElementById('stGo'), sty = id => (D.styles || []).find(x => x.id === id);
+  const upd = () => {
+    const sEl = document.querySelector('[name=stl]:checked'), f = document.querySelector('[name=fmt]:checked'), v = sEl ? sEl.value : 'plain', st = sty(v);
+    go.setAttribute('href', `#/studio/edit?style=${v}&fmt=${f ? f.value : 'invite'}`);
+    document.querySelectorAll('a[data-tpl]').forEach(c => {
+      c.setAttribute('href', '#/studio/' + c.dataset.tpl + (st ? '?style=' + encodeURIComponent(v) : ''));
+      const top = c.querySelector('.tpl-top'); if(!top) return;
+      top.classList.toggle('has-bg', !!st); top.style.backgroundImage = st ? 'url(' + (st.thumb || st.img) + ')' : '';
+    });
+  };
   document.querySelectorAll('[name=stl],[name=fmt]').forEach(i => i.onchange = upd); upd();
 };
 
@@ -507,71 +516,110 @@ pages.edit.after = (p, q) => {
 
 pages.design = ([id], q) => {
   const t = D.templates.find(x=>x.id===id); if(!t) return notFound();
-  const s = Object.assign({theme:'gold-blue', font:'frank', deco:'❖'}, t.fields, q.d?dec(q.d):{});
+  const styles = (D.styles || []).filter(x => !x.legacy);
+  const s = Object.assign({theme:'gold-blue', font: q.style ? 'suez' : 'frank', deco:'❖', style: q.style || ''}, t.fields, q.d?dec(q.d):{});
   const fl = {pre:'שורה עליונה', title:'כותרת', sub:'תת־כותרת', body:'פרטים', foot:'שורה תחתונה'};
-  return pageHead(esc(t.title), 'משלימים את הפרטים, בוחרים צבעים – ומורידים.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
+  return pageHead(esc(t.title), 'בוחרים שפה, משלימים את הטקסט, והדף מוכן בדיוק כמו שיודפס.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
   <div class="wrap builder">
     <form class="box form builder-panel" id="df">
-      ${Object.keys(fl).map(k=> (k==='body' ? `<label>${fl[k]}<textarea name="body" rows="5">${esc(s.body)}</textarea></label>` : `<label>${fl[k]}<input name="${k}" value="${esc(s[k])}"></label>`)).join('')}
-      <div><b>ערכת צבעים</b><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div>
+      <div><b>שפה עיצובית</b><div class="st-pick" id="stPick">${styles.map(x=>`<button type="button" class="stp ${s.style===x.id?'on':''}" data-style="${esc(x.id)}" title="${esc(x.name)}"><img src="${esc(x.thumb||x.img)}" alt="${esc(x.name)}" loading="lazy"></button>`).join('')}<button type="button" class="stp stp-plain ${s.style?'':'on'}" data-style="" title="בלי תמונה">בלי</button></div></div>
+      ${Object.keys(fl).map(k=> (k==='body' ? `<label>${fl[k]}<textarea name="body" rows="4">${esc(s.body)}</textarea></label>` : `<label>${fl[k]}<input name="${k}" value="${esc(s[k])}"></label>`)).join('')}
+      <div id="themeBox"><b>ערכת צבעים</b><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div>
       <div class="two-col">
         <label>גופן<select name="font">${D.fonts.map(f=>`<option value="${f.id}" ${s.font===f.id?'selected':''}>${f.name}</option>`).join('')}</select></label>
         <label>קישוט<select name="deco">${D.decos.map(d=>`<option ${s.deco===d?'selected':''} value="${d}">${d||'בלי'}</option>`).join('')}</select></label>
       </div>
       <label>לוגו או תמונה <span class="hint">לא חובה</span><input type="file" accept="image/*" id="logoIn"></label>
+      <label>גודל התצוגה <input type="range" id="zm" min="40" max="260" value="100"></label>
       <div class="btn-row">
         <button type="button" class="btn btn-gold" id="dPrint"> הדפסה / PDF</button>
         <button type="button" class="btn" id="dPng"> הורדה כתמונה</button>
         <button type="button" class="btn btn-light" id="dShare"> שיתוף</button>
         <button type="button" class="btn btn-light" id="dSave">♡ שמירה</button>
       </div>
-      <p class="hint">${t.repeat?'בהדפסה הדף יתמלא בכמה עותקים, מוכנים לגזירה.':'להורדה כ-PDF: בחלון ההדפסה בחר "שמירה כ-PDF".'} הלוגו לא נשמר בקישור השיתוף.</p>
+      <p class="hint">${t.repeat?'מה שרואים בתצוגה הוא הדף המלא כפי שיודפס, עם כל המדבקות.':'להורדה כ-PDF: בחלון ההדפסה בחר "שמירה כ-PDF".'} הלוגו לא נשמר בקישור השיתוף.</p>
     </form>
-    <div class="preview-area" id="dv" style="display:flex;align-items:center;justify-content:center"></div>
+    <div class="preview-area" id="dv"></div>
   </div>`;
 };
 pages.design.after = ([id], q) => {
   const t = D.templates.find(x=>x.id===id); if(!t) return;
   const f = document.getElementById('df'), dv = document.getElementById('dv');
-  const s = Object.assign({theme:'gold-blue', font:'frank', deco:'❖'}, t.fields, q.d?dec(q.d):{});
-  let logo = '';
+  const s = Object.assign({theme:'gold-blue', font: q.style ? 'suez' : 'frank', deco:'❖', style: q.style || ''}, t.fields, q.d?dec(q.d):{});
+  let logo = '', zoomK = 1;
   const read = () => Object.assign(s, Object.fromEntries(new FormData(f)));
-  const one = () => designHTML(t, s, logo);
-  const draw = () => { read(); dv.innerHTML = one(); const d = dv.firstElementChild; const sc = Math.min(1, (dv.clientWidth-40)/d.offsetWidth); d.style.zoom = sc; };
+  const draw = () => {
+    read(); const sh = sheetHTML(t, s, logo); dv.innerHTML = sh.html;
+    const el = dv.firstElementChild, fit = Math.min(1, (dv.clientWidth - 24) / el.offsetWidth);
+    el.style.zoom = fit * zoomK;
+    document.getElementById('themeBox').style.display = s.style ? 'none' : '';
+  };
   f.oninput = draw;
-  f.onclick = e => { const b = e.target.closest('[data-theme]'); if(!b) return; s.theme = b.dataset.theme; f.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on', x===b)); draw(); };
+  f.onclick = e => {
+    const sb = e.target.closest('[data-style]');
+    if(sb){ s.style = sb.dataset.style; f.querySelectorAll('.stp').forEach(x => x.classList.toggle('on', x === sb)); draw(); return; }
+    const b = e.target.closest('[data-theme]'); if(!b) return; s.theme = b.dataset.theme; f.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on', x===b)); draw();
+  };
+  document.getElementById('zm').oninput = e => { zoomK = e.target.value / 100; draw(); };
   document.getElementById('logoIn').onchange = e => { const file = e.target.files[0]; if(!file) return; if(file.size > 5e6) return toast('הקובץ גדול מדי (עד 5MB)'); const r = new FileReader(); r.onload = () => { logo = r.result; draw(); }; r.readAsDataURL(file); };
   const onResize = () => document.body.contains(f) ? draw() : window.removeEventListener('resize', onResize);
   window.addEventListener('resize', onResize);
   draw();
-  document.getElementById('dPrint').onclick = () => {
-    const land = t.land || (!t.repeat && t.w > t.h), pw = land ? 277 : 190, ph = land ? 190 : 277, tw = t.pair ? t.w*2+6 : t.w, page = land ? 'A4 landscape' : 'A4';
-    if(!t.repeat) return printHTML(one(), {credit:false, page, margin:0});
-    const cols = Math.max(1, Math.floor(pw/(tw+4))), rows = Math.max(1, Math.floor(ph/(t.h+4)));
-    printHTML(`<div class="sheet-labels" style="grid-template-columns:repeat(${cols},${tw}mm)">${Array(cols*rows).fill(one()).join('')}</div>`, {credit:false, page, margin:10});
-  };
+  document.getElementById('dPrint').onclick = () => { read(); const sh = sheetHTML(t, s, logo); printHTML(sh.html, {credit:false, page:sh.page, margin:0}); };
   document.getElementById('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
   document.getElementById('dSave').onclick = () => { read(); store.push('saved', {kind:'עיצוב', title:t.title+' – '+s.title, link:`#/studio/${t.id}?d=${enc(s)}`}); toast('נשמר באזור האישי ♡'); };
   document.getElementById('dPng').onclick = () => {
     const go = () => { const d = dv.firstElementChild; const z = d.style.zoom; d.style.zoom = 1;
-      window.html2canvas(d, {scale:3, backgroundColor:null}).then(cv=>{ d.style.zoom = z; const a = document.createElement('a'); a.download = 'madlik-'+t.id+'.png'; a.href = cv.toDataURL('image/png'); a.click(); }); };
+      window.html2canvas(d, {scale:2, backgroundColor:'#ffffff'}).then(cv=>{ d.style.zoom = z; const a = document.createElement('a'); a.download = 'madlik-'+t.id+'.png'; a.href = cv.toDataURL('image/png'); a.click(); }); };
     if(window.html2canvas) return go();
     toast('מכינה את התמונה...');
     const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; sc.onload = go; sc.onerror = () => toast('לא הצלחתי לטעון – נסה הדפסה ל-PDF'); document.head.appendChild(sc);
   };
 };
+
+/* דף מלא כפי שיודפס: מדבקות רבות על דף A4, או פריט בודד במרכז הדף */
+function sheetHTML(t, s, logo){
+  const land = t.land || (!t.repeat && t.w > t.h), pw = land ? 297 : 210, ph = land ? 210 : 297, tw = t.pair ? t.w*2+6 : t.w, m = t.repeat ? 10 : 0;
+  const one = designHTML(t, s, logo);
+  let inner = one;
+  if(t.repeat){
+    const cols = Math.max(1, Math.floor((pw - 2*m) / (tw + 4))), rows = Math.max(1, Math.floor((ph - 2*m) / (t.h + 4)));
+    inner = `<div class="sheet-labels" style="grid-template-columns:repeat(${cols},${tw}mm)">${Array(cols*rows).fill(one).join('')}</div>`;
+  }
+  return {page: land ? 'A4 landscape' : 'A4', html: `<div class="pv-page ${t.repeat ? 'rep' : ''}" style="width:${pw}mm;height:${ph - .5}mm;padding:${m}mm">${inner}</div>`};
+}
+
 function designHTML(t, s, logo){
-  const th = D.themes.find(x=>x.id===s.theme)||D.themes[0], fnt = (D.fonts.find(x=>x.id===s.font)||D.fonts[0]).css;
+  const st = s.style ? (D.styles || []).find(x => x.id === s.style && x.tpl) : null;
+  const fnt = (D.fonts.find(x=>x.id===s.font)||D.fonts[0]).css;
   const fs = Math.min(t.w, t.h)/32, small = Math.min(t.w,t.h) < 80, em = t.fs || fs*(small?1.6:1);
-  const one = `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${th.ink};--d-title:${th.title};--d-acc:${th.acc};--d-font:${fnt};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
+  const logoImg = logo ? `<img class="d-logo" src="${logo}" alt="">` : '';
+  let one;
+  if(st){
+    const k = st.tpl, zoom = Math.max(2, (t.w/t.h)/1.414*1.3), pl = small ? k.pl : k.plb;
+    const bg = small ? `background:#222 url(${st.img}) ${k.focus[0]}% ${k.focus[1]}%/auto ${Math.round(zoom*100)}% no-repeat` : `background:#222 url(${st.img}) center/cover no-repeat`;
+    const just = small ? 'center' : (k.pos === 'bottom' ? 'flex-end' : k.pos === 'top' ? 'flex-start' : 'center');
+    const pad = small ? '' : ';padding:7% 6%';
+    one = `<div class="design styled ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${k.ink};--d-title:${k.title};--d-acc:${k.acc};--d-font:${fnt};${bg};justify-content:${just}${pad}${t.css?';'+t.css:''}">
+      <div class="d-plate" style="background:${pl||'transparent'};border-radius:${small?'1.1em':'4mm'};padding:${pl?(small?'.45em .8em':'1.2em 2.2em'):'0'}">
+        ${logoImg}${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
+        <div class="d-title">${esc(s.title)}</div>
+        ${s.sub?`<div class="d-sub">${esc(s.sub)}</div>`:''}
+        ${s.body&&!small?`<div class="d-body">${esc(s.body)}</div>`:''}
+        ${s.foot&&!small?`<div class="d-foot">${esc(s.foot)}</div>`:''}
+      </div></div>`;
+  } else {
+    const th = D.themes.find(x=>x.id===s.theme)||D.themes[0];
+    one = `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${th.ink};--d-title:${th.title};--d-acc:${th.acc};--d-font:${fnt};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
     ${t.nofr?'':'<div class="d-frame"></div>'}
-    ${logo?`<img class="d-logo" src="${logo}" alt="">`:(s.deco&&!small?`<div class="d-deco">${esc(s.deco)}</div>`:'')}
+    ${logo?logoImg:(s.deco&&!small?`<div class="d-deco">${esc(s.deco)}</div>`:'')}
     ${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
     <div class="d-title">${esc(s.title)}</div>
     ${s.sub?`<div class="d-sub">${esc(s.sub)}</div>`:''}
     ${s.body&&!small?`<div class="d-body">${esc(s.body)}</div>`:''}
     ${s.foot&&!small?`<div class="d-foot">${esc(s.foot)}</div>`:''}
   </div>`;
+  }
   return t.pair ? `<div class="d-pair">${one}<i class="d-fold"></i>${one}</div>` : one;
 }
 
