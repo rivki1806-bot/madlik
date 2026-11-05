@@ -21,9 +21,14 @@ const hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה'
 function stats_() {
   const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;
   const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
-  const out = { sec: {}, sup: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};
+  const out = { sec: {}, sup: {}, tel: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};
   for (let i = 1; i < rows.length; i++) {
     const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);
+    if (type === 'sup' && id.indexOf('tel:') === 0) { // לחיצה על "הטלפון שלנו"
+      const tid = id.slice(4), t = out.tel[tid] = out.tel[tid] || { total: 0, today: 0, week: 0 };
+      t.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) t.today++; if (now - d.getTime() < 7 * DAY) t.week++;
+      continue;
+    }
     if (type !== 'sec' && type !== 'sup') continue;
     if (type === 'sec') {
       const A = out.all, dk = Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd');

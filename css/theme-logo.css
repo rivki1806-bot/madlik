@@ -367,3 +367,9 @@ html[data-pal=logo] .ad-card span{font-size:1rem;line-height:1.6}
 }
 @media (max-width:980px){html[data-pal=logo] .ad-stack{min-height:520px}html[data-pal=logo] .ad-card{padding-top:214px}}
 @media (prefers-reduced-motion:reduce){html[data-pal=logo] .ad-open{animation:none}}
+
+/* הכפתור "הטלפון שלנו" בעמוד עסק */
+.tel-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:999px;border:2px solid #3d2a1f;background:linear-gradient(180deg,#ffd13c,#ff8a2e);color:#3d2a1f;font:800 1rem 'Heebo','Assistant',sans-serif;cursor:pointer;box-shadow:3px 3px 0 #3d2a1f;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.tel-btn::before{content:"📞"}
+.tel-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 #3d2a1f}
+.tel-btn.open{direction:ltr;background:#fff}
