@@ -54,3 +54,11 @@
   .sheet::before{inset:3mm}.sheet::after{inset:5.5mm}
   .pz-c.a,.pz-c.b{top:7mm}.pz-c.c,.pz-c.d{bottom:7mm}.pz-c.a,.pz-c.c{right:8mm}.pz-c.b,.pz-c.d{left:8mm}
 }
+
+/* סטודיו: דגל לקיסם (שני עיגולים וקו קיפול), מעטפת כוס */
+.d-pair{display:flex;align-items:center;justify-content:center}
+.d-pair .design{flex:none;box-shadow:none}
+.d-fold{display:block;flex:none;width:6mm;height:0;border-top:.3mm dashed #8c7f74}
+.sheet-labels .design{box-shadow:none}
+.design.round{background-clip:padding-box}
+#dv>.design,#dv>.d-pair{flex:none}

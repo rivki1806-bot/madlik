@@ -63,8 +63,8 @@ window.MADLIK_DATA = {
   templates: [
     {id:'invite', ico:'💌', title:'הזמנה', w:148, h:210, fields:{pre:'הנכן מוזמנות',title:'ערב לביבות',sub:'ערב של אור, שמחה וטעמים',body:'יום שלישי, כ״ז בכסלו\nבשעה 20:00\nבאולם הקהילתי',foot:'נשמח לראותכן!'}},
     {id:'menu', ico:'🍽️', title:'תפריט', w:148, h:210, fields:{pre:'התפריט שלנו',title:'ערב לביבות',sub:'',body:'לביבות תפוחי אדמה\nלביבות גבינה ברוטב פירות יער\nסופגניות במילויים\nמגש ירקות ומטבלים\nשתייה חמה וקרה',foot:'בתיאבון!'}},
-    {id:'sign', ico:'🪧', title:'שלט', w:297, h:210, fields:{pre:'',title:'ברוכות הבאות',sub:'לערב הלביבות השנתי',body:'',foot:''}},
-    {id:'sticker', ico:'🔵', title:'מדבקה עגולה', w:60, h:60, round:true, repeat:12, fields:{pre:'',title:'חנוכה שמח',sub:'מאיתנו באהבה',body:'',foot:''}},
+    {id:'sign', ico:'🪧', title:'שלט לרוחב (A4)', w:297, h:210, fields:{pre:'',title:'ברוכות הבאות',sub:'לערב הלביבות השנתי',body:'',foot:''}},
+    {id:'sticker', ico:'🔵', title:'מדבקה עגולה בינונית (5 ס״מ)', w:50, h:50, round:true, repeat:12, fields:{pre:'',title:'חנוכה שמח',sub:'מאיתנו באהבה',body:'',foot:''}},
     {id:'bottle', ico:'🍾', title:'מדבקה לבקבוק גדול', w:200, h:70, repeat:3, fields:{pre:'',title:'שמחה בבקבוק',sub:'ערב לביבות תשפ״ז',body:'',foot:''}},
     {id:'bottle-small', ico:'🧃', title:'מדבקה לבקבוק קטן', w:120, h:45, repeat:8, fields:{pre:'',title:'מדליק!',sub:'חנוכה שמח',body:'',foot:''}},
     {id:'seat', ico:'🪑', title:'כרטיס הושבה', w:90, h:55, repeat:8, fields:{pre:'',title:'שם המשתתפת',sub:'שולחן 3',body:'',foot:''}},

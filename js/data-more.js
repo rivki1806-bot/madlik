@@ -125,9 +125,28 @@ D.templates.push(
   {id:'gift-tag', ico:'🎁', title:'תגית למתנה', w:55, h:85, repeat:10, fields:{pre:'',title:'חנוכה שמח',sub:'שיהיה לך מתוק!',body:'',foot:''}},
   {id:'topper', ico:'🧁', title:'עיגול לקישוט קינוחים', w:45, h:45, round:true, repeat:20, fields:{pre:'',title:'מדליק!',sub:'',body:'',foot:''}},
   {id:'table-number', ico:'🔢', title:'מספר שולחן', w:105, h:148, repeat:4, fields:{pre:'שולחן',title:'1',sub:'',body:'',foot:''}},
-  {id:'schedule', ico:'🗓️', title:'סדר הערב', w:148, h:210, fields:{pre:'סדר הערב',title:'ערב לביבות',sub:'',body:'20:00 קבלת פנים\n20:20 הדלקת נרות\n20:40 משחק פתיחה\n21:00 ארוחה\n21:40 משחק מרכזי\n22:15 הגרלה וסיום',foot:'נשמח שתהני!'}},
+  {id:'schedule', ico:'🗓️', title:'תכניה – סדר הערב', w:148, h:210, fields:{pre:'סדר הערב',title:'ערב לביבות',sub:'',body:'20:00 קבלת פנים\n20:20 הדלקת נרות\n20:40 משחק פתיחה\n21:00 ארוחה\n21:40 משחק מרכזי\n22:15 הגרלה וסיום',foot:'נשמח שתהני!'}},
   {id:'certificate', ico:'🏆', title:'תעודת זוכה', w:297, h:210, fields:{pre:'תעודת הוקרה',title:'אלופת הלביבות',sub:'מוענקת ל: ____________',body:'על ניצחון מדליק בתחרות הערב',foot:'חנוכה תשפ״ז'}},
   {id:'oil-label', ico:'🫒', title:'תווית לבקבוקון שמן', w:70, h:40, repeat:12, fields:{pre:'',title:'פך שמן קטן',sub:'לנס גדול',body:'',foot:''}}
+);
+
+D.templates.push(
+  /* מדבקות עגולות: 3 גדלים */
+  {id:'sticker-s', ico:'🔵', title:'מדבקה עגולה קטנה (3 ס״מ)', w:30, h:30, round:true, repeat:40, fs:1.55, fields:{pre:'',title:'חנוכה שמח',sub:'',body:'',foot:''}},
+  {id:'sticker-l', ico:'🔵', title:'מדבקה עגולה גדולה (8 ס״מ)', w:80, h:80, round:true, repeat:6, fs:3.4, fields:{pre:'',title:'חנוכה שמח',sub:'מאיתנו באהבה',body:'',foot:''}},
+  /* מדבקות מלבניות: 3 גדלים */
+  {id:'rect-s', ico:'▬', title:'מדבקה מלבנית קטנה (4×2 ס״מ)', w:40, h:20, repeat:60, fs:2.2, fields:{pre:'',title:'חנוכה שמח',sub:'',body:'',foot:''}},
+  {id:'rect-m', ico:'▬', title:'מדבקה מלבנית בינונית (6×3 ס״מ)', w:60, h:30, repeat:36, fs:3.3, fields:{pre:'',title:'חנוכה שמח',sub:'מאיתנו באהבה',body:'',foot:''}},
+  {id:'rect-l', ico:'▬', title:'מדבקה מלבנית גדולה (9×5 ס״מ)', w:90, h:50, repeat:12, fs:5.2, fields:{pre:'',title:'חנוכה שמח',sub:'מאיתנו באהבה',body:'',foot:''}},
+  /* דגל עגול לקיסם: שני עיגולים, מקפלים סביב הקיסם */
+  {id:'pick-flag', ico:'🚩', title:'דגל עגול לקיסם (לקפל סביב הקיסם)', w:28, h:28, round:true, pair:true, repeat:30, fs:1.5, fields:{pre:'',title:'לביבה',sub:'',body:'',foot:''}},
+  /* פלייסמנט ושילוט */
+  {id:'placemat', ico:'🍽️', title:'פלייסמנט (A4 לרוחב)', w:297, h:210, fields:{pre:'ערב לביבות',title:'חנוכה שמח',sub:'המקום של: ______________',body:'בתאבון!\nהנרות מאירים, הלביבות חמות',foot:'מדליק'}},
+  {id:'entrance-sign', ico:'🚪', title:'שילוט לכניסה (A4 לאורך)', w:210, h:297, fields:{pre:'ברוכים הבאים',title:'ערב לביבות',sub:'כאן נכנסים ←',body:'נעליים בכניסה\nמשחקים באולם\nלביבות חמות בחדר האוכל',foot:'חנוכה שמח'}},
+  /* כוס קרטון: מעטפת בצורת קשת. מדפיסים, גוזרים ומדביקים סביב הכוס (כוס 250 מ״ל) */
+  {id:'cup-wrap', ico:'☕', title:'תבנית להדבקה על כוס קרטון (250 מ״ל)', w:242, h:105, land:true, repeat:1, fs:4.2, nofr:true,
+    css:'border-radius:0;-webkit-mask:radial-gradient(circle at 121mm -160mm,transparent 0 180mm,#000 180.3mm 264.7mm,transparent 265mm);mask:radial-gradient(circle at 121mm -160mm,transparent 0 180mm,#000 180.3mm 264.7mm,transparent 265mm);padding-top:12mm',
+    fields:{pre:'',title:'חנוכה שמח',sub:'לשתות באהבה',body:'',foot:''}}
 );
 
 })(window.MADLIK_DATA);

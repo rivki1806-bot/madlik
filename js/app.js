@@ -112,6 +112,7 @@ function withCredit(html){
 function printHTML(html, o){
   const root = document.getElementById('printRoot');
   root.innerHTML = (o && o.credit === false) ? html : withCredit(html); // במדור המיתוג אין קרדיט
+  if(o && o.page) root.insertAdjacentHTML('afterbegin', '<style>@page{size:' + o.page + ';margin:' + (o.margin || 0) + 'mm}</style>');
   setTimeout(()=>{ window.print(); }, 300);
 }
 window.addEventListener('afterprint', ()=>{ document.getElementById('printRoot').innerHTML=''; });
@@ -477,8 +478,14 @@ pages.studio = () => {
       <div class="st-fmts" role="radiogroup" aria-label="גודל">${fmts.map(f=>`<label class="st-fmt"><input type="radio" name="fmt" value="${f.id}" ${f.id==='invite'?'checked':''}><span>${f.n}</span></label>`).join('')}</div></section>
     <div class="st-go"><a class="btn btn-gold" id="stGo" href="#/studio/edit?style=${styles[0]?esc(styles[0].id):'plain'}&fmt=invite">פותחים את העורך ←</a></div>
     ${mine.length ? `<section class="st-sec"><h2 class="st-h">העיצובים שלי</h2><div class="st-mine">${mine.map(d=>`<a href="#/studio/edit?load=${esc(d.id)}">${esc(d.title)}</a>`).join('')}</div></section>` : ''}
-    <section class="st-sec"><h2 class="st-h">מדבקות, תוויות וכרטיסים</h2><p class="muted" style="margin:0 0 18px">להדפסה על דף שלם, בהרבה עותקים מוכנים לגזירה.</p>
-      <div class="cards">${D.templates.filter(t=>t.repeat).map(tplCard).join('')}</div></section>
+    ${(() => { const T = D.templates, by = ids => ids.map(i => T.find(t => t.id === i)).filter(Boolean), used = new Set();
+      const grp = (h, p, ids) => { const l = by(ids); l.forEach(x => used.add(x.id)); return l.length ? `<section class="st-sec"><h2 class="st-h">${h}</h2>${p ? `<p class="muted" style="margin:0 0 18px">${p}</p>` : ''}<div class="cards">${l.map(tplCard).join('')}</div></section>` : ''; };
+      const main = grp('מדבקות עגולות, 3 גדלים', 'להדפסה על דף שלם, מוכנות לגזירה.', ['sticker-s','sticker','sticker-l'])
+        + grp('מדבקות מלבניות, 3 גדלים', 'להדפסה על דף שלם, מוכנות לגזירה.', ['rect-s','rect-m','rect-l'])
+        + grp('דגלונים לקיסם', 'מדפיסים, גוזרים ומקפלים סביב הקיסם.', ['pick-flag'])
+        + grp('בקבוקים וכוסות', 'מדבקות לבקבוק גדול וקטן, ותבנית להדבקה על כוס קרטון.', ['bottle','bottle-small','cup-wrap','oil-label'])
+        + grp('הזמנה, תכניה, פלייסמנט ושילוט', 'להדפסה על דף A4 או A5.', ['invite','schedule','placemat','entrance-sign','sign','menu','poster','certificate']);
+      return main + grp('עוד כרטיסים ותוויות', '', T.filter(t => t.repeat && !used.has(t.id)).map(t => t.id)); })()}
   </div>`;
 };
 pages.studio.after = () => {
@@ -538,9 +545,10 @@ pages.design.after = ([id], q) => {
   window.addEventListener('resize', onResize);
   draw();
   document.getElementById('dPrint').onclick = () => {
-    if(!t.repeat) return printHTML(one(), {credit:false});
-    const cols = Math.max(1, Math.floor(190/(t.w+4))), rows = Math.max(1, Math.floor(277/(t.h+4)));
-    printHTML(`<div class="sheet-labels" style="grid-template-columns:repeat(${cols},${t.w}mm)">${Array(cols*rows).fill(one()).join('')}</div>`, {credit:false});
+    const land = t.land || (!t.repeat && t.w > t.h), pw = land ? 277 : 190, ph = land ? 190 : 277, tw = t.pair ? t.w*2+6 : t.w, page = land ? 'A4 landscape' : 'A4';
+    if(!t.repeat) return printHTML(one(), {credit:false, page, margin:0});
+    const cols = Math.max(1, Math.floor(pw/(tw+4))), rows = Math.max(1, Math.floor(ph/(t.h+4)));
+    printHTML(`<div class="sheet-labels" style="grid-template-columns:repeat(${cols},${tw}mm)">${Array(cols*rows).fill(one()).join('')}</div>`, {credit:false, page, margin:10});
   };
   document.getElementById('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
   document.getElementById('dSave').onclick = () => { read(); store.push('saved', {kind:'עיצוב', title:t.title+' – '+s.title, link:`#/studio/${t.id}?d=${enc(s)}`}); toast('נשמר באזור האישי ♡'); };
@@ -554,9 +562,9 @@ pages.design.after = ([id], q) => {
 };
 function designHTML(t, s, logo){
   const th = D.themes.find(x=>x.id===s.theme)||D.themes[0], fnt = (D.fonts.find(x=>x.id===s.font)||D.fonts[0]).css;
-  const fs = Math.min(t.w, t.h)/32, small = Math.min(t.w,t.h) < 80;
-  return `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${fs*(small?1.6:1)}mm;--d-bg:${th.bg};--d-ink:${th.ink};--d-title:${th.title};--d-acc:${th.acc};--d-font:${fnt};--d-r:${t.round?'50%':'6px'}">
-    <div class="d-frame"></div>
+  const fs = Math.min(t.w, t.h)/32, small = Math.min(t.w,t.h) < 80, em = t.fs || fs*(small?1.6:1);
+  const one = `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${th.ink};--d-title:${th.title};--d-acc:${th.acc};--d-font:${fnt};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
+    ${t.nofr?'':'<div class="d-frame"></div>'}
     ${logo?`<img class="d-logo" src="${logo}" alt="">`:(s.deco&&!small?`<div class="d-deco">${esc(s.deco)}</div>`:'')}
     ${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
     <div class="d-title">${esc(s.title)}</div>
@@ -564,6 +572,7 @@ function designHTML(t, s, logo){
     ${s.body&&!small?`<div class="d-body">${esc(s.body)}</div>`:''}
     ${s.foot&&!small?`<div class="d-foot">${esc(s.foot)}</div>`:''}
   </div>`;
+  return t.pair ? `<div class="d-pair">${one}<i class="d-fold"></i>${one}</div>` : one;
 }
 
 /* מתכונים */

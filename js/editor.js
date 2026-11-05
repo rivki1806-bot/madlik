@@ -36,7 +36,10 @@ const FORMATS = [
   {id:'menu',   n:'תפריט A5', w:148, h:210},
   {id:'sign',   n:'שלט לרוחב A4', w:297, h:210},
   {id:'square', n:'ריבוע', w:210, h:210},
-  {id:'card',   n:'כרטיס ברכה', w:148, h:105}
+  {id:'card',   n:'כרטיס ברכה', w:148, h:105},
+  {id:'program', n:'תכניה A5', w:148, h:210},
+  {id:'placemat', n:'פלייסמנט A4 לרוחב', w:297, h:210},
+  {id:'entrance', n:'שילוט לכניסה A4', w:210, h:297}
 ];
 const GRADS = {
   gold:   ['זהב',      'linear-gradient(180deg,#fff3c4 0%,#ecc660 42%,#a8761c 100%)'],
@@ -74,7 +77,10 @@ const TEXTS = {
   menu:  ['התפריט שלנו','לביבות · סופגניות · שתייה חמה'],
   sign:  ['ברוכות הבאות','לערב הלביבות השנתי'],
   square:['ערב לביבות','חנוכה תשפ״ז'],
-  card:  ['תודה רבה!','שהדלקתן איתנו את הערב']
+  card:  ['תודה רבה!','שהדלקתן איתנו את הערב'],
+  program:['תכניית הערב','20:00 קבלת פנים · 20:30 הדלקת נרות · 21:00 ארוחה'],
+  placemat:['חנוכה שמח','המקום של: ____________'],
+  entrance:['ברוכים הבאים','לערב הלביבות · כאן נכנסים']
 };
 function newText(o){
   return Object.assign({id:uid(), type:'text', text:'טקסט', x:W/2, y:300, w:700, rot:0, font:'Assistant', size:44, bold:false, italic:false, u:false, s:false, align:'center',
