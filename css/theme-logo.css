@@ -109,3 +109,39 @@ html[data-pal=logo] .cust-rib{background:linear-gradient(100deg,#4aa0ee,#2b6fc2)
 html[data-pal=logo] .tag-new{background:#d9531a!important}
 html[data-pal=logo] ::selection{background:#ffc42d;color:var(--ink)}
 html[data-pal=logo] .newsletter-bar .btn-ink,html[data-pal=logo] .btn.btn-ink{color:#fff8ee!important}
+
+/* ============================================================
+   הריבוע "ראית את זה?": פתק מודבק בכתב יד, קופץ פנימה וצף
+   ============================================================ */
+html[data-pal=logo] .ad-rail{width:min(25vw,320px)}
+html[data-pal=logo] .ad-label{font-family:'Playpen Sans Hebrew','Assistant',sans-serif;font-weight:800;font-size:.95rem;letter-spacing:.1em;opacity:1;color:var(--ink)}
+html[data-pal=logo] .ad-stack{margin-top:30px;min-height:272px}
+html[data-pal=logo] .ad-card{font-family:'Playpen Sans Hebrew','Assistant',sans-serif;border:3px solid var(--ink);border-radius:22px;padding:34px 22px 18px;gap:12px;justify-content:flex-start;overflow:visible;
+  background:radial-gradient(circle at 88% 10%,rgba(255,255,255,.55) 0 16px,transparent 17px),repeating-linear-gradient(0deg,rgba(255,255,255,.2) 0 1.5px,transparent 1.5px 27px),linear-gradient(160deg,#ffe780 0%,#ffc42d 52%,#ffa12b 100%);
+  box-shadow:7px 7px 0 var(--ink),0 24px 40px -14px rgba(255,138,46,.65)}
+html[data-pal=logo] .ad-card::before{content:"";position:absolute;top:-17px;left:50%;width:100px;height:30px;margin-left:-50px;transform:rotate(-3deg);background:rgba(255,255,255,.72);border:1.5px dashed rgba(61,42,31,.35);box-shadow:0 3px 8px rgba(0,0,0,.14)}
+html[data-pal=logo] .ad-card::after{content:"🔥";position:absolute;top:-26px;right:-18px;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:1.8rem;background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);animation:adFlame 2.2s ease-in-out infinite}
+html[data-pal=logo] .ad-card b{font-family:'Playpen Sans Hebrew','Assistant',sans-serif;font-weight:800;font-size:1.85rem;line-height:1.15;color:var(--ink);text-decoration:underline wavy #ff7a2e 3px;text-underline-offset:7px;text-decoration-skip-ink:none}
+html[data-pal=logo] .ad-card span{font-family:'Playpen Sans Hebrew','Assistant',sans-serif;font-weight:600;font-size:1.05rem;line-height:1.5;color:#4b3326}
+html[data-pal=logo] .ad-card em{align-self:flex-start;margin-top:auto;border:0;padding:.5em 1.1em;border-radius:999px;background:var(--ink);color:#fff8ee;font-family:'Playpen Sans Hebrew','Assistant',sans-serif;font-weight:800;font-size:.92rem;box-shadow:3px 3px 0 #ff7a2e;transition:transform .2s,box-shadow .2s}
+html[data-pal=logo] .ad-card:hover em{transform:translateX(-4px) rotate(-2deg);box-shadow:5px 5px 0 #ff7a2e}
+html[data-pal=logo] .ad-card.on:hover{box-shadow:11px 11px 0 var(--ink),0 28px 44px -14px rgba(255,138,46,.7)}
+/* הכרטיס "ראית את זה?" בכחול כמו הקונפטי של הלוגו */
+html[data-pal=logo] .ad-cta{background:radial-gradient(circle at 88% 10%,rgba(255,255,255,.4) 0 16px,transparent 17px),repeating-linear-gradient(0deg,rgba(255,255,255,.14) 0 1.5px,transparent 1.5px 27px),linear-gradient(160deg,#78bdf5 0%,#4a9be0 52%,#2f7fd0 100%)}
+html[data-pal=logo] .ad-cta::after{content:"👀"}
+html[data-pal=logo] .ad-cta b{color:#fff;text-decoration-color:#ffc42d}
+html[data-pal=logo] .ad-cta span{color:#fff}
+html[data-pal=logo] .ad-cta em{background:#ffc42d;color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+/* קפיצה בכניסה למסך, ואחריה ציפה עדינה */
+html[data-pal=logo] .ad-rail.in .ad-card.on{animation:adPop 1s cubic-bezier(.2,1.2,.4,1) both,adFloat 4.4s ease-in-out 1.1s infinite}
+@keyframes adPop{0%{opacity:0;transform:translateY(110px) scale(.5) rotate(-16deg)}45%{opacity:1;transform:translateY(-26px) scale(1.12) rotate(4deg)}62%{transform:translateY(10px) scale(.96) rotate(-5deg)}78%{transform:translateY(-6px) scale(1.03) rotate(-1deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(-2deg)}}
+@keyframes adFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@keyframes adFlame{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.15)}}
+@media (max-width:980px){html[data-pal=logo] .ad-rail{width:100%;max-width:340px}}
+@media (prefers-reduced-motion:reduce){html[data-pal=logo] .ad-rail.in .ad-card.on,html[data-pal=logo] .ad-card::after{animation:none}}
+
+/* ---------- קרדיט בתחתית ---------- */
+html[data-pal=logo] .credit{text-align:center;margin:14px auto 0;padding:12px 18px;max-width:760px;font-family:'Playpen Sans Hebrew','Assistant',sans-serif;font-weight:700;font-size:.95rem;line-height:1.7;color:#ffe9a0;border-top:2px dashed rgba(255,196,45,.45)}
+html[data-pal=logo] .credit bdi{font-family:'Assistant',sans-serif;font-weight:800;color:#fff}
+html[data-pal=logo] .credit a{color:#ffc42d;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+html[data-pal=logo] .credit a:hover{color:#fff}

@@ -136,16 +136,6 @@ function wshow(w, kicker, title, text, href, btn, cards){
 pages.home = () => {
   const fx = window.MadlikFX;
   const games = content('games').slice(0,8), recipes = content('recipes').slice(0,8);
-  const nights = [
-    ['משחקים מוכנים','אליאס, רביעיות, בינגו וטריוויה. מדפיסים או מקרינים, ויוצאים לדרך.','#/games','למשחקים'],
-    ['משחק משלך','מכניסים את המילים שלך ומקבלים משחק מעוצב עם טיימר. בלי הרשמה.','#/create','ליצירה'],
-    ['מיתוג לערב','הזמנה, תפריט, מדבקה לבקבוק. כותבים שם ותאריך, מורידים ומדפיסים.','#/studio','לסטודיו'],
-    ['מתכונים','לביבות לכמה סועדות שתרצי. הכמויות מתחשבות לבד.','#/recipes','למתכונים'],
-    ['רוצים לפרסם?','העסק שלך על המסך הראשי, בשלוש תכניות פשוטות.','#/advertise','לתכניות'],
-    ['בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג ומפעילות. לפי אזור ולפי מחיר.','#/suppliers','לעסקים'],
-    ['הרעיון שלך','יש לך משחק או מתכון? שלחי, ואם יעלה לאתר נכתוב את שמך.','#/submit','לשליחה'],
-    ['האזור שלי','מועדפים ורשימת קניות במקום אחד, והכול נשאר אצלך.','#/me','לאזור שלי']
-  ];
   const words = ['סביבון','לביבות','סופגניות','שמונה נרות','פך שמן','נס גדול','משחקים','מיתוג','מתכונים'];
   const band = (cls,dir) => `<div class="band ${cls}" data-dir="${dir}" aria-hidden="true"><div class="band-track">${[0,1].map(()=>[...words,...words].map(w=>`<span>${w}</span>`).join('')).join('')}</div></div>`;
   const hl = ['בצחוק,','במשחק','בשולחן','ובתמונה','מוכן.'];
@@ -167,19 +157,10 @@ pages.home = () => {
     </aside>
     <div class="hero-copy">
       <p class="tagline">כל מה שצריך לערב לביבות<br><em>שמדליק שמחה בלבבות</em></p>
-      <form class="search-big" id="heroSearch"><input type="search" name="q" placeholder="מה מחפשים? למשל: משחק לקבוצה גדולה" aria-label="חיפוש"><button class="btn btn-gold">חיפוש</button></form>
     </div>
   </section>
   ${band('', 1)}
   <div class="statement"><p>${stm}</p></div>
-  <section class="nights" aria-label="שמונה לילות">
-    <div class="nights-stage" data-theme="orange">
-      <div class="n-panels">${nights.map((n,i)=>`<article class="n-panel" data-i="${i+1}"><div class="n-num"><small>לילה</small><b>${i+1}</b></div><h2${n[0].length>16?' class="long"':''}>${n[0]}</h2><p>${n[1]}</p><a class="btn btn-gold" href="${n[2]}">${n[3]} ←</a></article>`).join('')}</div>
-      <div class="n-menorah">${fx?fx.menorah({scroll:true}):''}</div>
-      <div class="n-hint">גללי כדי להדליק</div>
-      <div class="n-ticks">${nights.map(()=>'<i></i>').join('')}</div>
-    </div>
-  </section>
   ${wshow('games','משחקים על המסך','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון טלוויזיה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
   ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
@@ -192,10 +173,11 @@ pages.home = () => {
   </section>`;
 };
 pages.home.after = () => {
-  document.getElementById('heroSearch').onsubmit = e => { e.preventDefault(); location.hash = '#/search?q=' + encodeURIComponent(e.target.q.value); };
   const cards = [...document.querySelectorAll('.ad-card')], dots = [...document.querySelectorAll('.ad-dots i')]; let k = 0;
   const show = n => { k = n; cards.forEach((c,i)=>c.classList.toggle('on', i===n)); dots.forEach((d,i)=>d.classList.toggle('on', i===n)); };
   show(0); clearInterval(window.__adTimer);
+  const rail = document.querySelector('.ad-rail');
+  if(rail && 'IntersectionObserver' in window){ const io = new IntersectionObserver(es => es.forEach(e => rail.classList.toggle('in', e.isIntersecting)), {threshold:.35}); io.observe(rail); } else if(rail) rail.classList.add('in');
   if(cards.length > 1) window.__adTimer = setInterval(()=>show((k+1)%cards.length), 5000);
 };
 
@@ -847,7 +829,7 @@ function notFound(){ return pageHead('לא מצאנו את העמוד', '', '') 
 
 /* ---------- ניתוב ---------- */
 const routes = [
-  [/^\/?$/, 'home'], [/^\/search$/, 'search'], [/^\/games$/, 'games'], [/^\/game\/(.+)$/, 'game'],
+  [/^\/?$/, 'home'], [/^\/games$/, 'games'], [/^\/game\/(.+)$/, 'game'],
   [/^\/create$/, 'create'], [/^\/create\/(.+)$/, 'creator'], [/^\/studio$/, 'studio'], [/^\/studio\/edit$/, 'edit'], [/^\/studio\/(.+)$/, 'design'],
   [/^\/recipes$/, 'recipes'], [/^\/recipe\/(.+)$/, 'recipe'], [/^\/suppliers$/, 'suppliers'],
   [/^\/supplier\/(.+)$/, 'supplier'], [/^\/advertise$/, 'advertise'], [/^\/submit$/, 'submit'], [/^\/me$/, 'me'], [/^\/admin$/, 'admin']
