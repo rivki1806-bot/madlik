@@ -21,11 +21,11 @@ const hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה'
 function stats_() {
   const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;
   const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
-  const out = { sec: {}, sup: {}, tel: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};
+  const out = { sec: {}, sup: {}, tel: {}, web: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};
   for (let i = 1; i < rows.length; i++) {
     const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);
-    if (type === 'sup' && id.indexOf('tel:') === 0) { // לחיצה על "הטלפון שלנו"
-      const tid = id.slice(4), t = out.tel[tid] = out.tel[tid] || { total: 0, today: 0, week: 0 };
+    if (type === 'sup' && /^(tel|web):/.test(id)) { // לחיצות על "הטלפון שלנו" ועל האתר של העסק
+      const kind = id.slice(0, 3), tid = id.slice(4), grp = out[kind], t = grp[tid] = grp[tid] || { total: 0, today: 0, week: 0 };
       t.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) t.today++; if (now - d.getTime() < 7 * DAY) t.week++;
       continue;
     }
@@ -50,6 +50,7 @@ function valid_(e) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e); }
 function esc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function fmt_(d) { return d instanceof Date ? Utilities.formatDate(d, 'Asia/Jerusalem', 'dd/MM/yyyy HH:mm') : String(d); }
 function newId_() { return Utilities.getUuid().slice(0, 8); }
+function folder_() { const it = DriveApp.getFoldersByName('מדליק – מודעות'); return it.hasNext() ? it.next() : DriveApp.createFolder('מדליק – מודעות'); }
 function rowOf_(sh, id) { const ids = sh.getRange(1, 1, sh.getLastRow(), 1).getValues(); for (let i = 1; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 1; return 0; }
 
 // טופס מהאתר: רק טקסט, באורך מוגבל
@@ -124,6 +125,22 @@ function doPost(e) {
       const item = d.item || {}; item.id = String(item.id || newId_());
       conSheet_().appendRow([item.id, new Date(), d.kind, String(item.title || item.name || ''), JSON.stringify(item)]);
       return json_({ ok: true, id: item.id });
+    }
+    if (d.action === 'updateContent') {
+      const sh = conSheet_(), r = rowOf_(sh, d.id);
+      if (!r) return json_({ ok: false, error: 'לא נמצא' });
+      const item = d.item || {}; item.id = String(d.id);
+      sh.getRange(r, 4, 1, 2).setValues([[String(item.title || item.name || ''), JSON.stringify(item)]]);
+      return json_({ ok: true });
+    }
+    if (d.action === 'uploadImage') {
+      const m = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(String(d.data || ''));
+      if (!m) return json_({ ok: false, error: 'קובץ לא תקין' });
+      const bytes = Utilities.base64Decode(m[2]);
+      if (bytes.length > 4 * 1024 * 1024) return json_({ ok: false, error: 'התמונה גדולה מדי' });
+      const file = folder_().createFile(Utilities.newBlob(bytes, m[1], 'ad-' + newId_() + (m[1] === 'image/png' ? '.png' : '.jpg')));
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      return json_({ ok: true, url: 'https://lh3.googleusercontent.com/d/' + file.getId() + '=w1200' });
     }
     if (d.action === 'removeContent') {
       const sh = conSheet_(), r = rowOf_(sh, d.id);

@@ -373,3 +373,56 @@ html[data-pal=logo] .ad-card span{font-size:1rem;line-height:1.6}
 .tel-btn::before{content:"📞"}
 .tel-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 #3d2a1f}
 .tel-btn.open{direction:ltr;background:#fff}
+
+/* תמונת המודעה של בעל העסק: יחס 16:10 קבוע (1200 על 750 פיקסלים) */
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card .card-top{height:auto;aspect-ratio:16/10}
+html[data-pal=logo] .sup-card .biz-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,1,.3,1)}
+html[data-pal=logo] .sup-card:hover .biz-img{transform:scale(1.05)}
+html[data-pal=logo] .biz-pic{margin:-4px -4px 14px;border-radius:14px;overflow:hidden;aspect-ratio:16/10;border:2px solid #ffd9b8}
+html[data-pal=logo] .biz-pic .biz-img{width:100%;height:100%;object-fit:cover;display:block}
+@media (max-width:640px){html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card .card-top{height:auto;aspect-ratio:16/10}}
+
+/* כרטיס עסק: כפתור "הטלפון שלנו" וכפתור ראשי לאתר או לטופס */
+html[data-pal=logo] .sup-card .sup-name{color:inherit;text-decoration:none}
+html[data-pal=logo] .sup-actions{display:flex;gap:10px;margin-top:auto}
+html[data-pal=logo] .sup-actions>*{flex:1;min-width:0}
+html[data-pal=logo] .sup-tel{display:grid;place-items:center;min-height:48px;padding:0 8px;border-radius:12px;border:2px solid #ff7a2e;background:#fff;color:#d9531a;font:800 1rem 'Heebo','Assistant',sans-serif;cursor:pointer;text-decoration:none;box-shadow:0 5px 0 -2px #ffc999;transition:transform .2s,box-shadow .2s}
+html[data-pal=logo] .sup-tel:hover{transform:translateY(-2px);box-shadow:0 7px 0 -2px #ffc999}
+html[data-pal=logo] .sup-tel.open{direction:ltr}
+html[data-pal=logo] .sup-card .sup-go{flex:1.25;font:800 1rem/1.2 'Heebo','Assistant',sans-serif;text-decoration:none;text-align:center;padding:0 8px;margin-top:0;letter-spacing:normal}
+html[data-pal=logo] .sup-card:hover .sup-go{letter-spacing:normal}
+html[data-pal=logo] .sup-go i{font-style:normal;margin-inline-start:6px;transition:transform .2s}
+html[data-pal=logo] .sup-go:hover i{transform:translateX(-5px)}
+
+/* ניהול: עסקים מפרסמים */
+.bz-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr);gap:24px;align-items:start}
+.bz-prev{position:sticky;top:90px}
+.bz-prev .wshow.adprev{padding:0;background:transparent!important;min-height:0;display:block;border:0}
+.bz-prev .cards{grid-template-columns:1fr!important;max-width:380px}
+.bz-img{display:grid;gap:8px;padding:12px;border:2px dashed #ffb347;border-radius:14px;background:#fff8ee}
+.bz-drop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bz-checks{display:flex;gap:18px;flex-wrap:wrap}
+.bz-rows{display:grid;gap:12px}
+.bz-row{display:grid;grid-template-columns:104px 1fr auto;gap:14px;align-items:center;padding:12px;border:2px solid #f0d9b0;border-radius:16px;background:#fff}
+.bz-row.off{opacity:.55}
+.bz-thumb{width:104px;aspect-ratio:16/10;border-radius:10px;overflow:hidden;background:#ffe9d0;display:grid;place-items:center;font:400 1.6rem 'Suez One',serif}
+.bz-thumb img{width:100%;height:100%;object-fit:cover}
+.bz-info{display:grid;gap:3px}
+.bz-info small{color:#6b4a33}
+.bz-nums{font-weight:700;color:#3d2a1f!important}
+.bz-plan{font-style:normal;font-size:.78rem;font-weight:800;background:#ffe9a0;border-radius:999px;padding:.1em .7em;margin-inline-start:6px}
+.bz-off{font-style:normal;font-size:.78rem;background:#ddd;border-radius:999px;padding:.1em .7em}
+.bz-btns{display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:900px){.bz-grid{grid-template-columns:1fr}.bz-prev{position:static}.bz-row{grid-template-columns:76px 1fr}.bz-thumb{width:76px}.bz-btns{grid-column:1/-1}}
+html[data-pal=logo] .sup-card .sup-go{display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px}
+html[data-pal=logo] .sup-card .sup-go i{margin:0}
+html[data-pal=logo] .sup-card .sup-tel{min-height:48px}
+.bz-grid>*{min-width:0}
+.bz-wrap .form{min-width:0;max-width:100%}
+.bz-wrap .form :is(input,select,textarea){max-width:100%;box-sizing:border-box;min-width:0}
+.bz-wrap .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bz-wrap .two-col>*{min-width:0}
+@media (max-width:560px){.bz-wrap .two-col{grid-template-columns:1fr}.bz-wrap .box{padding-inline:14px}}
+.bz-wrap .form{grid-template-columns:minmax(0,1fr)}
+.bz-wrap .form label{grid-template-columns:minmax(0,1fr)}
+.bz-wrap .form input{width:100%}

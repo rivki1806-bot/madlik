@@ -10,7 +10,7 @@ const store = {
   set(k, v){ try{ localStorage.setItem('madlik_'+k, JSON.stringify(v)); }catch(e){} },
   push(k, item){ const a = store.get(k, []); a.unshift(Object.assign({id:Date.now().toString(36), date:new Date().toLocaleString('he-IL')}, item)); store.set(k, a); }
 };
-const GAS_CODE = "// מדליק – שרת קטן וחינמי בגוגל.\n// שומר בגיליון: נרשמות לרשימת התפוצה, כל הטפסים מהאתר, ותוכן שנוסף מהאדמין. ושולח מיילים לנרשמות.\n// 1. החליפי את המפתח כאן במפתח סודי משלך (אותיות באנגלית ומספרים).\nconst SECRET = 'CHANGE-ME-123';\n\nconst KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לבעלי עסקים', ads: 'בקשות פרסום', users: 'משתמשות', contact: 'פניות יצירת קשר' };\nconst CONTENT_KINDS = ['games', 'recipes', 'suppliers'];\n\nfunction tab_(name, head) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(name);\n  if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); }\n  return sh;\n}\nconst subsSheet_ = () => tab_('נרשמות', ['תאריך', 'מייל', 'שם', 'מקור', 'פעילה']);\nconst recSheet_ = kind => tab_(KINDS[kind], ['מזהה', 'תאריך', 'סטטוס', 'סיכום', 'נתונים']);\nconst conSheet_ = () => tab_('תוכן באתר', ['מזהה', 'תאריך', 'סוג', 'כותרת', 'נתונים']);\nconst hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה', 'מבקרת']);\n\n// סיכום הכניסות: סה\"כ, היום, 7 ימים, ומבקרות שונות – לכל מדור ולכל בעל עסק\nfunction stats_() {\n  const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;\n  const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');\n  const out = { sec: {}, sup: {}, tel: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};\n  for (let i = 1; i < rows.length; i++) {\n    const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);\n    if (type === 'sup' && id.indexOf('tel:') === 0) { // לחיצה על \"הטלפון שלנו\"\n      const tid = id.slice(4), t = out.tel[tid] = out.tel[tid] || { total: 0, today: 0, week: 0 };\n      t.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) t.today++; if (now - d.getTime() < 7 * DAY) t.week++;\n      continue;\n    }\n    if (type !== 'sec' && type !== 'sup') continue;\n    if (type === 'sec') {\n      const A = out.all, dk = Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd');\n      A.total++; if (dk === today) A.today++; if (now - d.getTime() < 7 * DAY) A.week++;\n      if (v && !seenAll[v]) { seenAll[v] = 1; A.uniq++; }\n      out.days[dk] = (out.days[dk] || 0) + 1;\n    }\n    const o = out[type][id] = out[type][id] || { total: 0, today: 0, week: 0, uniq: 0 };\n    o.total++;\n    if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++;\n    if (now - d.getTime() < 7 * DAY) o.week++;\n    const k = type + '|' + id + '|' + v; if (v && !seen[k]) { seen[k] = 1; o.uniq++; }\n  }\n  return out;\n}\n\nfunction json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }\nfunction valid_(e) { return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(e); }\nfunction esc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\nfunction fmt_(d) { return d instanceof Date ? Utilities.formatDate(d, 'Asia/Jerusalem', 'dd/MM/yyyy HH:mm') : String(d); }\nfunction newId_() { return Utilities.getUuid().slice(0, 8); }\nfunction rowOf_(sh, id) { const ids = sh.getRange(1, 1, sh.getLastRow(), 1).getValues(); for (let i = 1; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 1; return 0; }\n\n// טופס מהאתר: רק טקסט, באורך מוגבל\nfunction clean_(o) {\n  const out = {};\n  Object.keys(o || {}).slice(0, 30).forEach(k => { out[String(k).slice(0, 40)] = String(o[k] == null ? '' : o[k]).slice(0, 3000); });\n  return out;\n}\n\nfunction doPost(e) {\n  try {\n    const d = JSON.parse(e.postData.contents);\n\n    // --- פעולות פתוחות לכל גולשת ---\n    if (d.action === 'subscribe') {\n      const email = String(d.email || '').trim().toLowerCase();\n      if (!valid_(email)) return json_({ ok: false, error: 'מייל לא תקין' });\n      const sh = subsSheet_(), rows = sh.getDataRange().getValues();\n      for (let i = 1; i < rows.length; i++) {\n        if (String(rows[i][1]).toLowerCase() === email) {\n          if (rows[i][4] === 'לא') sh.getRange(i + 1, 5).setValue('כן');\n          return json_({ ok: true, dup: true });\n        }\n      }\n      sh.appendRow([new Date(), email, String(d.name || '').slice(0, 100), String(d.source || '').slice(0, 50), 'כן']);\n      return json_({ ok: true });\n    }\n    if (d.action === 'submit') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const data = clean_(d.data);\n      const summary = ['name', 'biz', 'title', 'supplier', 'phone', 'email'].map(k => data[k]).filter(Boolean).join(' · ');\n      recSheet_(d.kind).appendRow([newId_(), new Date(), d.kind === 'subs' ? 'ממתין' : 'חדש', summary, JSON.stringify(data)]);\n      return json_({ ok: true });\n    }\n\n    if (d.action === 'hit') {\n      const type = d.type === 'sup' ? 'sup' : 'sec';\n      hitSheet_().appendRow([new Date(), type, String(d.id || '').slice(0, 60), String(d.v || '').slice(0, 20)]);\n      return json_({ ok: true });\n    }\n\n    // --- מכאן רק עם מפתח הניהול ---\n    if (d.key !== SECRET) return json_({ ok: false, error: 'מפתח שגוי' });\n\n    if (d.action === 'stats') return json_({ ok: true, stats: stats_() });\n\n    if (d.action === 'list') {\n      const rows = subsSheet_().getDataRange().getValues(), out = [];\n      for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') out.push({ date: fmt_(rows[i][0]), email: rows[i][1], source: rows[i][3] });\n      return json_({ ok: true, subscribers: out });\n    }\n    if (d.action === 'send') return send_(d);\n\n    if (d.action === 'records') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const rows = recSheet_(d.kind).getDataRange().getValues(), out = [];\n      for (let i = rows.length - 1; i >= 1; i--) {\n        let data = {}; try { data = JSON.parse(rows[i][4]); } catch (err) {}\n        out.push(Object.assign(data, { id: String(rows[i][0]), date: fmt_(rows[i][1]), status: rows[i][2] }));\n      }\n      return json_({ ok: true, records: out });\n    }\n    if (d.action === 'setStatus' || d.action === 'remove') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const sh = recSheet_(d.kind), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      if (d.action === 'remove') sh.deleteRow(r); else sh.getRange(r, 3).setValue(String(d.status || ''));\n      return json_({ ok: true });\n    }\n    if (d.action === 'addContent') {\n      if (CONTENT_KINDS.indexOf(d.kind) < 0) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const item = d.item || {}; item.id = String(item.id || newId_());\n      conSheet_().appendRow([item.id, new Date(), d.kind, String(item.title || item.name || ''), JSON.stringify(item)]);\n      return json_({ ok: true, id: item.id });\n    }\n    if (d.action === 'removeContent') {\n      const sh = conSheet_(), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      sh.deleteRow(r);\n      return json_({ ok: true });\n    }\n    return json_({ ok: false, error: 'פעולה לא מוכרת' });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  }\n}\n\nfunction doGet(e) {\n  const p = e.parameter || {};\n  // תוכן שנוסף מהאדמין – כל הגולשות רואות אותו\n  if (p.action === 'content') {\n    const rows = conSheet_().getDataRange().getValues(), items = {};\n    CONTENT_KINDS.forEach(k => items[k] = []);\n    for (let i = 1; i < rows.length; i++) {\n      try { const it = JSON.parse(rows[i][4]); if (items[rows[i][2]]) items[rows[i][2]].push(it); } catch (err) {}\n    }\n    return json_({ ok: true, items: items });\n  }\n  // הסרה מרשימת התפוצה (הקישור שבסוף כל מייל)\n  if (p.action === 'unsub') {\n    const email = String(p.email || '').toLowerCase(), sh = subsSheet_(), rows = sh.getDataRange().getValues();\n    for (let i = 1; i < rows.length; i++) if (String(rows[i][1]).toLowerCase() === email) sh.getRange(i + 1, 5).setValue('לא');\n    return HtmlService.createHtmlOutput('<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;padding:48px;font-size:20px\">הוסרת מרשימת התפוצה של מדליק. תודה, ושיהיה חג אורים שמח.</div>');\n  }\n  return json_({ ok: true });\n}\n\nfunction send_(d) {\n  const rows = subsSheet_().getDataRange().getValues();\n  let to = [];\n  if (d.test) to = [String(d.test)];\n  else for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') to.push(rows[i][1]);\n  const subject = String(d.subject || '').trim(), body = String(d.body || '');\n  if (!subject || !body) return json_({ ok: false, error: 'חסר נושא או הודעה' });\n  const quota = MailApp.getRemainingDailyQuota();\n  let sent = 0, skipped = 0;\n  for (const email of to) {\n    if (sent >= quota) { skipped++; continue; }\n    const unsub = ScriptApp.getService().getUrl() + '?action=unsub&email=' + encodeURIComponent(email);\n    const html = '<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#071a38\">' + esc_(body).replace(/\\n/g, '<br>') +\n      '<hr style=\"margin-top:32px;border:0;border-top:1px solid #ddd\"><p style=\"font-size:12px;color:#666\">קיבלת מייל זה כי נרשמת לרשימת התפוצה של מדליק. <a href=\"' + unsub + '\">להסרה מהרשימה</a></p></div>';\n    MailApp.sendEmail({ to: email, subject: subject, htmlBody: html, body: body + '\\n\\nלהסרה מהרשימה: ' + unsub, name: 'מדליק' });\n    sent++;\n  }\n  return json_({ ok: true, sent: sent, skipped: skipped });\n}\n";
+const GAS_CODE = "// מדליק – שרת קטן וחינמי בגוגל.\n// שומר בגיליון: נרשמות לרשימת התפוצה, כל הטפסים מהאתר, ותוכן שנוסף מהאדמין. ושולח מיילים לנרשמות.\n// 1. החליפי את המפתח כאן במפתח סודי משלך (אותיות באנגלית ומספרים).\nconst SECRET = 'CHANGE-ME-123';\n\nconst KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לבעלי עסקים', ads: 'בקשות פרסום', users: 'משתמשות', contact: 'פניות יצירת קשר' };\nconst CONTENT_KINDS = ['games', 'recipes', 'suppliers'];\n\nfunction tab_(name, head) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(name);\n  if (!sh) { sh = ss.insertSheet(name); sh.appendRow(head); sh.setFrozenRows(1); }\n  return sh;\n}\nconst subsSheet_ = () => tab_('נרשמות', ['תאריך', 'מייל', 'שם', 'מקור', 'פעילה']);\nconst recSheet_ = kind => tab_(KINDS[kind], ['מזהה', 'תאריך', 'סטטוס', 'סיכום', 'נתונים']);\nconst conSheet_ = () => tab_('תוכן באתר', ['מזהה', 'תאריך', 'סוג', 'כותרת', 'נתונים']);\nconst hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה', 'מבקרת']);\n\n// סיכום הכניסות: סה\"כ, היום, 7 ימים, ומבקרות שונות – לכל מדור ולכל בעל עסק\nfunction stats_() {\n  const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;\n  const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');\n  const out = { sec: {}, sup: {}, tel: {}, web: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};\n  for (let i = 1; i < rows.length; i++) {\n    const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);\n    if (type === 'sup' && /^(tel|web):/.test(id)) { // לחיצות על \"הטלפון שלנו\" ועל האתר של העסק\n      const kind = id.slice(0, 3), tid = id.slice(4), grp = out[kind], t = grp[tid] = grp[tid] || { total: 0, today: 0, week: 0 };\n      t.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) t.today++; if (now - d.getTime() < 7 * DAY) t.week++;\n      continue;\n    }\n    if (type !== 'sec' && type !== 'sup') continue;\n    if (type === 'sec') {\n      const A = out.all, dk = Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd');\n      A.total++; if (dk === today) A.today++; if (now - d.getTime() < 7 * DAY) A.week++;\n      if (v && !seenAll[v]) { seenAll[v] = 1; A.uniq++; }\n      out.days[dk] = (out.days[dk] || 0) + 1;\n    }\n    const o = out[type][id] = out[type][id] || { total: 0, today: 0, week: 0, uniq: 0 };\n    o.total++;\n    if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++;\n    if (now - d.getTime() < 7 * DAY) o.week++;\n    const k = type + '|' + id + '|' + v; if (v && !seen[k]) { seen[k] = 1; o.uniq++; }\n  }\n  return out;\n}\n\nfunction json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }\nfunction valid_(e) { return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(e); }\nfunction esc_(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\nfunction fmt_(d) { return d instanceof Date ? Utilities.formatDate(d, 'Asia/Jerusalem', 'dd/MM/yyyy HH:mm') : String(d); }\nfunction newId_() { return Utilities.getUuid().slice(0, 8); }\nfunction folder_() { const it = DriveApp.getFoldersByName('מדליק – מודעות'); return it.hasNext() ? it.next() : DriveApp.createFolder('מדליק – מודעות'); }\nfunction rowOf_(sh, id) { const ids = sh.getRange(1, 1, sh.getLastRow(), 1).getValues(); for (let i = 1; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 1; return 0; }\n\n// טופס מהאתר: רק טקסט, באורך מוגבל\nfunction clean_(o) {\n  const out = {};\n  Object.keys(o || {}).slice(0, 30).forEach(k => { out[String(k).slice(0, 40)] = String(o[k] == null ? '' : o[k]).slice(0, 3000); });\n  return out;\n}\n\nfunction doPost(e) {\n  try {\n    const d = JSON.parse(e.postData.contents);\n\n    // --- פעולות פתוחות לכל גולשת ---\n    if (d.action === 'subscribe') {\n      const email = String(d.email || '').trim().toLowerCase();\n      if (!valid_(email)) return json_({ ok: false, error: 'מייל לא תקין' });\n      const sh = subsSheet_(), rows = sh.getDataRange().getValues();\n      for (let i = 1; i < rows.length; i++) {\n        if (String(rows[i][1]).toLowerCase() === email) {\n          if (rows[i][4] === 'לא') sh.getRange(i + 1, 5).setValue('כן');\n          return json_({ ok: true, dup: true });\n        }\n      }\n      sh.appendRow([new Date(), email, String(d.name || '').slice(0, 100), String(d.source || '').slice(0, 50), 'כן']);\n      return json_({ ok: true });\n    }\n    if (d.action === 'submit') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const data = clean_(d.data);\n      const summary = ['name', 'biz', 'title', 'supplier', 'phone', 'email'].map(k => data[k]).filter(Boolean).join(' · ');\n      recSheet_(d.kind).appendRow([newId_(), new Date(), d.kind === 'subs' ? 'ממתין' : 'חדש', summary, JSON.stringify(data)]);\n      return json_({ ok: true });\n    }\n\n    if (d.action === 'hit') {\n      const type = d.type === 'sup' ? 'sup' : 'sec';\n      hitSheet_().appendRow([new Date(), type, String(d.id || '').slice(0, 60), String(d.v || '').slice(0, 20)]);\n      return json_({ ok: true });\n    }\n\n    // --- מכאן רק עם מפתח הניהול ---\n    if (d.key !== SECRET) return json_({ ok: false, error: 'מפתח שגוי' });\n\n    if (d.action === 'stats') return json_({ ok: true, stats: stats_() });\n\n    if (d.action === 'list') {\n      const rows = subsSheet_().getDataRange().getValues(), out = [];\n      for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') out.push({ date: fmt_(rows[i][0]), email: rows[i][1], source: rows[i][3] });\n      return json_({ ok: true, subscribers: out });\n    }\n    if (d.action === 'send') return send_(d);\n\n    if (d.action === 'records') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const rows = recSheet_(d.kind).getDataRange().getValues(), out = [];\n      for (let i = rows.length - 1; i >= 1; i--) {\n        let data = {}; try { data = JSON.parse(rows[i][4]); } catch (err) {}\n        out.push(Object.assign(data, { id: String(rows[i][0]), date: fmt_(rows[i][1]), status: rows[i][2] }));\n      }\n      return json_({ ok: true, records: out });\n    }\n    if (d.action === 'setStatus' || d.action === 'remove') {\n      if (!KINDS[d.kind]) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const sh = recSheet_(d.kind), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      if (d.action === 'remove') sh.deleteRow(r); else sh.getRange(r, 3).setValue(String(d.status || ''));\n      return json_({ ok: true });\n    }\n    if (d.action === 'addContent') {\n      if (CONTENT_KINDS.indexOf(d.kind) < 0) return json_({ ok: false, error: 'סוג לא מוכר' });\n      const item = d.item || {}; item.id = String(item.id || newId_());\n      conSheet_().appendRow([item.id, new Date(), d.kind, String(item.title || item.name || ''), JSON.stringify(item)]);\n      return json_({ ok: true, id: item.id });\n    }\n    if (d.action === 'updateContent') {\n      const sh = conSheet_(), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      const item = d.item || {}; item.id = String(d.id);\n      sh.getRange(r, 4, 1, 2).setValues([[String(item.title || item.name || ''), JSON.stringify(item)]]);\n      return json_({ ok: true });\n    }\n    if (d.action === 'uploadImage') {\n      const m = /^data:(image\\/(?:jpeg|png|webp));base64,(.+)$/.exec(String(d.data || ''));\n      if (!m) return json_({ ok: false, error: 'קובץ לא תקין' });\n      const bytes = Utilities.base64Decode(m[2]);\n      if (bytes.length > 4 * 1024 * 1024) return json_({ ok: false, error: 'התמונה גדולה מדי' });\n      const file = folder_().createFile(Utilities.newBlob(bytes, m[1], 'ad-' + newId_() + (m[1] === 'image/png' ? '.png' : '.jpg')));\n      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);\n      return json_({ ok: true, url: 'https://lh3.googleusercontent.com/d/' + file.getId() + '=w1200' });\n    }\n    if (d.action === 'removeContent') {\n      const sh = conSheet_(), r = rowOf_(sh, d.id);\n      if (!r) return json_({ ok: false, error: 'לא נמצא' });\n      sh.deleteRow(r);\n      return json_({ ok: true });\n    }\n    return json_({ ok: false, error: 'פעולה לא מוכרת' });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  }\n}\n\nfunction doGet(e) {\n  const p = e.parameter || {};\n  // תוכן שנוסף מהאדמין – כל הגולשות רואות אותו\n  if (p.action === 'content') {\n    const rows = conSheet_().getDataRange().getValues(), items = {};\n    CONTENT_KINDS.forEach(k => items[k] = []);\n    for (let i = 1; i < rows.length; i++) {\n      try { const it = JSON.parse(rows[i][4]); if (items[rows[i][2]]) items[rows[i][2]].push(it); } catch (err) {}\n    }\n    return json_({ ok: true, items: items });\n  }\n  // הסרה מרשימת התפוצה (הקישור שבסוף כל מייל)\n  if (p.action === 'unsub') {\n    const email = String(p.email || '').toLowerCase(), sh = subsSheet_(), rows = sh.getDataRange().getValues();\n    for (let i = 1; i < rows.length; i++) if (String(rows[i][1]).toLowerCase() === email) sh.getRange(i + 1, 5).setValue('לא');\n    return HtmlService.createHtmlOutput('<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;padding:48px;font-size:20px\">הוסרת מרשימת התפוצה של מדליק. תודה, ושיהיה חג אורים שמח.</div>');\n  }\n  return json_({ ok: true });\n}\n\nfunction send_(d) {\n  const rows = subsSheet_().getDataRange().getValues();\n  let to = [];\n  if (d.test) to = [String(d.test)];\n  else for (let i = 1; i < rows.length; i++) if (rows[i][4] !== 'לא') to.push(rows[i][1]);\n  const subject = String(d.subject || '').trim(), body = String(d.body || '');\n  if (!subject || !body) return json_({ ok: false, error: 'חסר נושא או הודעה' });\n  const quota = MailApp.getRemainingDailyQuota();\n  let sent = 0, skipped = 0;\n  for (const email of to) {\n    if (sent >= quota) { skipped++; continue; }\n    const unsub = ScriptApp.getService().getUrl() + '?action=unsub&email=' + encodeURIComponent(email);\n    const html = '<div dir=\"rtl\" style=\"font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#071a38\">' + esc_(body).replace(/\\n/g, '<br>') +\n      '<hr style=\"margin-top:32px;border:0;border-top:1px solid #ddd\"><p style=\"font-size:12px;color:#666\">קיבלת מייל זה כי נרשמת לרשימת התפוצה של מדליק. <a href=\"' + unsub + '\">להסרה מהרשימה</a></p></div>';\n    MailApp.sendEmail({ to: email, subject: subject, htmlBody: html, body: body + '\\n\\nלהסרה מהרשימה: ' + unsub, name: 'מדליק' });\n    sent++;\n  }\n  return json_({ ok: true, sent: sent, skipped: skipped });\n}\n";
 const API = () => String(window.MADLIK_API || '').trim();
 function subscribe(email, source, name){
   email = String(email||'').trim();
@@ -32,16 +32,28 @@ const SECTIONS = {home:'עמוד הבית', games:'משחקים על המסך', 
 const visitorId = () => { let v = store.get('vid', ''); if(!v){ v = Math.random().toString(36).slice(2, 12); store.set('vid', v); } return v; };
 let lastHit = '';
 // לחיצה על "הטלפון שלנו" בעמוד עסק: נספרת לכל עסק. לשרת נשלחת כ"sup" עם הקידומת tel:, כך שגם שרת ישן לא ירשום כניסות מדומות
-function countTel(id){
-  if(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return;
+function countClick(kind, id){
+  if(ADMIN_PAGE || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return;
   const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10);
-  st.tel = st.tel || {};
-  const o = st.tel[id] = st.tel[id] || {total:0, today:0, day:today, week:[]};
+  st[kind] = st[kind] || {};
+  const o = st[kind][id] = st[kind][id] || {total:0, today:0, day:today, week:[]};
   if(o.day !== today){ o.day = today; o.today = 0; }
   o.total++; o.today++; o.week = (o.week||[]).filter(t => Date.now()-t < 7*864e5).concat(Date.now()).slice(-500);
   store.set('stats', st);
-  if(API()) try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'hit', type:'sup', id:'tel:' + id, v:visitorId()})}).catch(()=>{}); }catch(e){}
+  if(API()) try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'hit', type:'sup', id:kind + ':' + id, v:visitorId()})}).catch(()=>{}); }catch(e){}
 }
+// כפתורי הכרטיס: "הטלפון שלנו" מחייג ונספר, והכפתור הראשי לאתר העסק נספר
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tel]'), w = e.target.closest('[data-web]');
+  if(!t && !w) return;
+  if(ADMIN_PAGE){ e.preventDefault(); return; }
+  if(w){ countClick('web', w.dataset.web); return; }
+  e.preventDefault();
+  const s = findIn('suppliers', t.dataset.tel); if(!s || !s.phone) return;
+  countClick('tel', s.id);
+  t.outerHTML = '<a class="sup-tel open" href="tel:' + esc(s.phone) + '" dir="ltr">' + esc(s.phone) + '</a>';
+  location.href = 'tel:' + s.phone;
+});
 function countHit(name, params, path){
   if(!SECTIONS[name] || path === lastHit) return; lastHit = path;
   if(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return; // כניסות מהמחשב של הפיתוח לא נספרות
@@ -103,7 +115,11 @@ function printHTML(html, o){
 window.addEventListener('afterprint', ()=>{ document.getElementById('printRoot').innerHTML=''; });
 
 // תוכן = תוכן בסיס + מה שנוסף בניהול
-const content = k => (D[k]||[]).concat(addedContent(k));
+const content = k => {
+  const base = D[k]||[], add = addedContent(k);
+  if(k === 'suppliers'){ const real = add.filter(x => x.active !== false); return real.length ? real : base; } // כשיש עסק אמיתי אחד לפחות, כרטיסי הדוגמה מוסתרים
+  return base.concat(add);
+};
 const findIn = (k,id) => content(k).find(x=>x.id===id);
 
 /* ---------- מועדפים ---------- */
@@ -125,7 +141,12 @@ const isScreenGame = g => !!g.battle || (g.format||[]).includes('על המסך')
 const customRib = '<span class="cust-rib" aria-label="אפשר להתאים אישית"><i>🎨</i> התאמה אישית</span>';
 const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn('games',g.id)}${(g.battle||g.words||g.quartets)?customRib:''}<div class="card-top" style="--bg:${bgs[i%5]}">${gameArt(g)}</div><div class="card-body"><h3>${esc(g.title)}</h3><p>${esc(g.short)}</p><div class="tags"><span class="tag">${esc(g.type)}</span><span class="tag">${esc(g.min)}–${esc(g.max)} משתתפים</span>${(g.format||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div></a>`;
 const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
-const supCard = (s,i=0) => `<a class="card sup-card" href="#/supplier/${esc(s.id)}">${s.featured?'<span class="badge-featured">מומלץ</span>':''}${favBtn('suppliers',s.id)}<div class="card-top" style="--bg:${bgs[(i+3)%5]}">${(window.MadlikBizArt && MadlikBizArt.get(s)) || art(s)}</div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.text)}</p><div class="tags"><span class="tag">${esc(s.cat)}</span><span class="tag"> ${esc(s.region)}</span><span class="tag">${esc(s.price)}</span></div></div><span class="sup-go" aria-hidden="true">←</span></a>`;
+const safeImg = p => /^(img\/[\w\-\/.%]+|https:\/\/[^\s"'<>]+)$/i.test(String(p || '')) ? String(p) : '';
+const safeUrl = u => { u = String(u || '').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); return /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : ''; };
+const supPic = s => safeImg(s.img) ? `<img class="biz-img" src="${esc(safeImg(s.img))}" alt="${esc(s.name)}" loading="lazy">` : '';
+const supCard = (s,i=0) => { const id = esc(s.id), site = safeUrl(s.site);
+  const go = site ? `<a class="sup-go" href="${esc(site)}" target="_blank" rel="noopener noreferrer sponsored" data-web="${id}">לאתר שלנו <i>←</i></a>` : `<a class="sup-go" href="#/supplier/${id}">לטופס פנייה <i>←</i></a>`;
+  return `<article class="card sup-card">${s.featured?'<span class="badge-featured">מומלץ</span>':''}${favBtn('suppliers',s.id)}<a class="card-top" href="#/supplier/${id}" style="--bg:${bgs[(i+3)%5]}" aria-label="${esc(s.name)}">${supPic(s) || (window.MadlikBizArt && MadlikBizArt.get(s)) || art(s)}</a><div class="card-body"><a class="sup-name" href="#/supplier/${id}"><h3>${esc(s.name)}</h3></a><p>${esc(s.text)}</p><div class="tags"><span class="tag">${esc(s.cat)}</span><span class="tag"> ${esc(s.region)}</span><span class="tag">${esc(s.price)}</span></div></div><div class="sup-actions">${s.phone ? `<button type="button" class="sup-tel" data-tel="${id}">הטלפון שלנו</button>` : ''}${go}</div></article>`; };
 const tplCard = t => `<a class="card" href="#/studio/${esc(t.id)}"><div class="card-top" style="--bg:#f3e9da">${art(t)}</div><div class="card-body"><h3>${esc(t.title)}</h3><p>${t.w}×${t.h} מ״מ</p></div></a>`;
 const creatorCard = c => `<a class="card" href="#/create/${esc(c.id)}">${customRib}<div class="card-top" style="--bg:#fff3d6">${gameArt(c)}</div><div class="card-body"><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p><div class="tags">${c.isNew?'<span class="tag tag-new">חדש!</span>':''}<span class="tag tag-gold">חינם</span></div></div></a>`;
 const gameArt = x => (window.MadlikArt && MadlikArt.get(x)) || art(x);
@@ -650,12 +671,12 @@ pages.supplier = ([id]) => {
     <div class="box"><h2>שליחת פנייה</h2>
       <form class="form" id="lf"><div class="two-col"><label>שם<input name="name" required></label><label>טלפון<input name="phone" type="tel" required></label></div><label>מייל<input name="email" type="email"></label><div class="two-col"><label>תאריך האירוע<input name="date" type="date"></label><label>מספר משתתפים<input name="count" type="number" min="1"></label></div><label>פרטים<textarea name="msg"></textarea></label><button class="btn btn-gold">שליחה</button></form>
     </div>
-    <aside class="box"><ul class="meta-list"><li><span>תחום</span><b>${esc(s.cat)}</b></li><li><span>אזור</span><b>${esc(s.region)}</b></li><li><span>מחיר</span><b>${esc(s.price)}</b></li><li><span>טלפון</span><b><button type="button" class="tel-btn" id="telBtn">הטלפון שלנו</button></b></li><li><span>מייל</span><b><a href="mailto:${esc(s.email)}">${esc(s.email)}</a></b></li></ul><div class="btn-row"><button class="btn btn-light" data-fav="suppliers|${esc(s.id)}">${isFav('suppliers',s.id)?'♥':'♡'} שמירה</button></div></aside>
+    <aside class="box">${supPic(s) ? `<div class="biz-pic">${supPic(s)}</div>` : ''}<ul class="meta-list"><li><span>תחום</span><b>${esc(s.cat)}</b></li><li><span>אזור</span><b>${esc(s.region)}</b></li><li><span>מחיר</span><b>${esc(s.price)}</b></li><li><span>טלפון</span><b><button type="button" class="tel-btn" id="telBtn">הטלפון שלנו</button></b></li><li><span>מייל</span><b><a href="mailto:${esc(s.email)}">${esc(s.email)}</a></b></li></ul><div class="btn-row">${safeUrl(s.site) ? `<a class="btn btn-gold" href="${esc(safeUrl(s.site))}" target="_blank" rel="noopener noreferrer sponsored" data-web="${esc(s.id)}">לאתר שלנו ←</a>` : ''}<button class="btn btn-light" data-fav="suppliers|${esc(s.id)}">${isFav('suppliers',s.id)?'♥':'♡'} שמירה</button></div></aside>
   </div>`;
 };
 pages.supplier.after = ([id]) => {
   const tb = document.getElementById('telBtn');
-  if(tb) tb.onclick = () => { const s = findIn('suppliers', id); if(!s) return; countTel(id); tb.outerHTML = '<a class="tel-btn open" href="tel:' + esc(s.phone) + '" dir="ltr">' + esc(s.phone) + '</a>'; location.href = 'tel:' + s.phone; };
+  if(tb) tb.onclick = () => { const s = findIn('suppliers', id); if(!s) return; countClick('tel', id); tb.outerHTML = '<a class="tel-btn open" href="tel:' + esc(s.phone) + '" dir="ltr">' + esc(s.phone) + '</a>'; location.href = 'tel:' + s.phone; };
   const f = document.getElementById('lf'); if(!f) return; f.onsubmit = e => { e.preventDefault(); record('leads', Object.assign({supplier:findIn('suppliers',id).name}, Object.fromEntries(new FormData(f)))); f.reset(); toast('הפנייה נשלחה! בעל העסק יחזור אלייך בהקדם'); }; };
 
 pages.advertise = () => pageHead('רוצים לפרסם?', 'בחרו אחת משלוש התכניות, ואחר כך צרו איתנו קשר.', 'פרסום') + `<div class="wrap">${adBlock()}</div>`;
@@ -701,14 +722,15 @@ pages.admin = () => {
   if(!ADMIN_PAGE) return notFound();
   if(!sessionStorage.getItem('madlik_admin')) return pageHead('ניהול מדליק', '', 'ניהול') + `<div class="wrap"><div class="box" style="max-width:440px;margin:auto"><form class="form" id="loginF">${API() ? '<label>מפתח ניהול<input type="password" name="p" required autocomplete="off"></label><button class="btn btn-gold">כניסה</button><p class="hint">המפתח הסודי שקבעת בסקריפט של גוגל. הוא נבדק בשרת, ואינו נשמר באתר.</p>' : '<div class="notice">עדיין לא מחוברים לשרת של גוגל. בלי השרת אי אפשר לראות כניסות של גולשים אחרים או הודעות שנשלחו. אחרי הכניסה, בלשונית "רשימת תפוצה" יש הוראות חיבור.</div><button class="btn btn-gold">כניסה לניהול</button>'}</form></div></div>`;
   const tab = location.hash.split('tab=')[1] || 'stats', live = !!API();
-  const tabs = {stats:'כניסות', subs:'רעיונות שנשלחו', leads:'פניות לבעלי עסקים', ads:'בקשות פרסום', contact:'יצירת קשר', news:'רשימת תפוצה', users:'משתמשים', add:'הוספת תוכן'};
+  const tabs = {stats:'כניסות', biz:'עסקים מפרסמים', subs:'רעיונות שנשלחו', leads:'פניות לבעלי עסקים', ads:'בקשות פרסום', contact:'יצירת קשר', news:'רשימת תפוצה', users:'משתמשים', add:'הוספת תוכן'};
   const tbl = (rows, cols) => adminTable(tab, rows, cols);
   let body = '';
+  if(tab==='biz') body = bizTabHTML();
   if(tab==='news') body = newsTabHTML();
   if(tab==='stats') body = live ? '<div id="sList"><div class="empty">טוענת...</div></div>' : statsHTML(localStats(), store.get('leads',[]), false);
   if(ADMIN_COLS[tab]) body = live ? '<div id="rList"><div class="empty">טוענת...</div></div>' : tbl(store.get(tab,[]), ADMIN_COLS[tab]);
   if(tab==='add') body = `<div class="two-col">
-    <form class="box form" data-add="suppliers"><h3>עסק חדש</h3><label>שם<input name="name" required></label><div class="two-col"><label>תחום<input name="cat" required></label><label>אזור<select name="region"><option>צפון</option><option>חיפה</option><option>שרון</option><option>מרכז</option><option>ירושלים</option><option>שפלה</option><option>דרום</option></select></label></div><div class="two-col"><label>טלפון<input name="phone"></label><label>מייל<input name="email"></label></div><div class="two-col"><label>מחיר<select name="price"><option>₪</option><option>₪₪</option><option>₪₪₪</option></select></label><label>אייקון<input name="ico" value=""></label></div><label>תיאור<textarea name="text"></textarea></label><label class="check"><input type="checkbox" name="featured"> מומלץ (מופיע ראשון ברשימה)</label><label class="check"><input type="checkbox" name="homeAd"> מודעה בהרצה בעמוד הראשי (Premium / Pro)</label><button class="btn btn-gold">הוספה</button></form>
+    <div class="box"><h3>עסקים מפרסמים</h3><p>הוספה ועריכה של עסקים, עם תמונה וקישור, עברו ללשונית <a href="#/admin?tab=biz"><b>עסקים מפרסמים</b></a>.</p></div>
     <form class="box form" data-add="games"><h3>משחק חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>סוג<input name="type" value="מילים"></label><label>גיל<input name="age" value="כל הגילאים"></label></div><div class="two-col"><label>מינימום משתתפים<input type="number" name="min" value="4"></label><label>מקסימום<input type="number" name="max" value="50"></label></div><label>תיאור קצר<input name="short"></label><label>איך משחקים<textarea name="how"></textarea></label><label>מילים (לא חובה, שורה לכל מילה)<textarea name="words"></textarea></label><button class="btn btn-gold">הוספה</button></form>
     <form class="box form" data-add="recipes"><h3>מתכון חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>קטגוריה<input name="cat" value="לביבות"></label><label>כשרות<select name="diet"><option>פרווה</option><option>חלבי</option><option>בשרי</option></select></label></div><div class="two-col"><label>זמן (דקות)<input type="number" name="time" value="30"></label><label>סועדים<input type="number" name="serves" value="6"></label></div><label>רמה<select name="level"><option>קל</option><option>בינוני</option><option>מאתגר</option></select></label><label>מצרכים <span class="hint">שורה לכל מצרך: כמות | יחידה | שם</span><textarea name="ing" placeholder="2 | כוסות | קמח"></textarea></label><label>שלבי הכנה <span class="hint">שורה לכל שלב</span><textarea name="steps"></textarea></label><button class="btn btn-gold">הוספה</button></form>
   </div>
@@ -717,21 +739,21 @@ pages.admin = () => {
 };
 // לשונית הכניסות: טבלת מדורים וטבלת בעלי עסקים
 function localStats(){
-  const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10), out = {sec:{}, sup:{}, tel:{}};
+  const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10), out = {sec:{}, sup:{}, tel:{}, web:{}};
   ['sec','sup'].forEach(t => Object.entries(st[t]||{}).forEach(([id,o]) => out[t][id] = {total:o.total, today:o.day===today?o.today:0, week:(o.week||[]).filter(x=>Date.now()-x<7*864e5).length, uniq:null}));
-  Object.entries(st.tel||{}).forEach(([id,o]) => out.tel[id] = {total:o.total, today:o.day===today?o.today:0, week:(o.week||[]).filter(x=>Date.now()-x<7*864e5).length});
+  ['tel','web'].forEach(k => Object.entries(st[k]||{}).forEach(([id,o]) => out[k][id] = {total:o.total, today:o.day===today?o.today:0, week:(o.week||[]).filter(x=>Date.now()-x<7*864e5).length}));
   return out;
 }
 function statsHTML(st, leads, live){
   const n = x => x==null ? '–' : Number(x).toLocaleString('he-IL');
   const table = (rows, first, extra, tel) => {
     const max = Math.max(1, ...rows.map(r=>r.o.total));
-    return `<div style="overflow:auto"><table class="table stats-t"><tr><th>${first}</th><th>כניסות</th><th>היום</th><th>7 ימים</th>${live?'<th>מבקרים שונים</th>':''}${extra?`<th>${extra}</th>`:''}${tel?'<th>לחיצות על "הטלפון שלנו"</th>':''}</tr>${rows.map(r=>`<tr><td><b>${esc(r.name)}</b><span class="st-bar" style="--w:${Math.round(r.o.total/max*100)}%"></span></td><td><b>${n(r.o.total)}</b></td><td>${n(r.o.today)}</td><td>${n(r.o.week)}</td>${live?`<td>${n(r.o.uniq)}</td>`:''}${extra?`<td>${n(r.leads)}</td>`:''}${tel?`<td><b>${n(r.tel.total)}</b> <span class="muted">(${n(r.tel.week)} ב־7 ימים)</span></td>`:''}</tr>`).join('')}</table></div>`;
+    return `<div style="overflow:auto"><table class="table stats-t"><tr><th>${first}</th><th>כניסות</th><th>היום</th><th>7 ימים</th>${live?'<th>מבקרים שונים</th>':''}${extra?`<th>${extra}</th>`:''}${tel?'<th>לחיצות על "הטלפון שלנו"</th><th>לחיצות על האתר</th>':''}</tr>${rows.map(r=>`<tr><td><b>${esc(r.name)}</b><span class="st-bar" style="--w:${Math.round(r.o.total/max*100)}%"></span></td><td><b>${n(r.o.total)}</b></td><td>${n(r.o.today)}</td><td>${n(r.o.week)}</td>${live?`<td>${n(r.o.uniq)}</td>`:''}${extra?`<td>${n(r.leads)}</td>`:''}${tel?`<td><b>${n(r.tel.total)}</b> <span class="muted">(${n(r.tel.week)} ב־7 ימים)</span></td><td><b>${n(r.web.total)}</b> <span class="muted">(${n(r.web.week)} ב־7 ימים)</span></td>`:''}</tr>`).join('')}</table></div>`;
   };
   const zero = {total:0, today:0, week:0, uniq:0};
   const secNames = [...new Set(Object.values(SECTIONS))];
   const secs = secNames.map(name => ({name, o:st.sec[name]||zero})).sort((a,b)=>b.o.total-a.o.total);
-  const sups = content('suppliers').map(s => ({name:s.name, o:st.sup[s.id]||zero, leads:leads.filter(l=>l.supplier===s.name).length, tel:(st.tel && st.tel[s.id]) || {total:0, today:0, week:0}})).sort((a,b)=>b.o.total-a.o.total);
+  const sups = content('suppliers').map(s => ({name:s.name, o:st.sup[s.id]||zero, leads:leads.filter(l=>l.supplier===s.name).length, tel:(st.tel && st.tel[s.id]) || {total:0, today:0, week:0}, web:(st.web && st.web[s.id]) || {total:0, today:0, week:0}})).sort((a,b)=>b.o.total-a.o.total);
   const sum = secs.reduce((a,r)=>a+r.o.total, 0);
   const A = st.all || {total:sum, today:null, week:null, uniq:null};
   const tile = (lbl, val) => `<div class="st-tile"><b>${n(val)}</b><span>${lbl}</span></div>`;
@@ -742,6 +764,107 @@ function statsHTML(st, leads, live){
     <div class="st-tiles">${tile('כניסות בסך הכול', A.total)}${tile('היום', A.today)}${tile('7 ימים אחרונים', A.week)}${tile('גולשים שונים', A.uniq)}</div>${chart}<div class="box"><h2>כניסות לפי מדור</h2><p class="muted">סה"כ ${n(sum)} כניסות לעמודים באתר. כניסות שלך מהניהול לא נספרות.</p>${table(secs, 'מדור')}</div>
     <div class="box" style="margin-top:20px"><h2>כניסות לכל בעל עסק</h2><p class="muted">כמה פעמים נכנסו לעמוד של כל עסק, כמה פניות נשלחו אליו מהאתר, וכמה פעמים לחצו על "הטלפון שלנו".</p>${table(sups, 'עסק', 'פניות', true)}</div>`;
 }
+/* ---------- ניהול: עסקים מפרסמים (הוספה, עריכה, תמונה וקישור) ---------- */
+const BIZ_CATS = ['אולמות', 'קייטרינג', 'מפעילים', 'עיצוב ודקורציה', 'קינוחים', 'צילום'];
+const BIZ_REGIONS = ['צפון', 'חיפה', 'שרון', 'מרכז', 'ירושלים', 'שפלה', 'דרום'];
+function bizTabHTML(){
+  const cats = [...new Set(BIZ_CATS.concat((D.suppliers || []).map(s => s.cat)))];
+  return `<div class="bz-wrap">
+   <div class="box bz-main"><h2 id="bzHead">הוספת עסק מפרסם</h2>
+    <div class="bz-grid">
+     <form class="form" id="bzForm" autocomplete="off">
+      <input type="hidden" name="id">
+      <label>שם העסק *<input name="name" required maxlength="60"></label>
+      <div class="two-col"><label>תחום *<input name="cat" required list="bzCats" placeholder="בחרי או כתבי"><datalist id="bzCats">${cats.map(c => `<option value="${esc(c)}">`).join('')}</datalist></label><label>אזור *<select name="region">${BIZ_REGIONS.map(r => `<option>${r}</option>`).join('')}</select></label></div>
+      <div class="two-col"><label>טווח מחירים<select name="price"><option>₪</option><option selected>₪₪</option><option>₪₪₪</option></select></label><label>התכנית<select name="plan"><option>Basic</option><option selected>Premium</option><option>Pro</option></select></label></div>
+      <label>טקסט קצר לכרטיס <span class="hint" id="bzCount">0 מתוך 120</span><textarea name="text" rows="3" maxlength="140"></textarea></label>
+      <div class="two-col"><label>טלפון, לכפתור "הטלפון שלנו"<input name="phone" type="tel" dir="ltr"></label><label>מייל לקבלת פניות<input name="email" type="email" dir="ltr"></label></div>
+      <label>קישור לאתר או לטופס של העסק <span class="hint">הכפתור הכתום בכרטיס יוביל לשם. אם ריק, הוא יוביל לטופס הפנייה באתר</span><input name="site" dir="ltr" placeholder="https://"></label>
+      <div class="bz-img"><b>תמונת המודעה</b> <span class="hint">1200 × 750 פיקסלים (יחס 16:10). אפשר להעלות כל תמונה, והאתר חותך אותה ומתאים</span>
+        <div class="bz-drop"><input type="file" id="bzFile" accept="image/*"><span id="bzFileInfo">לא נבחרה תמונה</span></div>
+        <label>או קישור לתמונה<input name="img" dir="ltr" placeholder="https://... או img/ads/..."></label></div>
+      <div class="bz-checks"><label class="check"><input type="checkbox" name="featured"> מומלץ (מופיע ראשון)</label><label class="check"><input type="checkbox" name="active" checked> מוצג באתר</label></div>
+      <p class="hint">עסקי Premium ו־Pro מופיעים אוטומטית גם בבאנר בעמוד הראשי. כשיש עסק מפרסם אחד לפחות, כרטיסי הדוגמה מוסתרים.</p>
+      <div class="btn-row"><button class="btn btn-gold" id="bzSave">שמירה ופרסום</button><button type="button" class="btn btn-light" id="bzReset">טופס חדש</button></div>
+     </form>
+     <div class="bz-prev"><h3>ככה זה ייראה באתר</h3><div class="wshow adprev" data-w="biz"><div class="cards" id="bzPrev"></div></div></div>
+    </div></div>
+   <div class="box" style="margin-top:20px"><h2>העסקים המפרסמים</h2><div id="bzList"><div class="empty">טוענת...</div></div></div>
+  </div>`;
+}
+function initBiz(call, live, fail){
+  const $ = id => document.getElementById(id), f = $('bzForm');
+  let imgData = '', S = {sup:{}, tel:{}, web:{}}, L = [];
+  const list = () => addedContent('suppliers');
+  const readItem = () => { const v = Object.fromEntries(new FormData(f)); return {id:String(v.id || ''), name:String(v.name || '').trim(), cat:String(v.cat || '').trim(), region:v.region, price:v.price, plan:v.plan, text:String(v.text || '').trim(), phone:String(v.phone || '').trim(), email:String(v.email || '').trim(), site:safeUrl(v.site), img:String(v.img || '').trim(), featured:!!v.featured, active:!!v.active}; };
+  const prev = () => {
+    const it = readItem(); $('bzCount').textContent = it.text.length + ' מתוך 120';
+    const box = $('bzPrev'); box.innerHTML = supCard(Object.assign({}, it, {id:'preview', name:it.name || 'שם העסק', text:it.text || 'כאן יופיע הטקסט הקצר של העסק', cat:it.cat || 'תחום', img:imgData ? '' : it.img}));
+    if(imgData){ const top = box.querySelector('.card-top'); if(top) top.innerHTML = '<img class="biz-img" src="' + imgData + '" alt="">'; }
+  };
+  f.oninput = prev; prev();
+  $('bzFile').onchange = e => {
+    const file = e.target.files[0]; if(!file) return;
+    const rd = new FileReader();
+    rd.onload = () => { const im = new Image(); im.onload = () => {
+      const W = 1200, H = 750, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+      const k = Math.max(W / im.width, H / im.height), w = im.width * k, h = im.height * k; g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+      imgData = c.toDataURL('image/jpeg', .86); $('bzFileInfo').textContent = file.name + ' (' + Math.round(imgData.length * .75 / 1024) + 'KB)'; prev();
+    }; im.onerror = () => toast('לא הצלחתי לקרוא את התמונה'); im.src = rd.result; };
+    rd.readAsDataURL(file);
+  };
+  const reset = () => { f.reset(); f.elements.id.value = ''; imgData = ''; $('bzFile').value = ''; $('bzFileInfo').textContent = 'לא נבחרה תמונה'; $('bzHead').textContent = 'הוספת עסק מפרסם'; $('bzSave').textContent = 'שמירה ופרסום'; prev(); };
+  $('bzReset').onclick = reset;
+  const fill = it => {
+    f.elements.id.value = it.id;
+    ['name', 'cat', 'region', 'price', 'plan', 'text', 'phone', 'email', 'site', 'img'].forEach(k => { if(f.elements[k]) f.elements[k].value = it[k] || (k === 'plan' ? 'Premium' : ''); });
+    f.elements.featured.checked = !!it.featured; f.elements.active.checked = it.active !== false; imgData = ''; $('bzFile').value = '';
+    $('bzFileInfo').textContent = it.img ? 'יש תמונה (אפשר להחליף)' : 'לא נבחרה תמונה'; $('bzHead').textContent = 'עריכת עסק: ' + it.name; $('bzSave').textContent = 'שמירת השינויים'; prev(); f.scrollIntoView({behavior:'smooth', block:'start'});
+  };
+  const persist = (item, isNew) => {
+    if(live) return call(isNew ? {action:'addContent', kind:'suppliers', item} : {action:'updateContent', id:item.id, item}).then(refreshRemote);
+    const ex = store.get('extra_suppliers', []), i = ex.findIndex(x => x.id === item.id); if(i >= 0) ex[i] = item; else ex.push(item); store.set('extra_suppliers', ex); return Promise.resolve();
+  };
+  const num = o => o ? o.total : 0;
+  const draw = () => {
+    const items = list(), box = $('bzList');
+    if(!items.length){ box.innerHTML = '<div class="empty">עוד אין עסקים מפרסמים. כל עוד אין, באתר מוצגים כרטיסי דוגמה. הוסיפי את הראשון בטופס שלמעלה.</div>'; return; }
+    box.innerHTML = '<div class="bz-rows">' + items.map(s => {
+      const leads = L.filter(l => l.supplier === s.name).length, pic = safeImg(s.img) ? '<img src="' + esc(safeImg(s.img)) + '" alt="">' : '<span>' + esc((s.name || '?')[0]) + '</span>';
+      return '<div class="bz-row' + (s.active === false ? ' off' : '') + '"><div class="bz-thumb">' + pic + '</div><div class="bz-info"><b>' + esc(s.name) + '</b> <em class="bz-plan">' + esc(s.plan || 'Basic') + '</em>' + (s.active === false ? ' <em class="bz-off">מוסתר</em>' : '') +
+        '<small>' + esc(s.cat) + ' · ' + esc(s.region) + ' · ' + esc(s.price) + '</small><small class="bz-nums">כניסות ' + num(S.sup[s.id]) + ' · לחיצות על הטלפון ' + num(S.tel[s.id]) + ' · לחיצות על האתר ' + num(S.web[s.id]) + ' · פניות ' + leads + '</small></div>' +
+        '<div class="bz-btns"><button class="btn btn-sm" data-bz="edit|' + esc(s.id) + '">עריכה</button><button class="btn btn-sm btn-light" data-bz="toggle|' + esc(s.id) + '">' + (s.active === false ? 'הצגה' : 'הסתרה') + '</button><button class="btn btn-sm btn-light" data-bz="del|' + esc(s.id) + '">מחיקה</button></div></div>';
+    }).join('') + '</div>';
+  };
+  draw();
+  f.onsubmit = async e => {
+    e.preventDefault(); const it = readItem(), btn = $('bzSave');
+    if(!it.name || !it.cat) return toast('חסר שם עסק או תחום');
+    if(f.elements.site.value.trim() && !it.site) return toast('הקישור לאתר לא תקין');
+    btn.disabled = true;
+    try{
+      if(imgData){ if(!live) throw new Error('העלאת תמונה דורשת חיבור לשרת של גוגל. אפשר להדביק קישור לתמונה'); const r = await call({action:'uploadImage', data:imgData}); it.img = r.url; }
+      else if(it.img && !safeImg(it.img)) throw new Error('קישור התמונה לא תקין. נתיב כמו img/ads/שם.jpg או כתובת שמתחילה ב־https');
+      const isNew = !it.id; it.id = it.id || 'b' + Date.now().toString(36); it.homeAd = it.plan !== 'Basic'; it.ico = '';
+      if(!it.img) delete it.img; if(!it.site) delete it.site;
+      await persist(it, isNew); toast(isNew ? 'העסק נוסף ופורסם ✔' : 'השינויים נשמרו ✔'); reset(); draw();
+    }catch(err){ toast('שגיאה: ' + (err.message || err)); }
+    btn.disabled = false;
+  };
+  $('bzList').onclick = e => {
+    const b = e.target.closest('[data-bz]'); if(!b) return;
+    const [act, id] = b.dataset.bz.split('|'), s = list().find(x => x.id === id); if(!s) return;
+    if(act === 'edit') return fill(s);
+    if(act === 'toggle'){ const it = Object.assign({}, s, {active:s.active === false}); return persist(it, false).then(() => { toast(it.active ? 'העסק מוצג שוב' : 'העסק הוסתר'); draw(); }).catch(fail); }
+    if(act === 'del' && confirm('למחוק את "' + s.name + '" מהאתר?')){
+      const done = live ? call({action:'removeContent', id}).then(refreshRemote) : (store.set('extra_suppliers', store.get('extra_suppliers', []).filter(x => x.id !== id)), Promise.resolve());
+      done.then(() => { toast('נמחק'); draw(); }).catch(fail);
+    }
+  };
+  if(live){ Promise.all([call({action:'stats'}), call({action:'records', kind:'leads'}).catch(() => ({records:[]}))]).then(([s, l]) => { S = Object.assign(S, s.stats); L = l.records; draw(); }).catch(() => {}); }
+  else { S = localStats(); L = store.get('leads', []); draw(); }
+}
+
 function newsTabHTML(){
   const setup = API() ? '' : `<div class="box" id="nSetup"><h2>חיבור חד־פעמי של רשימת התפוצה</h2>
     <p>כדי שכל מה שנשלח באתר יגיע אלייך (נרשמים, פניות לבעלי עסקים, בקשות פרסום, רעיונות ומשתמשים), שהתוכן שתוסיפי יופיע לכל הגולשים, ושההודעות ייצאו מהג׳ימייל שלך, צריך שרת קטן וחינמי של גוגל. 5 דקות, פעם אחת:</p>
@@ -820,6 +943,7 @@ pages.admin.after = () => {
   if(tab === 'news') initNews();
   const fail = e => toast('שגיאה: ' + e.message);
   const call = body => apiPost(Object.assign({key:adminKey()}, body)).then(r => { if(!r.ok) throw new Error(r.error||'שגיאה'); return r; });
+  if(tab === 'biz') initBiz(call, live, fail);
 
   const sl = document.getElementById('sList');
   if(sl){
@@ -862,7 +986,7 @@ pages.admin.after = () => {
   // הוספת תוכן לאתר
   document.querySelectorAll('[data-add]').forEach(f => f.onsubmit = e => {
     e.preventDefault(); const k = f.dataset.add, v = Object.fromEntries(new FormData(f)); v.id = 'x'+Date.now().toString(36);
-    if(k==='suppliers'){ v.featured = !!v.featured; v.homeAd = !!v.homeAd; }
+    if(k==='suppliers'){ v.featured = !!v.featured; v.homeAd = !!v.homeAd; if(!safeImg(v.img)) delete v.img; }
     if(k==='games'){ v.min = +v.min; v.max = +v.max; v.ico = ''; v.format = ['בעל פה']; v.time = ''; v.equip = false; if(v.words) v.words = lines(v.words); else delete v.words; }
     if(k==='recipes'){ v.ico = ''; v.time = +v.time; v.serves = +v.serves||1; v.ing = lines(v.ing).map(l=>{ const p = l.split('|').map(x=>x.trim()); return p.length>=3 ? [parseFloat(p[0])||0, p[1], p[2]] : [0,'',l]; }); v.steps = lines(v.steps); }
     if(live) call({action:'addContent', kind:k, item:v}).then(refreshRemote).then(()=>{ toast('נוסף לאתר ✔'); render(); }).catch(fail);
