@@ -30,7 +30,7 @@ function record(kind, data){
   try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'submit', kind, data})}).catch(()=>{}); }catch(e){}
 }
 // ספירת כניסות: לכל מדור ולכל בעל עסק. נשלח לשרת כשהוא מחובר, ותמיד נשמר גם בדפדפן הזה
-const SECTIONS = {home:'עמוד הבית', games:'משחקים על המסך', game:'משחקים על המסך', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'בעלי עסקים', supplier:'בעלי עסקים', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
+const SECTIONS = {home:'עמוד הבית', games:'משחקים על המסך שניתנים גם להדפסה', game:'משחקים על המסך שניתנים גם להדפסה', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'בעלי עסקים', supplier:'בעלי עסקים', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
 const visitorId = () => { let v = store.get('vid', ''); if(!v){ v = Math.random().toString(36).slice(2, 12); store.set('vid', v); } return v; };
 let lastHit = '';
 // לחיצה על "הטלפון שלנו" בעמוד עסק: נספרת לכל עסק. לשרת נשלחת כ"sup" עם הקידומת tel:, כך שגם שרת ישן לא ירשום כניסות מדומות
@@ -60,7 +60,7 @@ function countHit(name, params, path){
   if(!SECTIONS[name] || path === lastHit) return; lastHit = path;
   if(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return; // כניסות מהמחשב של הפיתוח לא נספרות
   let sec = SECTIONS[name];
-  if(name === 'creator') sec = canPlay(params[0]) ? 'משחקים על המסך' : 'פעילויות להדפסה';
+  if(name === 'creator') sec = (canPlay(params[0])||params[0]==='battle') ? 'משחקים על המסך שניתנים גם להדפסה' : 'פעילויות להדפסה';
   if(name === 'game'){ const g = findIn('games', params[0]); if(g && !isScreenGame(g)) sec = 'פעילויות להדפסה'; }
   const hits = [['sec', sec]]; if(name === 'supplier' && params[0]) hits.push(['sup', params[0]]);
   const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10);
@@ -209,8 +209,8 @@ pages.home = () => {
   </section>
   ${band('', 1)}
   <div class="statement"><p>${stm}</p></div>
-  ${wshow('games','משחקים על המסך','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון חנוכה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
-  ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
+  ${wshow('games','משחקים על המסך שניתנים גם להדפסה','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון חנוכה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)||c.id==='battle').slice(0,3).map(creatorCard).join(''))}
+  ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').slice(0,3).map(creatorCard).join(''))}
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
   ${wshow('biz','בעלי עסקים','בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילים ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
@@ -242,10 +242,10 @@ pages.search = (p,q) => {
 pages.games = () => {
   const all = content('games').filter(isScreenGame);
   const types = [...new Set(all.map(g=>g.type))], formats = [...new Set(all.flatMap(g=>g.format||[]))], ages = [...new Set(all.map(g=>g.age))];
-  return pageHead('משחקים דיגיטליים אטרקטיביים על המסך', 'מקרינים על המסך ומשחקים: קבוצות, טיימר, צלילים וניקוד. ובכל משחק אפשר לשים את המילים שלכם.', 'משחקים על המסך') + `
+  return pageHead('משחקים על המסך שניתנים גם להדפסה', 'מקרינים על המסך ומשחקים: קבוצות, טיימר, צלילים וניקוד. ואפשר גם להדפיס. ובכל משחק אפשר לשים את המילים שלכם.', 'משחקים על המסך שניתנים גם להדפסה') + `
   <div class="wrap">
     <h2 class="sec-h">בונים משחק משלכם ומשחקים על המסך</h2>
-    <div class="cards">${D.creators.filter(c=>canPlay(c.id)).map(creatorCard).join('')}</div>
+    <div class="cards">${D.creators.filter(c=>canPlay(c.id)||c.id==='battle').map(creatorCard).join('')}</div>
     <h2 class="sec-h">משחקים מוכנים על המסך</h2>
     <form class="filters" id="gf" onsubmit="return false">
       <input type="search" name="q" placeholder="חיפוש משחק...">
@@ -276,7 +276,7 @@ pages.game = ([id]) => {
   if(g.quartets) play = `<a class="btn btn-gold" href="#/create/quartets?d=${enc({title:g.title, groups:g.quartets.map(q=>q.t+': '+q.i.join(', ')).join('\n')})}"> להדפסת הקלפים</a>`;
   if(g.qa) play = `<button class="btn btn-gold" id="triviaPlay"> מצב הקרנה</button>`;
   if(g.battle) play = `<a class="btn btn-gold" href="#/create/battle">⚔️ לשחק עכשיו</a>`;
-  return pageHead(esc(g.title), esc(g.short), `${isScreenGame(g)?'<a href="#/games">משחקים על המסך</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(g.title)}`) + `
+  return pageHead(esc(g.title), esc(g.short), `${isScreenGame(g)?'<a href="#/games">משחקים על המסך שניתנים גם להדפסה</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(g.title)}`) + `
   <div class="wrap detail">
     <div>
       <div class="box"><h2>איך משחקים?</h2><p>${esc(g.how)}</p><div class="btn-row">${play}<button class="btn btn-light" id="printHow">הדפסת ההוראות</button><button class="btn btn-light" data-fav="games|${esc(g.id)}">${isFav('games',g.id)?'♥':'♡'} שמירה</button><button class="btn btn-light" id="share"> שיתוף</button></div></div>
@@ -324,8 +324,14 @@ const creatorDefaults = {
 const GP = window.GamesPro || {DEFAULTS:{}, NEW:[], PLAYABLE:[], fields:()=>null, autoRules(){}};
 Object.assign(creatorDefaults, GP.DEFAULTS);
 const canPlay = type => ['memory','cards'].includes(type) || GP.PLAYABLE.includes(type);
+const PRINT_FILES = [
+  {href:'kids/coloring.html', ico:'🖍️', title:'דפי צביעה ומנדלות לחנוכה', text:'דפי צביעה ומנדלות מוכנים. פותחים ומדפיסים.', bg:'#ffe3ec'},
+  {href:'kids/booklet.html', ico:'📖', title:'חוברת פעילות: מסע האור', text:'חוברת פעילות לילדים לחנוכה, מוכנה להדפסה.', bg:'#e3ecff'}
+];
+const printFileCard = x => `<a class="card" href="${x.href}" target="_blank" rel="noopener"><div class="card-top" style="--bg:${x.bg}"><span style="font-size:4.5rem;line-height:1">${x.ico}</span></div><div class="card-body"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><div class="tags"><span class="tag tag-new">חדש!</span><span class="tag tag-gold">חינם</span></div></div></a>`;
 pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרים פעילות, מכניסים את המילים שלכם, ומקבלים דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + `<div class="wrap">
-  <h2 class="sec-h">מעצבים פעילות משלכם</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)).map(creatorCard).join('')}</div>
+  <h2 class="sec-h">מעצבים פעילות משלכם</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').map(creatorCard).join('')}</div>
+  <h2 class="sec-h">דפי צביעה וחוברת פעילות</h2><div class="cards">${PRINT_FILES.map(printFileCard).join('')}</div>
   <h2 class="sec-h">פעילויות מוכנות</h2><div class="cards">${content('games').filter(g=>!isScreenGame(g)).map(gameCard).join('')}</div>
   <div class="box center" style="margin-top:30px"><h3>רוצים לשחק על המסך?</h3><a class="btn btn-gold" href="#/games">למשחקים הדיגיטליים על המסך</a></div></div>`;
 
@@ -339,7 +345,7 @@ pages.creator = ([type], q) => {
   const wordsField = GP.fields(type, s) || (type==='quartets'
     ? `<label>רביעיות <span class="hint">שורה לכל רביעייה: נושא: פריט, פריט, פריט, פריט</span><textarea name="groups" rows="8">${esc(s.groups)}</textarea></label>`
     : `<label>${type==='cards'?'שאלות':'מילים'} <span class="hint">אחת בכל שורה</span><textarea name="words" rows="10">${esc(s.words)}</textarea></label>`);
-  return pageHead(esc(c.title), esc(c.text), `${canPlay(type)?'<a href="#/games">משחקים על המסך</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(c.title)}`) + `
+  return pageHead(esc(c.title), esc(c.text), `${(canPlay(type)||type==='battle')?'<a href="#/games">משחקים על המסך שניתנים גם להדפסה</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(c.title)}`) + `
   <div class="wrap builder">
     <form class="box form builder-panel" id="cf">
       ${GP.RULES && GP.RULES[type]?'<button type="button" class="rules-btn" id="doRules"><span class="q">?</span><span>איך משחקים? הוראות מלאות<small>כל החוקים, שלב אחר שלב</small></span></button>':''}
@@ -1022,7 +1028,7 @@ function render(){
   if(name && pages[name].after) pages[name].after(params, q);
   let isAdmin = false; try{ isAdmin = !!sessionStorage.getItem('madlik_admin'); }catch(e){}
   if(!isAdmin && !ADMIN_PAGE) countHit(name, params, path);
-  if(!ADMIN_PAGE){ const T = {games:'משחקים דיגיטליים על המסך', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'בעלי עסקים לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
+  if(!ADMIN_PAGE){ const T = {games:'משחקים על המסך שניתנים גם להדפסה', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'בעלי עסקים לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
   if(window.MadlikFX) window.MadlikFX.onRender(app);
   if(window.MadlikWorlds) window.MadlikWorlds.apply(name, app);
   document.querySelectorAll('.main-nav a').forEach(a=>a.classList.toggle('active', path!=='/' && ('#'+path).startsWith(a.getAttribute('href'))));

@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מסע האור</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Secular+One&family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: A4 paper pages stacked on a soft desk. Night-blue + candle-gold tie it to Hanukkah; each chapter owns one bright color (--cc). */
+:root{
+  --desk:#dbe3f6;
+  --night:#14215a; --blue:#2f5bea; --gold:#ffc23d; --gold-d:#d98e00;
+  --paper:#ffffff; --paper-2:#f2f5ff; --ink:#1b2350; --muted:#5d6795; --line:#b9c4ea;
+  --c1:#ff6b35; --c2:#7b5cff; --c3:#00a38c; --c4:#f2408f; --c5:#ef9f00;
+  --display:"Secular One","Rubik","Arial Hebrew",Arial,sans-serif;
+  --body:"Rubik","Arial Hebrew",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --desk:#0a1030; color-scheme:dark } }
+:root[data-theme="dark"]{ --desk:#0a1030; color-scheme:dark }
+
+*{ -webkit-print-color-adjust:exact; print-color-adjust:exact; box-sizing:border-box }
+body{ background:var(--desk); color:var(--ink); font-family:var(--body);
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:20px 40px; }
+.note{ max-width:210mm; margin:0 auto 16px; background:var(--night); color:#fff; border-radius:14px; padding:12px 16px; font-size:14px; line-height:1.5 }
+.note b{ color:var(--gold) }
+.book{ width:210mm; margin:0 auto }
+
+/* ---------- page ---------- */
+.page{ --cc:var(--blue); width:210mm; height:297mm; padding:13mm 14mm 17mm; position:relative; overflow:hidden;
+  background:var(--paper); color:var(--ink); font-size:12.5pt; line-height:1.45;
+  display:flex; flex-direction:column; gap:4.5mm; margin-bottom:10mm; border-radius:3px;
+  box-shadow:0 12px 34px rgba(16,26,80,.22); break-after:page; page-break-after:always }
+.page::before{ content:""; position:absolute; width:95mm; height:95mm; border-radius:50%; background:var(--cc); opacity:.09; top:-48mm; left:-40mm }
+.page::after{ content:""; position:absolute; width:60mm; height:60mm; border-radius:50%; background:var(--gold); opacity:.13; bottom:-28mm; right:-22mm }
+.page > *{ position:relative; z-index:1 }
+.page > .foot{ position:absolute }
+.ch1{--cc:var(--c1)} .ch2{--cc:var(--c2)} .ch3{--cc:var(--c3)} .ch4{--cc:var(--c4)} .ch5{--cc:var(--c5)}
+
+.ph{ display:flex; justify-content:space-between; align-items:center; gap:4mm }
+.chip{ background:var(--cc); color:#fff; font-family:var(--display); font-size:11.5pt; padding:1.2mm 4.5mm; border-radius:99px }
+.lvl{ font-size:10.5pt; color:var(--muted); font-weight:700; white-space:nowrap }
+.lvl b{ color:var(--gold-d); font-size:11.5pt }
+.lvl i{ font-style:normal; color:#d3d9ef; font-size:13pt }
+h2.t{ font-family:var(--display); font-weight:400; font-size:31pt; line-height:1.05; margin:0; color:var(--night); text-wrap:balance }
+h2.t .hl{ color:var(--cc) }
+h3.s{ font-family:var(--display); font-weight:400; font-size:18pt; margin:0; color:var(--night); display:flex; align-items:center; gap:3mm; flex-wrap:wrap }
+.task{ margin:0; font-size:13pt; max-width:165mm }
+.foot{ bottom:6.5mm; left:0; right:0; display:flex; justify-content:center; align-items:center; gap:3mm; font-size:9.5pt; color:var(--muted) }
+.foot b{ color:var(--night) }
+.cover > .foot{ color:#cfd8ff } .cover > .foot b{ color:var(--gold) }
+.pn{ background:var(--night); color:var(--gold); width:8mm; height:8mm; border-radius:50%; display:grid; place-items:center; font-weight:800; font-size:10pt }
+.grow{ flex:1; min-height:0 }
+.say{ display:flex; gap:3.5mm; align-items:center }
+.say svg{ width:15mm; height:19mm; flex:none }
+.bub{ background:var(--paper-2); border:2px solid var(--cc); border-radius:16px; padding:2.5mm 4.5mm; font-weight:500; font-size:12pt }
+.ln{ display:inline-block; border-bottom:2px dotted var(--muted); min-width:38mm; height:7mm; vertical-align:bottom }
+.box{ border:2.5px dashed var(--line); border-radius:18px; padding:4mm }
+.solid{ border:2.5px solid var(--cc); border-radius:18px; padding:4mm; background:#fff }
+.row{ display:flex; gap:4mm; align-items:stretch }
+.row > *{ min-width:0 }
+.g2{ display:grid; grid-template-columns:1fr 1fr; gap:4mm }
+.g3{ display:grid; grid-template-columns:repeat(3,1fr); gap:4mm }
+svg{ display:block }
+.tag{ display:inline-block; font-family:var(--body); font-size:9.5pt; font-weight:700; color:#fff; background:var(--cc); border-radius:99px; padding:.4mm 2.6mm; vertical-align:middle }
+.tag.g{ background:var(--gold-d) }
+
+/* ---------- cover ---------- */
+.cover{ background:radial-gradient(120% 70% at 50% 8%, #2c46b8 0%, #172873 45%, #0e1747 100%); color:#fff; padding:14mm; gap:0 }
+.cover::before, .cover::after{ display:none }
+.cover .sky{ position:absolute; inset:0; width:100%; height:100%; z-index:0 }
+.cv-top{ display:flex; justify-content:space-between }
+.pill{ border:1.5px solid rgba(255,194,61,.7); color:var(--gold); border-radius:99px; padding:1.2mm 4mm; font-size:11pt; font-weight:700 }
+.cover h1{ font-family:var(--display); font-weight:400; font-size:96pt; line-height:.9; margin:12mm 0 0; color:var(--gold); text-align:center;
+  text-shadow:0 0 18px rgba(255,194,61,.55), 0 4px 0 #b36f00 }
+.cover .sub{ text-align:center; font-size:16pt; margin:5mm auto 0; max-width:150mm; color:#e4e9ff; font-weight:500 }
+.cover #coverArt{ margin-top:auto }
+.badges{ display:flex; justify-content:center; gap:3mm; margin-top:6mm; flex-wrap:wrap }
+.badges span{ background:#fff; color:var(--night); font-weight:800; font-size:12pt; border-radius:99px; padding:2mm 5mm }
+.badges span:nth-child(1){ background:var(--gold) }
+.badges span:nth-child(2){ background:#ff8fc0 }
+.badges span:nth-child(3){ background:#7fe3d3 }
+.owner{ margin-top:7mm; margin-bottom:3mm; background:rgba(255,255,255,.1); border:2px dashed rgba(255,255,255,.4); border-radius:16px; padding:4mm 6mm; font-family:var(--display); font-size:17pt; display:flex; gap:4mm; align-items:end }
+.owner .ln{ flex:1; border-color:rgba(255,255,255,.6) }
+
+/* ---------- welcome ---------- */
+.hello{ display:flex; gap:6mm; align-items:center }
+.hello svg{ width:38mm; height:48mm; flex:none }
+.hello .bub{ font-size:13.5pt; line-height:1.55; border-width:2.5px }
+.legend{ display:grid; grid-template-columns:repeat(3,1fr); gap:3mm }
+.legend div{ background:var(--paper-2); border-radius:14px; padding:3mm 4mm; text-align:center; font-weight:700 }
+.legend b{ display:block; color:var(--gold-d); font-family:var(--display); font-weight:400; font-size:17pt }
+.toc{ display:grid; grid-template-columns:1fr 1fr; gap:3mm }
+.toc a{ text-decoration:none; color:inherit; display:flex; justify-content:space-between; align-items:center; gap:3mm; border-radius:14px; padding:3.2mm 4.5mm; color:#fff; font-family:var(--display); font-size:15pt }
+.toc a small{ font-family:var(--body); font-size:10pt; opacity:.9; display:block; font-weight:500 }
+.toc a span.n{ background:rgba(255,255,255,.25); border-radius:99px; padding:.5mm 3mm; font-size:12pt; white-space:nowrap }
+.flames{ display:grid; grid-template-columns:repeat(13,1fr); gap:1.5mm 1mm }
+.flames div{ text-align:center; font-size:8pt; color:var(--muted); font-weight:700 }
+.flames svg{ width:100%; height:9mm }
+
+/* ---------- activity bits ---------- */
+.suspects{ display:grid; grid-template-columns:repeat(4,1fr); gap:3mm }
+.sus{ border:2.5px solid var(--line); border-radius:16px; padding:3mm; text-align:center; background:#fff }
+.sus .face{ font-size:40pt; line-height:1.1 }
+.sus h4{ margin:1mm 0 2mm; font-family:var(--display); font-weight:400; font-size:14pt }
+.sus ul{ list-style:none; margin:0; padding:0; font-size:10.5pt; text-align:right; display:grid; gap:1mm }
+.sus li{ display:flex; justify-content:space-between; background:var(--paper-2); border-radius:8px; padding:.6mm 2mm }
+.clues{ display:grid; gap:3mm }
+.clue{ display:flex; gap:3mm; align-items:center; background:#fff7e0; border:2px solid #ffd77a; border-radius:14px; padding:3mm 4mm; font-weight:500 }
+.clue b{ background:var(--cc); color:#fff; border-radius:50%; width:8mm; height:8mm; display:grid; place-items:center; flex:none; font-size:12pt }
+.answer{ display:flex; gap:3mm; align-items:end; font-family:var(--display); font-size:15pt }
+.answer .ln{ flex:1 }
+
+.diff{ width:72%; margin:0 auto }
+.diff svg{ width:100%; border-radius:12px; border:3px solid var(--night) }
+.diff .lab{ font-family:var(--display); font-size:13pt; margin-bottom:1.5mm; color:var(--cc) }
+.ticks{ display:flex; gap:2mm; justify-content:center }
+.ticks span{ width:10mm; height:10mm; border:2.5px solid var(--cc); border-radius:50%; display:grid; place-items:center; color:var(--line); font-weight:800 }
+
+.field svg{ width:100%; border-radius:16px }
+.counts{ display:grid; grid-template-columns:repeat(5,1fr); gap:3mm }
+.counts div{ background:var(--paper-2); border-radius:14px; padding:2.5mm; text-align:center; font-weight:700; font-size:11pt }
+.counts .e{ font-size:24pt; display:block; line-height:1.2 }
+.counts .bx{ display:block; margin:1.5mm auto 0; width:13mm; height:10mm; border:2px solid var(--line); border-radius:8px; background:#fff }
+
+.key{ display:grid; grid-template-columns:repeat(6,1fr); gap:2mm }
+.key div{ background:var(--paper-2); border-radius:12px; padding:1.5mm; display:flex; justify-content:center; align-items:center; gap:2mm; font-size:15pt }
+.key div b{ font-family:var(--display); font-weight:400; font-size:17pt; color:var(--cc) }
+.code{ display:flex; gap:7mm; justify-content:center; flex-wrap:wrap }
+.word{ display:flex; gap:2mm }
+.cell{ display:flex; flex-direction:column; align-items:center; gap:1.5mm }
+.cell .sym{ font-size:22pt; line-height:1.1 }
+.cell .slot{ width:13mm; height:13mm; border:2.5px solid var(--cc); border-radius:10px; background:#fff }
+
+.riddles{ display:grid; grid-template-columns:1fr 1fr; gap:3mm }
+.rd{ background:var(--paper-2); border-radius:16px; padding:3mm 4mm; display:flex; flex-direction:column; gap:2mm }
+.rd p{ margin:0; font-weight:500 }
+.rd .num{ color:var(--cc); font-family:var(--display); font-size:14pt }
+.pics{ display:flex; justify-content:space-around; font-size:30pt; align-items:center }
+.pics > *{ display:flex; flex-direction:column; align-items:center; font-size:30pt }
+.pics svg{ width:12mm; height:15mm }
+
+.seq{ display:grid; gap:2.5mm }
+.sq{ display:flex; align-items:center; gap:3mm; background:var(--paper-2); border-radius:14px; padding:2mm 4mm }
+.sq .items{ display:flex; gap:3mm; font-size:21pt; flex:1; align-items:center; font-family:var(--display) }
+.sq .q{ width:14mm; height:13mm; border:2.5px dashed var(--cc); border-radius:10px; background:#fff }
+.odd{ display:grid; grid-template-columns:1fr 1fr; gap:3mm }
+.odd .sq .items{ justify-content:space-around }
+
+.sudoku{ display:grid; grid-template-columns:repeat(4,1fr); width:62mm; aspect-ratio:1; max-width:100%; border:3.5px solid var(--night); border-radius:10px; overflow:hidden; background:#fff }
+.sudoku div{ border:1px solid var(--line); display:grid; place-items:center; font-size:21pt; font-family:var(--display) }
+.sudoku div:nth-child(4n+2){ border-left:3px solid var(--night) }
+.sudoku div:nth-child(n+5):nth-child(-n+8){ border-bottom:3px solid var(--night) }
+.sudoku.sm{ width:34mm } .sudoku.sm div{ font-size:11pt }
+.opts{ display:flex; gap:3mm; flex-wrap:wrap }
+.opts span{ border:2px solid var(--cc); border-radius:99px; padding:.6mm 4mm; font-weight:700; background:#fff }
+
+table.lg{ border-collapse:collapse; width:100%; font-size:12pt; background:#fff }
+table.lg th, table.lg td{ border:2px solid var(--line); text-align:center; padding:2mm; height:12mm }
+table.lg th{ background:var(--paper-2); font-weight:800 }
+table.lg th.k{ text-align:right }
+
+.mz svg{ width:100%; height:100% }
+.ends{ display:flex; justify-content:space-between; font-weight:800; font-size:11.5pt }
+
+.draw{ border:2.5px dashed var(--line); border-radius:18px; background:#fff; position:relative }
+.draw .cap{ position:absolute; top:3mm; right:4mm; font-size:10.5pt; color:var(--muted); font-weight:700 }
+
+.chal{ display:grid; grid-template-columns:1fr 1fr; gap:3.5mm }
+.ch{ border:2.5px solid var(--line); border-radius:18px; padding:3.5mm; display:flex; flex-direction:column; gap:2mm; background:#fff }
+.ch h4{ margin:0; font-family:var(--display); font-weight:400; font-size:15pt; display:flex; justify-content:space-between; gap:2mm }
+.ch p{ margin:0; font-size:11pt }
+.ch .done{ width:7mm; height:7mm; border:2.5px solid var(--cc); border-radius:6px; flex:none }
+.ch .area{ flex:1; border-radius:12px; background:var(--paper-2); min-height:24mm }
+
+.mem{ display:grid; grid-template-columns:repeat(4,1fr); gap:3mm }
+.mem div{ aspect-ratio:1; max-width:100%; border-radius:18px; background:var(--paper-2); display:grid; place-items:center; font-size:40pt }
+.mem svg{ width:60%; height:70% }
+.fold{ border-top:3px dashed var(--muted); text-align:center; position:relative; margin:2mm 0 }
+.fold span{ position:relative; top:-3.4mm; background:var(--paper); padding:0 3mm; color:var(--muted); font-weight:800; font-size:10.5pt }
+.qs{ display:grid; gap:3mm }
+.qs div{ display:flex; gap:3mm; align-items:end; font-weight:500; font-size:13pt }
+.qs .ln{ flex:1 }
+
+.nights{ display:grid; grid-template-columns:1fr 1fr; gap:3mm }
+.nt{ display:flex; gap:3mm; align-items:center; border-radius:16px; padding:3mm; background:var(--paper-2) }
+.nt .nb{ flex:none; width:19mm; text-align:center }
+.nt .nb b{ display:block; font-family:var(--display); font-weight:400; font-size:22pt; line-height:1; color:var(--night) }
+.nt .nb small{ font-size:8.5pt; font-weight:700; color:var(--muted) }
+.nt p{ margin:0; flex:1; font-size:11pt; font-weight:500 }
+.nt .done{ width:8mm; height:8mm; border:2.5px solid var(--cc); border-radius:50%; flex:none; background:#fff }
+
+.sol{ display:grid; grid-template-columns:1fr 1fr; gap:3mm; font-size:10.5pt; line-height:1.4 }
+.sol > div{ background:var(--paper-2); border-radius:14px; padding:2.5mm 3.5mm }
+.sol h4{ margin:0 0 1mm; font-family:var(--display); font-weight:400; font-size:12.5pt; color:var(--cc) }
+.sol ol, .sol ul{ margin:0; padding-inline-start:5mm }
+.sol .wide{ grid-column:1/-1 }
+.sol svg{ width:100%; }
+
+.cert{ background:var(--paper); }
+.cert .frame{ flex:1; border:5mm solid var(--gold); border-radius:12mm; outline:1.5mm solid var(--night); outline-offset:-9mm; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4mm; text-align:center; padding:12mm }
+.cert h2{ font-family:var(--display); font-weight:400; font-size:34pt; line-height:1.05; margin:0; color:var(--night) }
+.cert .big{ font-size:15pt; max-width:130mm }
+.cert .nm{ width:120mm; border-bottom:3px solid var(--night); height:14mm }
+.cert .sig{ display:flex; gap:20mm; margin-top:6mm; font-weight:700; color:var(--muted) }
+.cert .sig div{ width:50mm; border-top:2px solid var(--muted); padding-top:2mm }
+.cert .stars{ font-size:30pt; color:var(--gold-d); letter-spacing:3mm }
+
+@media print{
+  body{ background:#fff; padding:0 }
+  .note{ display:none }
+  .book{ zoom:1 !important; width:auto }
+  .page{ margin:0; box-shadow:none; border-radius:0 }
+}
+@page{ size:A4; margin:0 }
+</style>
+
+<div class="note" dir="rtl">
+  <b>מסע האור</b> – חוברת אתגרים לחנוכה, 20 עמודים בגודל A4.
+  להדפסה: פתחו את הקובץ בדפדפן, הקישו Ctrl+P, בחרו A4, שוליים "ללא" וסמנו "גרפיקת רקע".
+</div>
+
+<div class="book" dir="rtl" lang="he">
+
+<!-- 1 · COVER -->
+<section class="page cover">
+  <svg class="sky" id="sky" viewBox="0 0 210 297" preserveAspectRatio="none"></svg>
+  <div class="cv-top"><span class="pill">חוברת אתגרים לחנוכה</span><span class="pill">חנוכה תשפ״ז</span></div>
+  <h1>מסע<br>האור</h1>
+  <p class="sub">תעלומות, צפנים, מבוכים, ציורים ואתגרים מצחיקים לשמונת ימי חנוכה</p>
+  <div id="coverArt"></div>
+  <div class="badges"><span>גילאי 4–10</span><span>30 אתגרים</span><span>לבד או עם כל המשפחה</span></div>
+  <div class="owner">החוברת של: <span class="ln"></span></div>
+</section>
+
+<!-- 2 · WELCOME -->
+<section class="page">
+  <div class="ph"><span class="chip">ברוכים הבאים</span><span class="lvl">מה יש בחוברת?</span></div>
+  <h2 class="t">שלום, אני <span class="hl">סבבי</span>!</h2>
+  <div class="hello">
+    <svg viewBox="-6 -4 112 140" class="mascot"></svg>
+    <div class="bub">אני סביבון שאוהב חידות. בחוברת הזאת מחכים לכם 30 אתגרים: תעלומה של סופגנייה שנעלמה, צופן סודי, מבוכים, ציורים מטורפים ומשימה לכל לילה של חנוכה.<br>בכל עמוד אני אהיה שם לעזור. מוכנים? מסתובבים!</div>
+  </div>
+  <h3 class="s">כמה קשה האתגר?</h3>
+  <div class="legend">
+    <div><b>קל</b>מגיל 4</div>
+    <div><b>בינוני</b>מגיל 6</div>
+    <div><b>אלופים</b>מגיל 8</div>
+  </div>
+  <p class="task" style="font-size:11.5pt;color:var(--muted)">ילדים קטנים? אפשר לפתור יחד עם אבא, אמא, אח או אחות גדולים. צריך רק עיפרון, צבעים וקצת סבלנות. הפתרונות מחכים בעמודים 19–20 (בלי להציץ!).</p>
+  <h3 class="s">תוכן החוברת</h3>
+  <div class="toc">
+    <a style="background:var(--c1)"><div>בלשים צעירים<small>תעלומה, הבדלים, צופן וחידות</small></div><span class="n">עמ׳ 3</span></a>
+    <a style="background:var(--c2)"><div>מוח של אלופים<small>סדרות, סודוקו והיגיון</small></div><span class="n">עמ׳ 8</span></a>
+    <a style="background:var(--c3)"><div>מבוך ההרפתקאות<small>מבוכים וקווים מסובכים</small></div><span class="n">עמ׳ 11</span></a>
+    <a style="background:var(--c4)"><div>יצירה בלי גבולות<small>מעצבים, מציירים וממציאים</small></div><span class="n">עמ׳ 14</span></a>
+    <a style="background:var(--c5)"><div>אתגרים קורעים מצחוק<small>צחוקים, זיכרון ו-8 משימות</small></div><span class="n">עמ׳ 16</span></a>
+    <a style="background:var(--night)"><div>פתרונות<small>בודקים אם צדקתם</small></div><span class="n">עמ׳ 19</span></a>
+  </div>
+  <h3 class="s">מד האור שלי <span class="tag g">צבעו להבה על כל אתגר שסיימתם</span></h3>
+  <div class="flames" id="flames"></div>
+</section>
+
+<!-- 3 · WHO STOLE THE SUFGANIYA -->
+<section class="page ch1">
+  <div class="ph"><span class="chip">פרק 1 · בלשים צעירים</span><span class="lvl" data-l="2" data-age="5+"></span></div>
+  <h2 class="t">מי גנב את <span class="hl">הסופגנייה</span>?</h2>
+  <p class="task">הסופגנייה עם הריבה של סבתא נעלמה מהצלחת! ארבעה חשודים היו במטבח. קראו את הרמזים, מחקו בכל פעם את מי שלא מתאים, וגלו מי הגנב.</p>
+  <div class="suspects">
+    <div class="sus"><div class="face">🐰</div><h4>הארנבת רותי</h4><ul><li><span>כובע</span><span>✔</span></li><li><span>משקפיים</span><span>✘</span></li><li><span>צעיף</span><span>אדום</span></li></ul></div>
+    <div class="sus"><div class="face">🐱</div><h4>החתול מיצי</h4><ul><li><span>כובע</span><span>✘</span></li><li><span>משקפיים</span><span>✔</span></li><li><span>צעיף</span><span>כחול</span></li></ul></div>
+    <div class="sus"><div class="face">🐻</div><h4>הדוב דובי</h4><ul><li><span>כובע</span><span>✔</span></li><li><span>משקפיים</span><span>✔</span></li><li><span>צעיף</span><span>כחול</span></li></ul></div>
+    <div class="sus"><div class="face">🦊</div><h4>השועל שוקי</h4><ul><li><span>כובע</span><span>✔</span></li><li><span>משקפיים</span><span>✔</span></li><li><span>צעיף</span><span>אדום</span></li></ul></div>
+  </div>
+  <h3 class="s">🔎 פתקי הבלש</h3>
+  <div class="clues">
+    <div class="clue"><b>1</b>על הרצפה נמצאה אבקת סוכר שנפלה מכובע. הגנב חבש כובע.</div>
+    <div class="clue"><b>2</b>ליד הצלחת היו טביעות של משקפיים מלוכלכות בריבה. הגנב מרכיב משקפיים.</div>
+    <div class="clue"><b>3</b>חוט צמר כחול נתפס בידית של הדלת. הצעיף של הגנב כחול.</div>
+  </div>
+  <div class="say"><svg viewBox="-6 -4 112 140" class="mascot"></svg><div class="bub">טיפ של בלשים: אחרי כל רמז, סמנו ✘ על חשוד שלא מתאים. מי שנשאר בסוף הוא הגנב!</div></div>
+  <div class="solid grow" style="display:flex;flex-direction:column;justify-content:center;gap:5mm">
+    <div class="answer">הגנב הוא: <span class="ln"></span></div>
+    <div class="answer" style="font-size:12.5pt;font-family:var(--body);font-weight:500">ועכשיו אתם: מה העונש הכי מצחיק שתתנו לגנב? <span class="ln"></span></div>
+  </div>
+</section>
+
+<!-- 4 · SPOT THE DIFFERENCE -->
+<section class="page ch1">
+  <div class="ph"><span class="chip">פרק 1 · בלשים צעירים</span><span class="lvl" data-l="2" data-age="5+"></span></div>
+  <h2 class="t">מצאו <span class="hl">8 הבדלים</span></h2>
+  <p class="task">שתי התמונות נראות אותו דבר, אבל יש ביניהן 8 הבדלים. הקיפו כל הבדל בתמונה התחתונה וצבעו עיגול אחד על כל הבדל שמצאתם.</p>
+  <div class="diff"><div class="lab">תמונה א׳</div><div id="sceneA"></div></div>
+  <div class="diff"><div class="lab">תמונה ב׳</div><div id="sceneB"></div></div>
+  <div class="ticks"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+</section>
+
+<!-- 5 · HAWK EYE -->
+<section class="page ch1">
+  <div class="ph"><span class="chip">פרק 1 · בלשים צעירים</span><span class="lvl" data-l="1" data-age="4+"></span></div>
+  <h2 class="t">עין <span class="hl">הנץ</span></h2>
+  <p class="task">שוק החנוכה מלא בדברים! ספרו כמה יש מכל פריט וכתבו בתיבה. ובנוסף: איפשהו מסתתרים מפתח אחד וינשוף אחד. מצאו והקיפו אותם.</p>
+  <div class="field" id="field"></div>
+  <div class="counts">
+    <div><span class="e">🍩</span>סופגניות<span class="bx"></span></div>
+    <div><span class="e">🕯️</span>נרות<span class="bx"></span></div>
+    <div><span class="e">🪙</span>מטבעות<span class="bx"></span></div>
+    <div><span class="e">🔑</span>מצאתי?<span class="bx"></span></div>
+    <div><span class="e">🦉</span>מצאתי?<span class="bx"></span></div>
+  </div>
+</section>
+
+<!-- 6 · SECRET CODE -->
+<section class="page ch1">
+  <div class="ph"><span class="chip">פרק 1 · בלשים צעירים</span><span class="lvl" data-l="2" data-age="6+"></span></div>
+  <h2 class="t">פצחו את <span class="hl">הצופן</span>!</h2>
+  <p class="task">כל ציור מסמן אות. היעזרו במפתח, כתבו את האות המתאימה מתחת לכל ציור, ותגלו הודעה סודית מימי החשמונאים.</p>
+  <div class="solid">
+    <h3 class="s" style="font-size:14pt;margin-bottom:2mm">🗝️ מפתח הצופן</h3>
+    <div class="key" id="key"></div>
+  </div>
+  <h3 class="s">הודעה 1 <span class="tag">בינוני</span></h3>
+  <div class="code" id="msg1"></div>
+  <h3 class="s">הודעה 2 <span class="tag">בינוני</span></h3>
+  <div class="code" id="msg2"></div>
+  <h3 class="s">אתגר האלופים <span class="tag g">אלופים</span></h3>
+  <div class="box grow" style="display:flex;flex-direction:column;gap:3mm">
+    <p style="margin:0;font-weight:500">כתבו הודעה סודית משלכם בציורים, ותנו למישהו במשפחה לפענח:</p>
+    <div style="flex:1;background:repeating-linear-gradient(to bottom,transparent 0 11mm,var(--line) 11mm 11.6mm)"></div>
+  </div>
+</section>
+
+<!-- 7 · WHO AM I -->
+<section class="page ch1">
+  <div class="ph"><span class="chip">פרק 1 · בלשים צעירים</span><span class="lvl" data-l="1" data-age="4+"></span></div>
+  <h2 class="t">מי <span class="hl">אני</span>?</h2>
+  <p class="task">קראו כל חידה וכתבו את התשובה. ילדים שעוד לא כותבים יכולים למתוח קו מהחידה לציור הנכון בתחתית העמוד.</p>
+  <div class="riddles">
+    <div class="rd"><span class="num">1</span><p>אני מסתובב על רגל אחת, ויש עליי ארבע אותיות.</p><span class="ln" style="width:100%"></span></div>
+    <div class="rd"><span class="num">2</span><p>אני עגולה, מטוגנת בשמן, ויש לי ריבה בבטן.</p><span class="ln" style="width:100%"></span></div>
+    <div class="rd"><span class="num">3</span><p>עשו אותי מתפוחי אדמה מגוררים, ואני פריכה וחמה.</p><span class="ln" style="width:100%"></span></div>
+    <div class="rd"><span class="num">4</span><p>יש לי תשעה קנים, ואחד מהם גבוה מכולם.</p><span class="ln" style="width:100%"></span></div>
+    <div class="rd"><span class="num">5</span><p>אני הנר שמדליק את כל שאר הנרות.</p><span class="ln" style="width:100%"></span></div>
+    <div class="rd"><span class="num">6</span><p>היה בי שמן ליום אחד בלבד, והוא דלק שמונה ימים.</p><span class="ln" style="width:100%"></span></div>
+  </div>
+  <div class="solid grow" style="display:flex;flex-direction:column;justify-content:center">
+    <div class="pics" id="whoPics"></div>
+  </div>
+</section>
+
+<!-- 8 · SEQUENCES + ODD ONE OUT -->
+<section class="page ch2">
+  <div class="ph"><span class="chip">פרק 2 · מוח של אלופים</span><span class="lvl" data-l="2" data-age="4+"></span></div>
+  <h2 class="t">מה <span class="hl">בא אחר כך</span>?</h2>
+  <p class="task">גלו את החוק של כל שורה, וציירו או כתבו מה מגיע במקום הריק.</p>
+  <div class="seq">
+    <div class="sq"><span class="tag">קל</span><div class="items">🕯️ 🍩 🕯️ 🍩 🕯️</div><span class="q"></span></div>
+    <div class="sq"><span class="tag">קל</span><div class="items">🔵 🟡 🟡 🔵 🟡 🟡 🔵</div><span class="q"></span></div>
+    <div class="sq"><span class="tag">בינוני</span><div class="items">1 &nbsp; 2 &nbsp; 3 &nbsp; <span class="q"></span> &nbsp; 5 &nbsp; 6</div></div>
+    <div class="sq"><span class="tag">בינוני</span><div class="items">2 &nbsp; 4 &nbsp; 6 &nbsp; <span class="q"></span> &nbsp; 10</div></div>
+    <div class="sq"><span class="tag g">אלופים</span><div class="items">1 &nbsp; 3 &nbsp; 6 &nbsp; 10</div><span class="q"></span></div>
+    <div class="sq"><span class="tag g">אלופים</span><div class="items">נ &nbsp; ג &nbsp; ה &nbsp; ש &nbsp; נ &nbsp; ג</div><span class="q"></span></div>
+  </div>
+  <h2 class="t" style="font-size:24pt;margin-top:2mm">מי <span class="hl">יוצא דופן</span>?</h2>
+  <p class="task">בכל שורה יש פריט אחד שלא שייך. הקיפו אותו, ונסו להסביר למה.</p>
+  <div class="odd">
+    <div class="sq"><span class="tag">קל</span><div class="items">🕯️ 🕯️ 🔦 🕯️</div></div>
+    <div class="sq"><span class="tag">קל</span><div class="items">🍩 🥔 🍉 🫒</div></div>
+    <div class="sq"><span class="tag">בינוני</span><div class="items">נ &nbsp; ג &nbsp; מ &nbsp; ה</div></div>
+    <div class="sq"><span class="tag g">אלופים</span><div class="items">2 &nbsp; 4 &nbsp; 7 &nbsp; 8</div></div>
+  </div>
+  <div class="say"><svg viewBox="-6 -4 112 140" class="mascot"></svg><div class="bub">רמז בשורה של הסופגנייה: מה אוכלים בחנוכה, ומה אוכלים דווקא בקיץ?</div></div>
+</section>
+
+<!-- 9 · SUDOKU + LOGIC -->
+<section class="page ch2">
+  <div class="ph"><span class="chip">פרק 2 · מוח של אלופים</span><span class="lvl" data-l="3" data-age="5+"></span></div>
+  <h2 class="t">סוד <span class="hl">הריבועים</span></h2>
+  <p class="task">בכל שורה, בכל טור ובכל ריבוע קטן של 4 משבצות, כל ציור (או מספר) מופיע פעם אחת בלבד. ציירו או כתבו מה חסר.</p>
+  <div class="g2">
+    <div class="solid" style="display:flex;flex-direction:column;align-items:center;gap:2mm">
+      <h3 class="s" style="font-size:15pt">סודוקו של חנוכה <span class="tag">קל</span></h3>
+      <div style="font-size:16pt">🕯️ 🍩 🪙 🎁</div>
+      <div class="sudoku" id="sud1"></div>
+    </div>
+    <div class="solid" style="display:flex;flex-direction:column;align-items:center;gap:2mm">
+      <h3 class="s" style="font-size:15pt">סודוקו מספרים <span class="tag">בינוני</span></h3>
+      <div style="font-size:15pt;font-family:var(--display)">1 · 2 · 3 · 4</div>
+      <div class="sudoku" id="sud2"></div>
+    </div>
+  </div>
+  <h2 class="t" style="font-size:24pt">חידות <span class="hl">היגיון</span></h2>
+  <p class="task">הקיפו את התשובה הנכונה.</p>
+  <div class="riddles">
+    <div class="rd"><span class="num">1 <span class="tag">קל</span></span><p>לדני היו 3 סביבונים. הוא קיבל עוד 2, ואחד התגלגל מתחת לספה. כמה נשארו לו?</p><div class="opts"><span>4</span><span>5</span><span>6</span></div></div>
+    <div class="rd"><span class="num">2 <span class="tag">בינוני</span></span><p>בלילה הרביעי של חנוכה, כמה נרות דולקים בחנוכייה, יחד עם השמש?</p><div class="opts"><span>4</span><span>5</span><span>8</span></div></div>
+    <div class="rd"><span class="num">3 <span class="tag">בינוני</span></span><p>מה כבד יותר: קילו סופגניות או קילו נוצות?</p><div class="opts"><span>הסופגניות</span><span>הנוצות</span><span>שווה</span></div></div>
+    <div class="rd"><span class="num">4 <span class="tag g">אלופים</span></span><p>כמה נרות מדליקים בכל שמונת ימי החנוכה, בלי השמש?</p><div class="opts"><span>8</span><span>36</span><span>44</span></div></div>
+  </div>
+</section>
+
+<!-- 10 · WHO LIVES WHERE -->
+<section class="page ch2">
+  <div class="ph"><span class="chip">פרק 2 · מוח של אלופים</span><span class="lvl" data-l="3" data-age="7+"></span></div>
+  <h2 class="t">מי גר <span class="hl">באיזה בית</span>?</h2>
+  <p class="task">נועה, איתי ותמר גרים בשלושה בתים: כחול, צהוב ואדום. כל אחד אוהב דבר אחר בחנוכה: סופגנייה, לביבה או סביבון. קראו את הרמזים וגלו מי גר איפה ומה הוא אוהב.</p>
+  <div id="houses"></div>
+  <div class="clues">
+    <div class="clue"><b>1</b>איתי לא גר בבית הכחול, וגם לא בבית האדום.</div>
+    <div class="clue"><b>2</b>נועה לא גרה בבית האדום.</div>
+    <div class="clue"><b>3</b>מי שגר בבית האדום אוהב לשחק בסביבון.</div>
+    <div class="clue"><b>4</b>איתי לא אוהב סופגניות.</div>
+  </div>
+  <p class="task" style="font-size:11.5pt;color:var(--muted)">סמנו ✔ כשאתם בטוחים ו-✘ כשמשהו לא יכול להיות. כתבו את השמות על השלטים של הבתים.</p>
+  <table class="lg">
+    <tr><th class="k"></th><th>🟦 כחול</th><th>🟨 צהוב</th><th>🟥 אדום</th><th>🍩 סופגנייה</th><th>🥔 לביבה</th><th>🎲 סביבון</th></tr>
+    <tr><th class="k">נועה</th><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="k">איתי</th><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="k">תמר</th><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+</section>
+
+<!-- 11 · EASY MAZE -->
+<section class="page ch3">
+  <div class="ph"><span class="chip">פרק 3 · מבוך ההרפתקאות</span><span class="lvl" data-l="1" data-age="4+"></span></div>
+  <h2 class="t">פך השמן <span class="hl">בדרך לחנוכייה</span></h2>
+  <p class="task">עזרו לפך השמן הקטן למצוא את הדרך דרך המבוך, כדי שהחנוכייה תוכל לדלוק. התחילו למעלה בצד ימין, וסיימו למטה בצד שמאל.</p>
+  <div class="mz grow solid" id="maze1" style="padding:3mm"></div>
+  <div class="say"><svg viewBox="-6 -4 112 140" class="mascot"></svg><div class="bub">נתקעתם? חזרו לפנייה האחרונה ונסו דרך אחרת. ככה עושים כל המבוכים!</div></div>
+</section>
+
+<!-- 12 · BIG MAZE -->
+<section class="page ch3">
+  <div class="ph"><span class="chip">פרק 3 · מבוך ההרפתקאות</span><span class="lvl" data-l="3" data-age="7+"></span></div>
+  <h2 class="t">המבוך של <span class="hl">המכבים</span></h2>
+  <p class="task">המבוך הגדול! עזרו לסבבי להגיע מהכניסה למעלה אל ערימת הסופגניות למטה. נסו לסמן את הדרך בעיפרון, ורק אחר כך בטוש.</p>
+  <div class="mz grow solid" id="maze2" style="padding:3mm"></div>
+  <div class="ends"><span>⏱️ כמה זמן לקח לכם? <span class="ln" style="min-width:30mm"></span></span><span>🏆 שיא משפחתי: <span class="ln" style="min-width:30mm"></span></span></div>
+</section>
+
+<!-- 13 · TANGLED + FLOW -->
+<section class="page ch3">
+  <div class="ph"><span class="chip">פרק 3 · מבוך ההרפתקאות</span><span class="lvl" data-l="2" data-age="5+"></span></div>
+  <h2 class="t">איזה מסלול <span class="hl">מוביל למתנה</span>?</h2>
+  <p class="task">כל ילד הולך בחוט שלו. עקבו עם האצבע (או בצבע אחר לכל חוט) וגלו איזו מתנה מקבל כל אחד.</p>
+  <div class="solid" id="tangle" style="padding:2mm"></div>
+  <div style="display:flex;gap:5mm;font-weight:700;justify-content:center;flex-wrap:wrap"><span>מיכל ← <span class="ln" style="min-width:16mm"></span></span><span>יואב ← <span class="ln" style="min-width:16mm"></span></span><span>אלה ← <span class="ln" style="min-width:16mm"></span></span></div>
+  <h2 class="t" style="font-size:24pt">ציירו דרך <span class="hl">בלי לחצות</span></h2>
+  <div class="row grow">
+    <div id="flow" style="width:78mm;flex:none"></div>
+    <div style="display:flex;flex-direction:column;gap:3mm;justify-content:center">
+      <p class="task" style="font-size:12pt">חברו כל זוג עיגולים באותו צבע בקו. הקווים זזים רק ישר (לא באלכסון), לא חוצים זה את זה, ובסוף כל המשבצות צריכות להיות מלאות.</p>
+      <span class="tag g" style="align-self:start">אתגר לאלופים</span>
+    </div>
+  </div>
+</section>
+
+<!-- 14 · DESIGN A DREIDEL + MENORAH -->
+<section class="page ch4">
+  <div class="ph"><span class="chip">פרק 4 · יצירה בלי גבולות</span><span class="lvl" data-l="1" data-age="4+"></span></div>
+  <h2 class="t">עצבו <span class="hl">סביבון משלכם</span></h2>
+  <p class="task">צבעו, קשטו וציירו פרצוף לסביבון. איזו אות תשימו עליו? ואיך קוראים לו?</p>
+  <div class="draw grow" style="display:flex;align-items:center;justify-content:center">
+    <span class="cap">שם הסביבון שלי: <span class="ln"></span></span>
+    <svg id="bigDreidel" viewBox="-10 -10 120 150" style="height:88%;width:auto"></svg>
+  </div>
+  <h3 class="s">הדליקו את החנוכייה <span class="tag">קל</span></h3>
+  <p class="task" style="font-size:12pt">היום הלילה השלישי של חנוכה. ציירו להבות על הנרות הנכונים (אל תשכחו את השמש!) וצבעו את הנרות בצבעים שאתם אוהבים.</p>
+  <div class="solid" style="display:flex;justify-content:center"><svg id="emptyMenorah" viewBox="0 -10 220 190" style="width:120mm;max-width:100%"></svg></div>
+</section>
+
+<!-- 15 · OIL BLOBS + NEW FLAVOR + INVENTION -->
+<section class="page ch4">
+  <div class="ph"><span class="chip">פרק 4 · יצירה בלי גבולות</span><span class="lvl" data-l="2" data-age="5+"></span></div>
+  <h2 class="t">אופס! <span class="hl">נשפך שמן</span></h2>
+  <p class="task">על הדף נפלו שלושה כתמי שמן. הוסיפו להם עיניים, ידיים, רגליים או כל דבר אחר, והפכו כל כתם לדמות מצחיקה.</p>
+  <div class="g3" id="blobs" style="height:62mm"></div>
+  <div class="g2 grow">
+    <div class="draw" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10mm 4mm 4mm;gap:3mm">
+      <span class="cap">🍩 טעם חדש לסופגנייה</span>
+      <svg id="emptyDonut" viewBox="0 0 120 90" style="width:70%"></svg>
+      <div style="width:90%;font-weight:700;font-size:11pt">שם הטעם: <span class="ln" style="min-width:0;width:60%"></span></div>
+    </div>
+    <div class="draw" style="padding:10mm 4mm 4mm;display:flex;flex-direction:column;gap:2mm">
+      <span class="cap">🛠️ מכונת הקסמים שלי</span>
+      <p style="margin:0;font-size:11pt">המציאו מכונה שעוזרת בחנוכה: מטגנת סופגניות, מסובבת סביבונים או מדליקה נרות. ציירו אותה כאן.</p>
+      <div style="flex:1"></div>
+      <div style="font-weight:700;font-size:11pt">היא עושה: <span class="ln" style="min-width:0;width:65%"></span></div>
+    </div>
+  </div>
+  <div class="draw" style="height:42mm;padding:9mm 4mm 4mm">
+    <span class="cap">🦁 חיה של חנוכה: המציאו חיה חדשה שחיה רק בחנוכה. איך קוראים לה ומה היא אוכלת?</span>
+  </div>
+</section>
+
+<!-- 16 · FUNNY CHALLENGES -->
+<section class="page ch5">
+  <div class="ph"><span class="chip">פרק 5 · אתגרים קורעים מצחוק</span><span class="lvl" data-l="1" data-age="4+"></span></div>
+  <h2 class="t">אתגרים <span class="hl">קורעים מצחוק</span></h2>
+  <p class="task">שחקו לבד או עם המשפחה. סמנו ✔ בריבוע של כל אתגר שעשיתם.</p>
+  <div class="chal grow">
+    <div class="ch"><h4>ציור בעיניים עצומות <span class="done"></span></h4><p>עצמו עיניים וציירו סביבון. אפשר לפקוח רק בסוף!</p><div class="area"></div></div>
+    <div class="ch"><h4>היד החלשה <span class="done"></span></h4><p>ציירו חנוכייה ביד שאתם לא כותבים בה.</p><div class="area"></div></div>
+    <div class="ch"><h4>שם מצחיק <span class="done"></span></h4><p>המציאו שם מצחיק לסופגנייה שמתגלגלת לבד ברחוב.</p><span class="ln" style="width:100%"></span><span class="ln" style="width:100%"></span></div>
+    <div class="ch"><h4>סיפור מ-5 מילים <span class="done"></span></h4><p>ספרו סיפור שיש בו את כל המילים: <b>סביבון, פיל, שמן, טרקטור, ירח</b>.</p><span class="ln" style="width:100%"></span><span class="ln" style="width:100%"></span></div>
+    <div class="ch"><h4>אתגר 30 השניות <span class="done"></span></h4><p>כמה דברים בבית מתחילים באות <b>ס</b>? כתבו כמה שיותר עד שנגמר הזמן.</p><div class="area"></div></div>
+    <div class="ch"><h4>אליפות הסביבון <span class="done"></span></h4><p>מי מסובב הכי הרבה זמן? כתבו את השמות ואת השניות.</p>
+      <table class="lg" style="font-size:10pt"><tr><th>שם</th><th>שניות</th></tr><tr><td style="height:7mm"></td><td></td></tr><tr><td style="height:7mm"></td><td></td></tr><tr><td style="height:7mm"></td><td></td></tr></table></div>
+  </div>
+</section>
+
+<!-- 17 · MEMORY -->
+<section class="page ch5">
+  <div class="ph"><span class="chip">פרק 5 · אתגרים קורעים מצחוק</span><span class="lvl" data-l="1" data-age="4+"></span></div>
+  <h2 class="t">אתגר <span class="hl">הזיכרון</span></h2>
+  <p class="task">הסתכלו על הציורים 20 שניות. אחר כך קפלו את הדף על הקו המקווקו (או כסו את הציורים) וענו על השאלות בלי להציץ.</p>
+  <div class="mem" id="mem"></div>
+  <div class="fold"><span>✂ קפלו כאן ✂</span></div>
+  <div class="solid grow" style="display:flex;flex-direction:column;gap:4mm;justify-content:center">
+    <div class="qs">
+      <div>1. כמה בעלי חיים ראיתם? <span class="ln"></span></div>
+      <div>2. האם הופיע סביבון? <span class="ln"></span></div>
+      <div>3. האם היה נר? <span class="ln"></span></div>
+      <div>4. איזה פרי ירוק היה שם? <span class="ln"></span></div>
+      <div>5. כמה ציורים היו בסך הכול? <span class="ln"></span></div>
+    </div>
+    <div class="say"><svg viewBox="-6 -4 112 140" class="mascot"></svg><div class="bub">רוצים יותר קשה? נסו לזכור גם באיזה סדר הציורים הופיעו!</div></div>
+  </div>
+</section>
+
+<!-- 18 · 8 NIGHTS -->
+<section class="page ch5">
+  <div class="ph"><span class="chip">פרק 5 · אתגרים קורעים מצחוק</span><span class="lvl" data-l="1" data-age="4+"></span></div>
+  <h2 class="t">8 לילות, <span class="hl">8 משימות</span></h2>
+  <p class="task">בכל ערב, אחרי הדלקת הנרות, עשו משימה אחת עם המשפחה וצבעו את העיגול. אחרי שמונה לילות אתם אלופי החנוכה!</p>
+  <div class="nights grow" id="nights"></div>
+</section>
+
+<!-- 19 · SOLUTIONS A -->
+<section class="page">
+  <div class="ph"><span class="chip">פתרונות</span><span class="lvl">רק אחרי שניסיתם!</span></div>
+  <h2 class="t">פתרונות <span class="hl">חלק א׳</span></h2>
+  <div class="sol grow">
+    <div><h4>מי גנב את הסופגנייה? (עמ׳ 3)</h4>הדוב דובי. רק לו יש כובע, משקפיים וצעיף כחול.</div>
+    <div><h4>הקוד הסודי (עמ׳ 6)</h4>הודעה 1: <b>נס גדול היה פה</b><br>הודעה 2: <b>חנוכה שמח</b></div>
+    <div><h4>8 הבדלים (עמ׳ 4)</h4><ol style="columns:2"><li>אין קו אמצעי בחלון</li><li>אין ירח</li><li>ענן נוסף בשמיים</li><li>נר אחד פחות דולק</li><li>סביבון אדום במקום כחול</li><li>אות ש׳ במקום ג׳</li><li>סופגנייה בלי ריבה</li><li>סרט ירוק על המתנה</li></ol></div>
+    <div><h4>עין הנץ (עמ׳ 5)</h4><span id="fieldAns"></span> המפתח והינשוף מסומנים בתמונה הקטנה.<div id="fieldSol" style="margin-top:1.5mm"></div></div>
+    <div><h4>מי אני? (עמ׳ 7)</h4>1. סביבון · 2. סופגנייה · 3. לביבה · 4. חנוכייה · 5. השמש · 6. פך השמן</div>
+    <div><h4>מה בא אחר כך? (עמ׳ 8)</h4>🍩 · 🟡 · 4 · 8 · 15 (מוסיפים בכל פעם 1 יותר) · ה (אותיות הסביבון חוזרות)</div>
+    <div class="wide"><h4>מי יוצא דופן? (עמ׳ 8)</h4>🔦 פנס, הוא לא נר · 🍉 אבטיח, לא אוכלים אותו דווקא בחנוכה (לביבה, סופגנייה וזית קשורים לשמן) · מ, היא לא אות של סביבון · 7, הוא המספר האי-זוגי היחיד</div>
+  </div>
+</section>
+
+<!-- 20 · SOLUTIONS B -->
+<section class="page">
+  <div class="ph"><span class="chip">פתרונות</span><span class="lvl">רק אחרי שניסיתם!</span></div>
+  <h2 class="t">פתרונות <span class="hl">חלק ב׳</span></h2>
+  <div class="sol grow">
+    <div><h4>סוד הריבועים (עמ׳ 9)</h4><div style="display:flex;gap:4mm;justify-content:center"><div class="sudoku sm" id="sud1s"></div><div class="sudoku sm" id="sud2s"></div></div></div>
+    <div><h4>חידות היגיון (עמ׳ 9)</h4>1. <b>4</b> · 2. <b>5</b> (4 נרות + השמש) · 3. <b>שווה</b>, שניהם קילו · 4. <b>36</b> (1+2+3+4+5+6+7+8)</div>
+    <div class="wide"><h4>מי גר באיזה בית? (עמ׳ 10)</h4>איתי גר בבית <b>הצהוב</b> ואוהב <b>לביבות</b>. נועה גרה בבית <b>הכחול</b> ואוהבת <b>סופגניות</b>. תמר גרה בבית <b>האדום</b> ואוהבת <b>סביבון</b>.</div>
+    <div><h4>פך השמן (עמ׳ 11)</h4><div id="maze1s"></div></div>
+    <div><h4>המבוך של המכבים (עמ׳ 12)</h4><div id="maze2s"></div></div>
+    <div><h4>איזה מסלול? (עמ׳ 13)</h4><span id="tangleAns"></span><div id="tangleS" style="margin-top:1.5mm"></div></div>
+    <div><h4>ציירו דרך (עמ׳ 13)</h4><div id="flowS" style="width:55%;margin:0 auto"></div></div>
+    <div class="wide"><h4>אתגר הזיכרון (עמ׳ 17)</h4>1. שניים (ינשוף וחתול) · 2. כן · 3. לא · 4. זית · 5. שמונה</div>
+  </div>
+</section>
+
+
+</div>
+
+<script>
+(function(){
+const INK='#14215a', GOLD='#ffc23d';
+const f=n=>(+n).toFixed(1);
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const $=id=>document.getElementById(id);
+
+/* ---------- art helpers ---------- */
+function flame(cx,top,h,glow){h=h||16;return `${glow?`<ellipse cx="${cx}" cy="${top-h*.45}" rx="${h*.75}" ry="${h*.9}" fill="${GOLD}" opacity=".28"/>`:''}<path d="M${cx} ${top-h}C${cx+h*.45} ${top-h*.45},${cx+h*.38} ${top},${cx} ${top}C${cx-h*.38} ${top},${cx-h*.45} ${top-h*.45},${cx} ${top-h}Z" fill="#ff9d00"/><path d="M${cx} ${top-h*.6}C${cx+h*.2} ${top-h*.3},${cx+h*.18} ${top},${cx} ${top}C${cx-h*.18} ${top},${cx-h*.2} ${top-h*.3},${cx} ${top-h*.6}Z" fill="#fff3a0"/>`}
+function dreidel(o){o=Object.assign({x:0,y:0,s:1,color:'#2f5bea',letter:'',face:false,outline:false},o);
+  const fillB=o.outline?'#fff':o.color, fillH=o.outline?'#fff':GOLD, sw=o.outline?2.5:3;
+  let g=`<g transform="translate(${o.x} ${o.y}) scale(${o.s})" stroke-linejoin="round">
+  <rect x="42" y="0" width="16" height="31" rx="7" fill="${fillH}" stroke="${INK}" stroke-width="${sw}"/>
+  <path d="M16 28H84Q92 28 92 36V74L50 126L8 74V36Q8 28 16 28Z" fill="${fillB}" stroke="${INK}" stroke-width="${sw}"/>`;
+  if(!o.outline) g+=`<path d="M18 38V70" stroke="#fff" stroke-opacity=".45" stroke-width="6" stroke-linecap="round"/>`;
+  if(o.letter) g+=`<text x="50" y="84" text-anchor="middle" font-family="Secular One,Rubik,sans-serif" font-size="42" fill="#fff">${o.letter}</text>`;
+  if(o.face) g+=`<circle cx="36" cy="56" r="9" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="64" cy="56" r="9" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="38" cy="57" r="4.2" fill="${INK}"/><circle cx="66" cy="57" r="4.2" fill="${INK}"/><circle cx="39.5" cy="55" r="1.5" fill="#fff"/><circle cx="67.5" cy="55" r="1.5" fill="#fff"/><circle cx="25" cy="70" r="5" fill="#ff8fb5" opacity=".8"/><circle cx="75" cy="70" r="5" fill="#ff8fb5" opacity=".8"/><path d="M38 74Q50 86 62 74" fill="#ff6b8a" stroke="${INK}" stroke-width="2.5"/>`;
+  return g+'</g>';}
+function donut(x,y,r,icing,jam,outline){
+  if(outline) return `<g><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r*.82}" fill="#fff" stroke="${INK}" stroke-width="2.5"/><path d="M${x-r*.85} ${y-r*.1}Q${x-r*.5} ${y+r*.25} ${x-r*.2} ${y-r*.05}T${x+r*.4} ${y-r*.05}T${x+r*.85} ${y-r*.1}" fill="none" stroke="${INK}" stroke-width="2" stroke-dasharray="4 4"/></g>`;
+  let g=`<g><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r*.82}" fill="#e7a254" stroke="${INK}" stroke-width="2"/><ellipse cx="${x}" cy="${y-r*.12}" rx="${r*.82}" ry="${r*.6}" fill="${icing}"/>`;
+  if(jam) g+=`<circle cx="${x}" cy="${y-r*.15}" r="${r*.28}" fill="#d81f43"/>`;
+  const sp=[[-.5,-.3,'#2f5bea'],[.45,-.35,'#00a38c'],[-.2,.15,'#ffc23d'],[.35,.12,'#7b5cff']];
+  sp.forEach(([a,b,c])=>g+=`<rect x="${x+a*r-1.5}" y="${y+b*r-.8}" width="3.4" height="1.6" rx=".8" fill="${c}" transform="rotate(${a*80} ${x+a*r} ${y+b*r})"/>`);
+  return g+'</g>';}
+function gift(x,y,w,h,box,rib){return `<g stroke="${INK}" stroke-width="2"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${box}"/><rect x="${x+w/2-4}" y="${y}" width="8" height="${h}" fill="${rib}"/><ellipse cx="${x+w/2-8}" cy="${y-5}" rx="8" ry="5" fill="${rib}"/><ellipse cx="${x+w/2+8}" cy="${y-5}" rx="8" ry="5" fill="${rib}"/></g>`}
+function star(x,y,r,fill){let p='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;p+=`${f(x+rr*Math.cos(a))},${f(y+rr*Math.sin(a))} `}return `<polygon points="${p}" fill="${fill}"/>`}
+const CANDLES=['#ff6b35','#2f5bea','#00a38c','#f2408f','#7b5cff','#ff6b35','#2f5bea','#00a38c','#f2408f'];
+function menorah(o){o=Object.assign({x:0,y:0,s:1,lit:8,glow:false,outline:false,shamashLit:true,metal:GOLD},o);
+  const M=o.outline?'#fff':o.metal, sw=o.outline?2.5:2;
+  let g=`<g transform="translate(${o.x} ${o.y}) scale(${o.s})" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round">`;
+  g+=`<rect x="104" y="44" width="12" height="108" rx="3" fill="${M}"/>`;
+  g+=`<rect x="16" y="92" width="188" height="10" rx="5" fill="${M}"/>`;
+  const xs=[...Array(9)].map((_,i)=>20+i*22.5);
+  xs.forEach((x,i)=>{ if(i===4) return; g+=`<rect x="${x-3}" y="70" width="6" height="24" fill="${M}"/>`; });
+  g+=`<rect x="74" y="148" width="72" height="14" rx="7" fill="${M}"/>`;
+  const order=[8,7,6,5,3,2,1,0];
+  xs.forEach((x,i)=>{
+    const sh=i===4, cupY=sh?40:64, top=cupY-26;
+    g+=`<rect x="${x-9}" y="${cupY}" width="18" height="8" rx="3" fill="${M}"/>`;
+    if(!o.outline || true){ g+=`<rect x="${x-4.5}" y="${top}" width="9" height="26" rx="2" fill="${o.outline?'#fff':CANDLES[i]}"/>`;
+      g+=`<path d="M${x} ${top}v-4" stroke="${INK}" stroke-width="1.6"/>`; }
+    const lit = sh ? (o.shamashLit && o.lit>0) : order.indexOf(i) < o.lit;
+    if(lit && !o.outline) g+=`<g stroke="none">${flame(x,top-3,16,o.glow)}</g>`;
+  });
+  return g+'</g>';}
+function smooth(pts,closed){const n=pts.length;const get=i=>closed?pts[(i+n)%n]:pts[Math.max(0,Math.min(n-1,i))];
+  let d=`M${f(pts[0][0])} ${f(pts[0][1])}`;const segs=closed?n:n-1;
+  for(let i=0;i<segs;i++){const p0=get(i-1),p1=get(i),p2=get(i+1),p3=get(i+2);
+    d+=`C${f(p1[0]+(p2[0]-p0[0])/6)} ${f(p1[1]+(p2[1]-p0[1])/6)},${f(p2[0]-(p3[0]-p1[0])/6)} ${f(p2[1]-(p3[1]-p1[1])/6)},${f(p2[0])} ${f(p2[1])}`;}
+  return d+(closed?'Z':'');}
+
+/* ---------- mascots, stars ---------- */
+document.querySelectorAll('svg.mascot').forEach(s=>s.innerHTML=dreidel({face:true,color:'#2f5bea'}));
+document.querySelectorAll('.lvl[data-l]').forEach(el=>{const l=+el.dataset.l;el.innerHTML=`<b>${['','קל','בינוני','אלופים'][l]}</b> · מגיל ${el.dataset.age.replace('+','')}`});
+
+/* ---------- cover ---------- */
+(function(){
+  $('coverArt').innerHTML=`<svg viewBox="0 0 400 230" style="width:100%">
+   <ellipse cx="200" cy="222" rx="190" ry="10" fill="#000" opacity=".25"/>
+   ${menorah({x:85,y:30,s:1.05,lit:8,glow:true})}
+   ${dreidel({x:10,y:105,s:.85,color:'#f2408f',face:true})}
+   ${dreidel({x:318,y:128,s:.62,color:'#00a38c',letter:'נ'})}
+   ${donut(345,205,22,'#ffd1e3',true)}${donut(300,212,17,'#fff',true)}${donut(105,212,16,'#c9a6ff',true)}
+  </svg>`;})();
+
+/* ---------- welcome flames ---------- */
+(function(){let h='';for(let i=1;i<=26;i++)h+=`<div><svg viewBox="0 0 20 24"><path d="M10 2C17 10 16 22 10 22C4 22 3 10 10 2Z" fill="#fff" stroke="${INK}" stroke-width="1.6"/></svg>${i}</div>`;$('flames').innerHTML=h;})();
+
+/* ---------- spot the difference ---------- */
+function scene(v){let s=`<svg viewBox="0 0 360 250"><rect width="360" height="250" fill="#e6ecff"/>`;
+  s+=`<rect x="20" y="14" width="150" height="112" rx="8" fill="#1d2f7c" stroke="#8a5a2b" stroke-width="6"/>`;
+  if(v===0) s+=`<circle cx="135" cy="44" r="15" fill="#fff2b8"/><circle cx="142" cy="40" r="13" fill="#1d2f7c"/>`;
+  [[48,40],[60,102],[140,102]].concat(v===1?[[112,32]]:[]).forEach(([x,y])=>s+=`<g fill="#dfe7ff"><ellipse cx="${x}" cy="${y}" rx="14" ry="6"/><circle cx="${x-4}" cy="${y-4}" r="6"/><circle cx="${x+5}" cy="${y-3}" r="5"/></g>`);
+  s+=`<path d="M20 70H170" stroke="#8a5a2b" stroke-width="5"/>`;
+  if(v===0) s+=`<path d="M95 14V126" stroke="#8a5a2b" stroke-width="5"/>`;
+  s+=`<rect x="0" y="186" width="360" height="64" fill="#c98a4b"/><rect x="0" y="182" width="360" height="8" fill="#8a5a2b"/>`;
+  s+=menorah({x:190,y:52,s:.75,lit:v===0?5:4});
+  s+=dreidel({x:22,y:132,s:.42,color:v===0?'#2f5bea':'#e53935',letter:'נ'});
+  s+=dreidel({x:72,y:140,s:.36,color:'#00a38c',letter:v===0?'ג':'ש'});
+  s+=`<ellipse cx="150" cy="200" rx="46" ry="9" fill="#fff" stroke="${INK}" stroke-width="2"/>`;
+  s+=donut(126,189,13,'#ffd1e3',true)+donut(174,189,13,'#fff',true)+donut(150,183,14,'#c9a6ff',v===0);
+  s+=gift(292,205,46,32,'#f2408f',v===0?GOLD:'#2ecc71');
+  return s+'</svg>';}
+$('sceneA').innerHTML=scene(0);$('sceneB').innerHTML=scene(1);
+
+/* ---------- hawk eye field ---------- */
+(function(){const R=rng(2026),cols=11,rows=8,W=600,H=420,cw=W/cols,chh=H/rows;
+  const pool=['🍩','🍩','🕯️','🕯️','🪙','🪙','🎁','🧸','🫒','🥔','🧀','🔥'];
+  const special={};special[Math.floor(R()*cols*rows)]='🔑';let o;do{o=Math.floor(R()*cols*rows)}while(special[o]);special[o]='🦉';
+  const cnt={'🍩':0,'🕯️':0,'🪙':0};let items='',sol='';
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const i=r*cols+c;let e=special[i];if(!e){if(R()<.18)continue;e=pool[Math.floor(R()*pool.length)]}
+    if(cnt[e]!==undefined)cnt[e]++;
+    const x=c*cw+cw/2+(R()-.5)*cw*.4,y=r*chh+chh/2+(R()-.5)*chh*.35,rot=(R()-.5)*50,sz=(special[i]?24:30+R()*8);
+    items+=`<text x="${f(x)}" y="${f(y)}" font-size="${f(sz)}" text-anchor="middle" dominant-baseline="central" transform="rotate(${f(rot)} ${f(x)} ${f(y)})">${e}</text>`;
+    if(special[i]) sol+=`<circle cx="${f(x)}" cy="${f(y)}" r="22" fill="none" stroke="#e53935" stroke-width="5"/>`;}
+  const bg=`<rect width="${W}" height="${H}" rx="18" fill="#fff4dc"/>`+[...Array(6)].map((_,i)=>`<rect x="0" y="${i*70}" width="${W}" height="35" fill="#ffe9b8" opacity=".55"/>`).join('');
+  $('field').innerHTML=`<svg viewBox="0 0 ${W} ${H}">${bg}${items}</svg>`;
+  $('fieldSol').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:60%;margin:0 auto">${bg}${items}${sol}</svg>`;
+  $('fieldAns').innerHTML=`סופגניות: <b>${cnt['🍩']}</b> · נרות: <b>${cnt['🕯️']}</b> · מטבעות: <b>${cnt['🪙']}</b>.`;})();
+
+/* ---------- cipher ---------- */
+(function(){const K=[['🕯️','נ'],['🍩','ס'],['🪙','ג'],['🍭','ד'],['🫒','ו'],['🎁','ל'],['🔥','ה'],['🌙','י'],['🥔','פ'],['💧','ש'],['🐘','מ'],['🎈','ח'],['🍪','כ']];
+  $('key').innerHTML=K.map(([s,l])=>`<div>${s}<b>${l}</b></div>`).join('');
+  const m=Object.fromEntries(K.map(([s,l])=>[l,s]));
+  const enc=t=>t.split(' ').map(w=>`<div class="word">${[...w].map(ch=>`<div class="cell"><span class="sym">${m[ch]}</span><span class="slot"></span></div>`).join('')}</div>`).join('');
+  $('msg1').innerHTML=enc('נס גדול היה פה');$('msg2').innerHTML=enc('חנוכה שמח');})();
+
+/* ---------- who am I pictures ---------- */
+$('whoPics').innerHTML=`<span><svg viewBox="-4 -4 108 138">${dreidel({color:'#f2408f',letter:'ג'})}</svg></span><span>🕯️</span><span><svg viewBox="0 0 60 50">${donut(30,26,22,'#ffd1e3',true)}</svg></span><span>🥔</span><span><svg viewBox="0 -12 220 180" style="width:22mm">${menorah({lit:0})}</svg></span><span>🏺</span>`;
+
+/* ---------- sudoku ---------- */
+(function(){const S=['🕯️','🍩','🪙','🎁'];
+  const g1=[[0,1,2,3],[2,3,0,1],[1,0,3,2],[3,2,1,0]],m1=[[1,0,1,0],[0,1,0,1],[1,0,1,0],[0,1,0,1]];
+  const g2=[[2,3,4,1],[4,1,2,3],[1,2,3,4],[3,4,1,2]],m2=[[1,0,0,1],[0,1,1,0],[0,1,1,0],[1,0,0,1]];
+  const draw=(g,m,sym,all)=>g.flat().map((v,i)=>`<div>${(all||m.flat()[i])?(sym?S[v]:v):''}</div>`).join('');
+  $('sud1').innerHTML=draw(g1,m1,true);$('sud2').innerHTML=draw(g2,m2,false);
+  $('sud1s').innerHTML=draw(g1,m1,true,true);$('sud2s').innerHTML=draw(g2,m2,false,true);})();
+
+/* ---------- houses ---------- */
+(function(){const H=[['#4a7bff','כחול'],['#ffc23d','צהוב'],['#ff5a4f','אדום']];let s=`<svg viewBox="0 0 600 190" style="width:100%">`;
+  H.forEach(([c],i)=>{const x=40+i*190;s+=`<g stroke="${INK}" stroke-width="3" stroke-linejoin="round"><path d="M${x} 80L${x+70} 20L${x+140} 80Z" fill="#8a5a2b"/><rect x="${x+12}" y="78" width="116" height="92" fill="${c}"/><rect x="${x+52}" y="118" width="34" height="52" rx="4" fill="#fff"/><rect x="${x+22}" y="92" width="24" height="22" fill="#fff4b8"/><rect x="${x+94}" y="92" width="24" height="22" fill="#fff4b8"/><rect x="${x+20}" y="174" width="100" height="0" /></g>
+    <rect x="${x+20}" y="0" width="100" height="0"/>`;});
+  s+=`<path d="M0 172H600" stroke="${INK}" stroke-width="3"/></svg>`;
+  let tags='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;padding:0 4mm">'+H.map(([c,n])=>`<div style="border:2.5px solid ${c};border-radius:10px;height:10mm;display:flex;align-items:center;padding:0 3mm;font-size:10pt;color:var(--muted);font-weight:700">בית ${n}:</div>`).join('')+'</div>';
+  $('houses').innerHTML=s+tags;})();
+
+/* ---------- mazes ---------- */
+function makeMaze(w,h,seed){const R=rng(seed),N=w*h,E=Array(N).fill(true),S=Array(N).fill(true),vis=Array(N).fill(false),st=[w-1];vis[w-1]=true;
+  while(st.length){const c=st[st.length-1],x=c%w,y=(c/w)|0,nb=[];
+    if(x>0&&!vis[c-1])nb.push(c-1);if(x<w-1&&!vis[c+1])nb.push(c+1);if(y>0&&!vis[c-w])nb.push(c-w);if(y<h-1&&!vis[c+w])nb.push(c+w);
+    if(!nb.length){st.pop();continue}const n=nb[(R()*nb.length)|0];
+    if(n===c+1)E[c]=false;else if(n===c-1)E[n]=false;else if(n===c+w)S[c]=false;else S[n]=false;vis[n]=true;st.push(n);}
+  const start=w-1,end=(h-1)*w,prev=Array(N).fill(-1),q=[start];prev[start]=start;
+  while(q.length){const c=q.shift();if(c===end)break;const x=c%w,y=(c/w)|0;const t=(n,open)=>{if(open&&prev[n]<0){prev[n]=c;q.push(n)}};
+    if(x<w-1)t(c+1,!E[c]);if(x>0)t(c-1,!E[c-1]);if(y<h-1)t(c+w,!S[c]);if(y>0)t(c-w,!S[c-w]);}
+  const path=[];for(let c=end;;c=prev[c]){path.push(c);if(c===start)break}return{w,h,E,S,path:path.reverse()};}
+function mazeSVG(m,o){const cs=40,px=8,py=cs*1.4,W=m.w*cs+2*px,H=m.h*cs+2*py,L=px,T=py,R=px+m.w*cs,B=py+m.h*cs;let d='';
+  for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){const c=y*m.w+x,X=L+x*cs,Y=T+y*cs;if(x<m.w-1&&m.E[c])d+=`M${X+cs} ${Y}V${Y+cs}`;if(y<m.h-1&&m.S[c])d+=`M${X} ${Y+cs}H${X+cs}`;}
+  d+=`M${R-cs} ${T}H${L}V${B}M${L+cs} ${B}H${R}V${T}`;
+  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">`;
+  if(o.bg) s+=`<rect x="${L}" y="${T}" width="${m.w*cs}" height="${m.h*cs}" fill="${o.bg}"/>`;
+  if(o.sol){const pts=m.path.map(c=>[L+(c%m.w)*cs+cs/2,T+((c/m.w)|0)*cs+cs/2]);pts.unshift([R-cs/2,T-cs*.5]);pts.push([L+cs/2,B+cs*.5]);
+    s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#e53935" stroke-width="${cs*.3}" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>`;}
+  s+=`<path d="${d}" stroke="${o.wall||INK}" stroke-width="${o.sw||5}" stroke-linecap="round" fill="none"/>`;
+  s+=`<g transform="translate(${R-cs/2} ${T-cs*.72})">${o.start}</g><g transform="translate(${L+cs/2} ${B+cs*.72})">${o.end}</g>`;
+  return s+'</svg>';}
+const jug=`<g transform="scale(1.3)"><path d="M-8 -14H8L6 -9Q15 -4 13 6Q11 15 0 15Q-11 15 -13 6Q-15 -4 -6 -9Z" fill="#ffc23d" stroke="${INK}" stroke-width="2"/><rect x="-6" y="-17" width="12" height="4" rx="2" fill="#8a5a2b" stroke="${INK}" stroke-width="1.5"/><path d="M-6 2H6" stroke="${INK}" stroke-width="2"/></g>`;
+const m1=makeMaze(8,9,11),m2=makeMaze(14,17,1948);
+const s1={start:jug,end:`<g transform="translate(-36 -26) scale(.33)">${menorah({lit:8})}</g>`};
+const s2={start:`<g transform="translate(-16 -26) scale(.32)">${dreidel({face:true})}</g>`,end:`<g>${donut(-12,4,13,'#ffd1e3',true)}${donut(12,4,13,'#fff',true)}${donut(0,-8,13,'#c9a6ff',true)}</g>`};
+$('maze1').innerHTML=mazeSVG(m1,Object.assign({bg:'#e6fbf6',sw:6},s1));
+$('maze2').innerHTML=mazeSVG(m2,Object.assign({bg:'#e6fbf6',sw:5},s2));
+$('maze1s').innerHTML=mazeSVG(m1,Object.assign({sol:true,sw:6},s1));
+$('maze2s').innerHTML=mazeSVG(m2,Object.assign({sol:true,sw:5},s2));
+
+/* ---------- tangled lines ---------- */
+(function(){const R=rng(808),xs=[500,300,100],names=['מיכל','יואב','אלה'],kids=['👧','👦','🧒'],gifts=['א','ב','ג'],perm=[2,0,1],cols=['#f2408f','#2f5bea','#00a38c'];
+  const paths=xs.map((sx,i)=>{const pts=[[sx,62]];[120,175,230,285].forEach(y=>pts.push([70+R()*460,y]));pts.push([xs[perm[i]],338]);return smooth(pts)});
+  const build=sol=>{let s=`<svg viewBox="0 0 600 410" style="width:100%">`;
+    paths.forEach((d,i)=>s+=`<path d="${d}" fill="none" stroke="${sol?cols[i]:INK}" stroke-width="6" stroke-linecap="round"/>`);
+    xs.forEach((x,i)=>{s+=`<circle cx="${x}" cy="34" r="27" fill="#fff" stroke="${INK}" stroke-width="3"/><text x="${x}" y="36" font-size="32" text-anchor="middle" dominant-baseline="central">${kids[i]}</text><text x="${x+52}" y="38" font-size="20" font-weight="700" text-anchor="middle" fill="${INK}" font-family="Rubik,sans-serif">${names[i]}</text>`;
+      s+=gift(x-26,350,52,40,['#ffc23d','#7b5cff','#ff6b35'][i],'#fff')+`<text x="${x}" y="377" font-size="22" text-anchor="middle" fill="${INK}" font-family="Secular One,sans-serif">${gifts[i]}</text>`;});
+    return s+'</svg>';};
+  $('tangle').innerHTML=build(false);$('tangleS').innerHTML=build(true);
+  $('tangleAns').innerHTML=names.map((n,i)=>`${n} ← <b>${gifts[perm[i]]}</b>`).join(' · ');})();
+
+/* ---------- flow puzzle ---------- */
+(function(){const P=[{c:'#ff6b35',p:[[0,0],[0,1],[0,2],[1,2]]},{c:'#2f5bea',p:[[0,3],[0,4],[1,4],[2,4],[3,4],[4,4]]},{c:'#00a38c',p:[[1,1],[1,0],[2,0],[3,0],[4,0],[4,1],[4,2],[4,3]]},{c:'#f2408f',p:[[1,3],[2,3],[2,2],[2,1]]},{c:'#7b5cff',p:[[3,1],[3,2],[3,3]]}];
+  const cs=60,ctr=([r,c])=>[c*cs+cs/2+5,r*cs+cs/2+5];
+  const build=sol=>{let s=`<svg viewBox="0 0 310 310" style="width:100%"><rect x="5" y="5" width="300" height="300" rx="14" fill="#fff" stroke="${INK}" stroke-width="4"/>`;
+    for(let i=1;i<5;i++)s+=`<path d="M${5+i*cs} 5V305M5 ${5+i*cs}H305" stroke="#c9d2ef" stroke-width="2"/>`;
+    if(sol)P.forEach(({c,p})=>s+=`<polyline points="${p.map(ctr).map(q=>q.join(',')).join(' ')}" fill="none" stroke="${c}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>`);
+    P.forEach(({c,p})=>[p[0],p[p.length-1]].forEach(q=>{const [x,y]=ctr(q);s+=`<circle cx="${x}" cy="${y}" r="20" fill="${c}" stroke="${INK}" stroke-width="2.5"/>`}));
+    return s+'</svg>';};
+  $('flow').innerHTML=build(false);$('flowS').innerHTML=build(true);})();
+
+/* ---------- creative ---------- */
+$('bigDreidel').innerHTML=dreidel({outline:true});
+$('emptyMenorah').innerHTML=menorah({outline:true,lit:0});
+$('emptyDonut').innerHTML=donut(60,46,52,null,false,true);
+(function(){const R=rng(33);let h='';for(let k=0;k<3;k++){const pts=[];const n=9;for(let i=0;i<n;i++){const a=i/n*Math.PI*2,r=34*(.65+R()*.5);pts.push([60+r*Math.cos(a),55+r*Math.sin(a)])}
+  h+=`<div class="draw" style="display:grid;place-items:center"><svg viewBox="0 0 120 110" style="width:70%"><path d="${smooth(pts,true)}" fill="#ffd36b" stroke="#d98e00" stroke-width="2.5"/><ellipse cx="48" cy="44" rx="7" ry="4" fill="#fff" opacity=".7"/></svg></div>`;}
+  $('blobs').innerHTML=h;})();
+
+/* ---------- memory ---------- */
+$('mem').innerHTML=['🍩','🦉','🎁',`<svg viewBox="-4 -4 108 138">${dreidel({color:'#7b5cff',letter:'ה'})}</svg>`,'🫒','🪙','🐈','🍭'].map(e=>`<div>${e}</div>`).join('');
+
+/* ---------- 8 nights ---------- */
+(function(){const T=['מדליקים יחד ומספרים את סיפור נס פך השמן. כל אחד מוסיף משפט.','טורניר סביבונים משפחתי! מי שמקבל נ׳ עושה פרצוף מצחיק.','מכינים כרטיס ברכה לחנוכה לסבא וסבתא או לחבר טוב.','טועמים מאכל חנוכה חדש שעוד לא אכלתם.','כל אחד אומר מחמאה לכל אחד במשפחה.','בונים חנוכייה מלגו, מפקקים או מקופסאות.','ערב חידות: פותרים יחד שני עמודים מהחוברת.','מציירים את הרגע הכי שמח שלכם בחנוכה על דף נפרד.'];
+  $('nights').innerHTML=T.map((t,i)=>`<div class="nt"><div class="nb"><b>${i+1}</b><small>לילה</small><svg viewBox="0 -8 220 180" style="width:100%">${menorah({lit:i+1})}</svg></div><p>${t}</p><span class="done"></span></div>`).join('');})();
+
+/* ---------- certificate ---------- */
+
+/* ---------- page footers ---------- */
+document.querySelectorAll('.book > .page').forEach((p,i)=>{if(p.hasAttribute('data-nofoot'))return;const ft=document.createElement('div');ft.className='foot';ft.innerHTML=`<span>חוברת זו הורדה מאתר מדליק · <b dir="ltr">madlik.autoclick.co.il</b></span>`+(i?`<span class="pn">${i+1}</span>`:'');p.appendChild(ft)});
+
+/* ---------- fit to screen ---------- */
+const book=document.querySelector('.book');
+function fit(){const avail=document.documentElement.clientWidth-32,pw=210*96/25.4;book.style.zoom=Math.min(1,avail/pw)}
+fit();addEventListener('resize',fit);
+})();
+</script>
