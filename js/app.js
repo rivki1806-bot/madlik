@@ -33,6 +33,7 @@ const visitorId = () => { let v = store.get('vid', ''); if(!v){ v = Math.random(
 let lastHit = '';
 function countHit(name, params, path){
   if(!SECTIONS[name] || path === lastHit) return; lastHit = path;
+  if(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return; // כניסות מהמחשב של הפיתוח לא נספרות
   let sec = SECTIONS[name];
   if(name === 'creator') sec = canPlay(params[0]) ? 'משחקים על המסך' : 'פעילויות להדפסה';
   if(name === 'game'){ const g = findIn('games', params[0]); if(g && !isScreenGame(g)) sec = 'פעילויות להדפסה'; }
@@ -141,7 +142,7 @@ pages.home = () => {
   const words = ['סביבון','לביבות','סופגניות','שמונה נרות','פך שמן','נס גדול','משחקים','מיתוג','מתכונים'];
   const band = (cls,dir) => `<div class="band ${cls}" data-dir="${dir}" aria-hidden="true"><div class="band-track">${[0,1].map(()=>[...words,...words].map(w=>`<span>${w}</span>`).join('')).join('')}</div></div>`;
   const hl = ['בצחוק,','במשחק','בשולחן','ובתמונה','מוכן.'];
-  const stm = 'ערב לביבות טוב לא נגמר בלביבות. הוא נגמר בצחוק, במשחק שכולן נכנסו אליו, בשולחן שמישהי טרחה עליו ובתמונה שכולן רוצות. אספנו את כל זה במקום אחד, כדי שתבואי עם כוס תה ותצאי עם ערב מוכן.'.split(' ').map(w=>`<span class="w${hl.includes(w)?' hl':''}">${w}</span>`).join(' ');
+  const stm = 'ערב לביבות טוב לא נגמר בלביבות. הוא נגמר בצחוק, במשחק שכולם נכנסו אליו, בשולחן שמישהו טרח עליו ובתמונה שכולם רוצים. אספנו את כל זה במקום אחד, כדי שתבואו עם כוס תה ותצאו עם ערב מוכן.'.split(' ').map(w=>`<span class="w${hl.includes(w)?' hl':''}">${w}</span>`).join(' ');
   const ring = txt => { const ch = [...txt], n = ch.length; return ch.map((c,i)=>`<text transform="rotate(${(-(i/n)*360).toFixed(2)} 80 80) translate(80 24)" text-anchor="middle">${c}</text>`).join(''); };
   const pile = (id,theme,font,over) => { const t = D.templates.find(x=>x.id===id); return designHTML(t, Object.assign({theme, font:font||'frank', deco:''}, t.fields, over||{}), ''); };
   const p2 = n => String(n).padStart(2,'0');
@@ -149,7 +150,7 @@ pages.home = () => {
     .concat(['<a class="ad-card ad-cta" href="#/advertise"><b>ראית את זה?</b><span>ראו את זה עוד אלפי אנשים, מוזמן לפרסם באחת התכניות השוות!</span><em>לכל התכניות וטופס יצירת קשר ←</em></a>']);
   return `
   <section class="hero" id="hero">
-    <div class="hero-top"><span>חנוכה תשפ״ז</span><span>הכול בחינם</span><span>גללי ותראי מה קורה ↓</span></div>
+    <div class="hero-top"><span>חנוכה תשפ״ז</span><span>הכול בחינם</span><span>גללו ותראו מה קורה ↓</span></div>
     <h1 class="hero-word"><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
     <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות • שמדליק שמחה בלבבות • ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
         <aside class="ad-rail" aria-label="מודעות">
@@ -167,9 +168,9 @@ pages.home = () => {
   ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
-  ${wshow('biz','בעלי עסקים','בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילות ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
+  ${wshow('biz','בעלי עסקים','בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילים ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
   <section class="final">
-    <a class="big-link" href="#/games">מתחילות לשחק <i>←</i></a>
+    <a class="big-link" href="#/games">מתחילים לשחק <i>←</i></a>
     <a class="big-link" href="#/submit">יש לך רעיון? <i>←</i></a>
     <a class="big-link" href="#/advertise">יש לך עסק? <i>←</i></a>
   </section>`;
@@ -512,7 +513,7 @@ function designHTML(t, s, logo){
 /* מתכונים */
 pages.recipes = () => {
   const cats = [...new Set(content('recipes').map(r=>r.cat))];
-  return pageHead('מתכונים לערב לביבות', 'לביבות, סופגניות, מגשי אירוח ושתייה – עם חישוב כמויות לפי מספר הסועדות.', 'מתכונים') + `
+  return pageHead('מתכונים לערב לביבות', 'לביבות, סופגניות, מגשי אירוח ושתייה – עם חישוב כמויות לפי מספר הסועדים.', 'מתכונים') + `
   <div class="wrap"><form class="filters" id="rf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש מתכון או מצרך..."><select name="cat"><option value="">כל הקטגוריות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="diet"><option value="">חלבי / פרווה</option><option>חלבי</option><option>פרווה</option><option>בשרי</option></select><select name="level"><option value="">כל הרמות</option><option>קל</option><option>בינוני</option><option>מאתגר</option></select></form><div class="cards" id="rl"></div></div>`;
 };
 pages.recipes.after = () => { const f = document.getElementById('rf'), l = document.getElementById('rl'); const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('recipes').filter(r=>(!v.q||JSON.stringify(r).includes(v.q))&&(!v.cat||r.cat===v.cat)&&(!v.diet||r.diet===v.diet)&&(!v.level||r.level===v.level)); l.innerHTML = res.length?res.map(recipeCard).join(''):'<div class="empty">לא נמצא מתכון.</div>'; }; f.oninput = run; run(); };
@@ -531,7 +532,7 @@ pages.recipe = ([id]) => {
   <div class="wrap detail">
     <div>
       <div class="box"><h2>מצרכים</h2>
-        <div class="servings">מספר סועדות: <button id="sMinus" aria-label="פחות">−</button><strong id="sNum">${r.serves}</strong><button id="sPlus" aria-label="יותר">+</button></div>
+        <div class="servings">מספר סועדים: <button id="sMinus" aria-label="פחות">−</button><strong id="sNum">${r.serves}</strong><button id="sPlus" aria-label="יותר">+</button></div>
         <ul class="ing-list" id="ing"></ul>
         <div class="btn-row"><button class="btn btn-gold" id="toShop"> הוספה לרשימת הקניות</button></div>
       </div>
@@ -551,7 +552,7 @@ pages.recipe.after = ([id]) => {
   document.getElementById('sPlus').onclick = () => { n++; draw(); };
   document.getElementById('toShop').onclick = () => { const s = store.get('shop', []); list().forEach(x=>s.push({t:x, from:r.title, done:false})); store.set('shop', s); toast('נוסף לרשימת הקניות באזור האישי '); };
   document.getElementById('rShare').onclick = () => copyLink('#/recipe/'+r.id);
-  document.getElementById('rPrint').onclick = () => printHTML(`<div class="sheet" style="aspect-ratio:auto"><h1>${esc(r.title)}</h1><p>${n} סועדות · ${esc(r.time)} דק׳ · ${esc(r.level)}</p><h2>מצרכים</h2><ul>${list().map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h2>אופן ההכנה</h2><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p style="color:#c49a45;text-align:center">מדליק · כל מה שצריך לערב לביבות</p></div>`);
+  document.getElementById('rPrint').onclick = () => printHTML(`<div class="sheet" style="aspect-ratio:auto"><h1>${esc(r.title)}</h1><p>${n} סועדים · ${esc(r.time)} דק׳ · ${esc(r.level)}</p><h2>מצרכים</h2><ul>${list().map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h2>אופן ההכנה</h2><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p style="color:#c49a45;text-align:center">מדליק · כל מה שצריך לערב לביבות</p></div>`);
   draw();
 };
 
@@ -564,7 +565,9 @@ const PLANS = [
 ];
 function adBlock(){
   return `<section class="ad-block" id="adBlock">
-    <h2 class="ad-title">רוצים לפרסם?<br><span>צרו איתנו קשר</span></h2>
+    <h2 class="ad-title">רוצים לפרסם?<br><span>בחרו תכנית</span></h2>
+    <div class="plans">${PLANS.map(p=>`<button type="button" class="plan ${p.cls}" data-plan="${p.id}"><span class="plan-name">${p.name}</span><b class="plan-price">${p.price}</b><span class="plan-text">${p.text}</span><span class="plan-cta">אני רוצה את זה ←</span></button>`).join('')}</div>
+    <h3 class="ad-sub">ואחרי שבחרתם, צרו איתנו קשר</h3>
     <form class="box form ad-form" id="af">
       <div class="two-col"><label>שם העסק<input name="biz" required></label><label>איש/אשת קשר<input name="name" required></label></div>
       <div class="two-col"><label>טלפון<input name="phone" type="tel" required></label><label>מייל<input name="email" type="email" required></label></div>
@@ -575,7 +578,6 @@ function adBlock(){
       <button class="btn btn-gold">שליחה</button>
       <p class="hint">ההודעה מגיעה ישירות אלינו, ונחזור אליכם בהקדם.</p>
     </form>
-    <div class="plans">${PLANS.map(p=>`<button type="button" class="plan ${p.cls}" data-plan="${p.id}"><span class="plan-name">${p.name}</span><b class="plan-price">${p.price}</b><span class="plan-text">${p.text}</span><span class="plan-cta">אני רוצה את זה ←</span></button>`).join('')}</div>
   </section>`;
 }
 function sendToOwner(d){
@@ -600,7 +602,7 @@ function adBlockAfter(){
 
 pages.suppliers = () => {
   const all = content('suppliers'), cats = [...new Set(all.map(s=>s.cat))], regions = ['צפון','חיפה','שרון','מרכז','ירושלים','שפלה','דרום'];
-  return pageHead('בעלי עסקים שישדרגו לכם את האירוע', 'אולמות, קייטרינג, מפעילות, עיצוב וקינוחים. לפי אזור, סוג ומחיר.', 'בעלי עסקים') + `
+  return pageHead('בעלי עסקים שישדרגו לכם את האירוע', 'אולמות, קייטרינג, מפעילים, עיצוב וקינוחים. לפי אזור, סוג ומחיר.', 'בעלי עסקים') + `
   <div class="wrap">
     <a class="ad-strip" href="#/advertise" data-scroll="adBlock"><b>רוצים לפרסם?</b><span>צרו איתנו קשר</span><i>←</i></a>
     <form class="filters" id="sf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש עסק..."><select name="cat"><option value="">כל סוגי השירות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="region"><option value="">כל הארץ</option>${regions.map(c=>`<option>${c}</option>`).join('')}</select><select name="price"><option value="">כל טווחי המחיר</option><option>₪</option><option>₪₪</option><option>₪₪₪</option></select></form>
@@ -629,7 +631,7 @@ pages.supplier = ([id]) => {
 };
 pages.supplier.after = ([id]) => { const f = document.getElementById('lf'); if(!f) return; f.onsubmit = e => { e.preventDefault(); record('leads', Object.assign({supplier:findIn('suppliers',id).name}, Object.fromEntries(new FormData(f)))); f.reset(); toast('הפנייה נשלחה! בעל העסק יחזור אלייך בהקדם'); }; };
 
-pages.advertise = () => pageHead('רוצים לפרסם?', 'צרו איתנו קשר, ובחרו אחת משלוש התכניות.', 'פרסום') + `<div class="wrap">${adBlock()}</div>`;
+pages.advertise = () => pageHead('רוצים לפרסם?', 'בחרו אחת משלוש התכניות, ואחר כך צרו איתנו קשר.', 'פרסום') + `<div class="wrap">${adBlock()}</div>`;
 pages.advertise.after = adBlockAfter;
 
 pages.submit = () => pageHead('שליחת רעיון', 'משחק, מתכון או רעיון לאתר. אם הוא יתאים, נוסיף אותו ונכתוב את שמך.', 'שליחת רעיון') + `
@@ -672,7 +674,7 @@ pages.admin = () => {
   if(!ADMIN_PAGE) return notFound();
   if(!sessionStorage.getItem('madlik_admin')) return pageHead('ניהול מדליק', '', 'ניהול') + `<div class="wrap"><div class="box" style="max-width:440px;margin:auto"><form class="form" id="loginF">${API() ? '<label>מפתח ניהול<input type="password" name="p" required autocomplete="off"></label><button class="btn btn-gold">כניסה</button><p class="hint">המפתח הסודי שקבעת בסקריפט של גוגל. הוא נבדק בשרת, ואינו נשמר באתר.</p>' : '<div class="notice">עדיין לא מחוברים לשרת של גוגל. בלי השרת אי אפשר לראות כניסות של גולשים אחרים או הודעות שנשלחו. אחרי הכניסה, בלשונית "רשימת תפוצה" יש הוראות חיבור.</div><button class="btn btn-gold">כניסה לניהול</button>'}</form></div></div>`;
   const tab = location.hash.split('tab=')[1] || 'stats', live = !!API();
-  const tabs = {stats:'כניסות', subs:'רעיונות שנשלחו', leads:'פניות לבעלי עסקים', ads:'בקשות פרסום', contact:'יצירת קשר', news:'רשימת תפוצה', users:'משתמשות', add:'הוספת תוכן'};
+  const tabs = {stats:'כניסות', subs:'רעיונות שנשלחו', leads:'פניות לבעלי עסקים', ads:'בקשות פרסום', contact:'יצירת קשר', news:'רשימת תפוצה', users:'משתמשים', add:'הוספת תוכן'};
   const tbl = (rows, cols) => adminTable(tab, rows, cols);
   let body = '';
   if(tab==='news') body = newsTabHTML();
@@ -681,10 +683,10 @@ pages.admin = () => {
   if(tab==='add') body = `<div class="two-col">
     <form class="box form" data-add="suppliers"><h3>עסק חדש</h3><label>שם<input name="name" required></label><div class="two-col"><label>תחום<input name="cat" required></label><label>אזור<select name="region"><option>צפון</option><option>חיפה</option><option>שרון</option><option>מרכז</option><option>ירושלים</option><option>שפלה</option><option>דרום</option></select></label></div><div class="two-col"><label>טלפון<input name="phone"></label><label>מייל<input name="email"></label></div><div class="two-col"><label>מחיר<select name="price"><option>₪</option><option>₪₪</option><option>₪₪₪</option></select></label><label>אייקון<input name="ico" value=""></label></div><label>תיאור<textarea name="text"></textarea></label><label class="check"><input type="checkbox" name="featured"> מומלץ (מופיע ראשון ברשימה)</label><label class="check"><input type="checkbox" name="homeAd"> מודעה בהרצה בעמוד הראשי (Premium / Pro)</label><button class="btn btn-gold">הוספה</button></form>
     <form class="box form" data-add="games"><h3>משחק חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>סוג<input name="type" value="מילים"></label><label>גיל<input name="age" value="כל הגילאים"></label></div><div class="two-col"><label>מינימום משתתפים<input type="number" name="min" value="4"></label><label>מקסימום<input type="number" name="max" value="50"></label></div><label>תיאור קצר<input name="short"></label><label>איך משחקים<textarea name="how"></textarea></label><label>מילים (לא חובה, שורה לכל מילה)<textarea name="words"></textarea></label><button class="btn btn-gold">הוספה</button></form>
-    <form class="box form" data-add="recipes"><h3>מתכון חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>קטגוריה<input name="cat" value="לביבות"></label><label>כשרות<select name="diet"><option>פרווה</option><option>חלבי</option><option>בשרי</option></select></label></div><div class="two-col"><label>זמן (דקות)<input type="number" name="time" value="30"></label><label>סועדות<input type="number" name="serves" value="6"></label></div><label>רמה<select name="level"><option>קל</option><option>בינוני</option><option>מאתגר</option></select></label><label>מצרכים <span class="hint">שורה לכל מצרך: כמות | יחידה | שם</span><textarea name="ing" placeholder="2 | כוסות | קמח"></textarea></label><label>שלבי הכנה <span class="hint">שורה לכל שלב</span><textarea name="steps"></textarea></label><button class="btn btn-gold">הוספה</button></form>
+    <form class="box form" data-add="recipes"><h3>מתכון חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>קטגוריה<input name="cat" value="לביבות"></label><label>כשרות<select name="diet"><option>פרווה</option><option>חלבי</option><option>בשרי</option></select></label></div><div class="two-col"><label>זמן (דקות)<input type="number" name="time" value="30"></label><label>סועדים<input type="number" name="serves" value="6"></label></div><label>רמה<select name="level"><option>קל</option><option>בינוני</option><option>מאתגר</option></select></label><label>מצרכים <span class="hint">שורה לכל מצרך: כמות | יחידה | שם</span><textarea name="ing" placeholder="2 | כוסות | קמח"></textarea></label><label>שלבי הכנה <span class="hint">שורה לכל שלב</span><textarea name="steps"></textarea></label><button class="btn btn-gold">הוספה</button></form>
   </div>
   <div class="box"><h3>תוכן שהוספת</h3>${['games','recipes','suppliers'].map(k=>addedContent(k).map(x=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span>${esc(x.title||x.name)} <span class="muted">(${k})</span></span><button class="btn btn-sm btn-light" data-del-extra="${k}|${esc(x.id)}">מחיקה</button></div>`).join('')).join('') || '<p class="muted">עוד לא הוספת.</p>'}</div>`;
-  return pageHead('ניהול האתר', '', 'ניהול') + `<div class="wrap">${live ? `<div class="notice" style="margin-bottom:16px">מחובר לשרת של גוגל: כל הטפסים, הנרשמות והתוכן נשמרים בגיליון שלך.</div>` : `<div class="notice" style="margin-bottom:16px">עדיין לא מחובר לשרת: מה שמופיע כאן נשמר רק בדפדפן הזה. כדי שכל הטפסים והנרשמות יגיעו אלייך, חברי את השרת של גוגל (ההוראות בלשונית "רשימת תפוצה").</div>`}<div class="tabs">${Object.entries(tabs).map(([k,v])=>`<a class="chip ${k===tab?'on':''}" href="#/admin?tab=${k}">${v}</a>`).join('')}<button class="chip" id="logout">יציאה</button></div>${body}</div>`;
+  return pageHead('ניהול האתר', '', 'ניהול') + `<div class="wrap">${live ? `<div class="notice" style="margin-bottom:16px">מחובר לשרת של גוגל: כל הטפסים, הנרשמים והתוכן נשמרים בגיליון שלך.</div>` : `<div class="notice" style="margin-bottom:16px">עדיין לא מחובר לשרת: מה שמופיע כאן נשמר רק בדפדפן הזה. כדי שכל הטפסים והנרשמים יגיעו אלייך, חברי את השרת של גוגל (ההוראות בלשונית "רשימת תפוצה").</div>`}<div class="tabs">${Object.entries(tabs).map(([k,v])=>`<a class="chip ${k===tab?'on':''}" href="#/admin?tab=${k}">${v}</a>`).join('')}<button class="chip" id="logout">יציאה</button></div>${body}</div>`;
 };
 // לשונית הכניסות: טבלת מדורים וטבלת בעלי עסקים
 function localStats(){
@@ -696,7 +698,7 @@ function statsHTML(st, leads, live){
   const n = x => x==null ? '–' : Number(x).toLocaleString('he-IL');
   const table = (rows, first, extra) => {
     const max = Math.max(1, ...rows.map(r=>r.o.total));
-    return `<div style="overflow:auto"><table class="table stats-t"><tr><th>${first}</th><th>כניסות</th><th>היום</th><th>7 ימים</th>${live?'<th>מבקרות שונות</th>':''}${extra?`<th>${extra}</th>`:''}</tr>${rows.map(r=>`<tr><td><b>${esc(r.name)}</b><span class="st-bar" style="--w:${Math.round(r.o.total/max*100)}%"></span></td><td><b>${n(r.o.total)}</b></td><td>${n(r.o.today)}</td><td>${n(r.o.week)}</td>${live?`<td>${n(r.o.uniq)}</td>`:''}${extra?`<td>${n(r.leads)}</td>`:''}</tr>`).join('')}</table></div>`;
+    return `<div style="overflow:auto"><table class="table stats-t"><tr><th>${first}</th><th>כניסות</th><th>היום</th><th>7 ימים</th>${live?'<th>מבקרים שונים</th>':''}${extra?`<th>${extra}</th>`:''}</tr>${rows.map(r=>`<tr><td><b>${esc(r.name)}</b><span class="st-bar" style="--w:${Math.round(r.o.total/max*100)}%"></span></td><td><b>${n(r.o.total)}</b></td><td>${n(r.o.today)}</td><td>${n(r.o.week)}</td>${live?`<td>${n(r.o.uniq)}</td>`:''}${extra?`<td>${n(r.leads)}</td>`:''}</tr>`).join('')}</table></div>`;
   };
   const zero = {total:0, today:0, week:0, uniq:0};
   const secNames = [...new Set(Object.values(SECTIONS))];
@@ -708,13 +710,13 @@ function statsHTML(st, leads, live){
   const days = []; for(let i = 13; i >= 0; i--){ const d = new Date(Date.now() - i * 864e5), k = d.toISOString().slice(0, 10); days.push([k, (st.days && st.days[k]) || 0]); }
   const dmax = Math.max(1, ...days.map(x => x[1]));
   const chart = st.days ? `<div class="box" style="margin-bottom:20px"><h2>14 הימים האחרונים</h2><div class="st-chart">${days.map(([k, v]) => `<div title="${k}: ${v}"><i style="height:${Math.round(v / dmax * 100)}%"></i><em>${v || ''}</em><span>${k.slice(8)}</span></div>`).join('')}</div></div>` : '';
-  return `${live?'':'<div class="notice" style="margin-bottom:16px">המספרים כאן הם רק מהדפדפן הזה. כשמחברים את השרת של גוגל (בלשונית "רשימת תפוצה"), כאן יופיעו הכניסות של כל הגולשות.</div>'}
+  return `${live?'':'<div class="notice" style="margin-bottom:16px">המספרים כאן הם רק מהדפדפן הזה. כשמחברים את השרת של גוגל (בלשונית "רשימת תפוצה"), כאן יופיעו הכניסות של כל הגולשים.</div>'}
     <div class="st-tiles">${tile('כניסות בסך הכול', A.total)}${tile('היום', A.today)}${tile('7 ימים אחרונים', A.week)}${tile('גולשים שונים', A.uniq)}</div>${chart}<div class="box"><h2>כניסות לפי מדור</h2><p class="muted">סה"כ ${n(sum)} כניסות לעמודים באתר. כניסות שלך מהניהול לא נספרות.</p>${table(secs, 'מדור')}</div>
     <div class="box" style="margin-top:20px"><h2>כניסות לכל בעל עסק</h2><p class="muted">כמה פעמים נכנסו לעמוד של כל עסק, וכמה פניות נשלחו אליו מהאתר.</p>${table(sups, 'עסק', 'פניות')}</div>`;
 }
 function newsTabHTML(){
   const setup = API() ? '' : `<div class="box" id="nSetup"><h2>חיבור חד־פעמי של רשימת התפוצה</h2>
-    <p>כדי שכל מה שנשלח באתר יגיע אלייך (נרשמות, פניות לבעלי עסקים, בקשות פרסום, רעיונות ומשתמשות), שהתוכן שתוסיפי יופיע לכל הגולשות, ושההודעות ייצאו מהג׳ימייל שלך, צריך שרת קטן וחינמי של גוגל. 5 דקות, פעם אחת:</p>
+    <p>כדי שכל מה שנשלח באתר יגיע אלייך (נרשמים, פניות לבעלי עסקים, בקשות פרסום, רעיונות ומשתמשים), שהתוכן שתוסיפי יופיע לכל הגולשים, ושההודעות ייצאו מהג׳ימייל שלך, צריך שרת קטן וחינמי של גוגל. 5 דקות, פעם אחת:</p>
     <ol>
       <li>פתחי גיליון חדש בגוגל שיטס: <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a>.</li>
       <li>בתפריט למעלה: <b>תוספים</b> ← <b>Apps Script</b>.</li>
@@ -726,7 +728,7 @@ function newsTabHTML(){
     <textarea readonly id="gasCode" rows="7" style="width:100%;direction:ltr;font-family:monospace;font-size:.8rem;border:2px solid var(--ink);border-radius:6px;padding:8px">${esc(GAS_CODE)}</textarea>
     <div class="btn-row"><button class="btn" id="gasCopy">העתקת הקוד</button></div></div>`;
   return `${setup}<div class="two-col" style="margin-top:20px;align-items:start">
-    <div class="box"><h2>הנרשמות</h2>
+    <div class="box"><h2>הנרשמים</h2>
       <p id="nCount" class="muted">טוענת...</p>
       <div class="btn-row"><button class="btn btn-sm" id="nReload">רענון</button><button class="btn btn-sm" id="nCopy">העתקת כתובות</button><button class="btn btn-sm" id="nCsv">הורדה ל־CSV</button></div>
       <div id="nList" style="max-height:340px;overflow:auto"></div></div>
@@ -744,8 +746,8 @@ function initNews(){
   const cnt = $('nCount'), list = $('nList'), keyIn = {get value(){ return adminKey(); }}, st = $('nStatus'), f = $('nf');
   let subs = [];
   const draw = () => {
-    cnt.textContent = subs.length + ' נרשמות' + (API() ? '' : ' (רק מהדפדפן הזה, עד שתחברי את השרת)');
-    list.innerHTML = subs.length ? `<table class="table"><tr><th>מייל</th><th>תאריך</th><th>מקור</th></tr>${subs.slice(0,300).map(s=>`<tr><td>${esc(s.email)}</td><td>${esc(s.date)}</td><td>${esc(s.source)}</td></tr>`).join('')}</table>` : '<p class="muted">עוד אין נרשמות.</p>';
+    cnt.textContent = subs.length + ' נרשמים' + (API() ? '' : ' (רק מהדפדפן הזה, עד שתחברי את השרת)');
+    list.innerHTML = subs.length ? `<table class="table"><tr><th>מייל</th><th>תאריך</th><th>מקור</th></tr>${subs.slice(0,300).map(s=>`<tr><td>${esc(s.email)}</td><td>${esc(s.date)}</td><td>${esc(s.source)}</td></tr>`).join('')}</table>` : '<p class="muted">עוד אין נרשמים.</p>';
   };
   const load = () => {
     if(!API()){ subs = store.get('subscribers',[]).map(x=>({email:x.email, date:x.date, source:x.source})); draw(); return; }
@@ -766,7 +768,7 @@ function initNews(){
     const k = keyIn.value.trim(); if(!k) return toast('כתבי את מפתח הניהול');
     const v = Object.fromEntries(new FormData(f)), test = !!v.test;
     if(test && !v.testTo) return toast('כתבי לאיזה מייל לשלוח את הבדיקה');
-    if(!test && !confirm('לשלוח את ההודעה ל־' + subs.length + ' נרשמות?')) return;
+    if(!test && !confirm('לשלוח את ההודעה ל־' + subs.length + ' נרשמים?')) return;
     st.textContent = 'שולחת...';
     apiPost({action:'send', key:k, subject:v.subject, body:v.body, test: test ? v.testTo : ''})
       .then(r => { if(!r.ok) throw new Error(r.error||'שגיאה'); st.textContent = 'נשלח ל־' + r.sent + (r.skipped ? ' (' + r.skipped + ' לא נשלחו בגלל המכסה היומית)' : ''); toast('ההודעה נשלחה'); })

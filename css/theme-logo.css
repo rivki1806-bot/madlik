@@ -220,3 +220,4 @@ body.bn-lock{overflow:hidden}
 html[data-pal=logo] .chip{color:var(--ink);background:#fff;border:2px solid var(--ink)}
 html[data-pal=logo] .chip:hover{background:#ffe9a0}
 html[data-pal=logo] .chip.on{background:#ff7a2e;color:#fff;border-color:var(--ink)}
+.ad-sub{margin:46px 0 16px;font-family:var(--f-poster);font-weight:400;font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.1;color:var(--ink)}
