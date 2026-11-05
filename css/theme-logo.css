@@ -201,3 +201,22 @@ body.bn-lock{overflow:hidden}
 @keyframes bnBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 .bn-card{padding-bottom:36px}
 @media (prefers-reduced-motion:reduce){.bn-card,.bn-ico,.bn-date{animation:none}}
+
+/* ============================================================
+   דף הניהול הייעודי: בלי חלקים ציבוריים, עם סיכום כניסות
+   ============================================================ */
+.admin-page .newsletter-bar,.admin-page .main-nav,.admin-page .menu-toggle,.admin-page .scene,.admin-page .site-footer,.admin-page .to-top,.admin-page #intro{display:none!important}
+.admin-page .site-header{justify-content:center}
+.st-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.st-tile{display:grid;gap:2px;text-align:center;padding:18px 10px;border-radius:18px;background:linear-gradient(180deg,#fff,#fff1d6);border:3px solid #3d2a1f;box-shadow:5px 5px 0 #3d2a1f}
+.st-tile b{font:400 2.4rem/1.1 'Rubik Bubbles','Suez One',sans-serif;color:#ff7a2e;-webkit-text-stroke:1.5px #3d2a1f;paint-order:stroke fill}
+.st-tile span{font-weight:700;color:#4b3326}
+.st-chart{display:flex;align-items:flex-end;gap:6px;height:170px;padding-top:8px}
+.st-chart>div{flex:1;display:grid;grid-template-rows:1fr auto auto;justify-items:center;align-items:end;height:100%;min-width:0}
+.st-chart i{display:block;width:100%;max-width:34px;border-radius:8px 8px 0 0;background:linear-gradient(180deg,#ffc42d,#ff7a2e);border:2px solid #3d2a1f;border-bottom:0;min-height:3px}
+.st-chart em{font:700 .78rem 'Heebo',sans-serif;font-style:normal;color:#3d2a1f;min-height:1.1em}
+.st-chart span{font:600 .72rem 'Heebo',sans-serif;color:#8c7f74}
+@media (max-width:640px){.st-tiles{grid-template-columns:1fr 1fr}}
+html[data-pal=logo] .chip{color:var(--ink);background:#fff;border:2px solid var(--ink)}
+html[data-pal=logo] .chip:hover{background:#ffe9a0}
+html[data-pal=logo] .chip.on{background:#ff7a2e;color:#fff;border-color:var(--ink)}

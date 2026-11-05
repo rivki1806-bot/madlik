@@ -21,10 +21,16 @@ const hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה'
 function stats_() {
   const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;
   const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
-  const out = { sec: {}, sup: {} }, seen = {};
+  const out = { sec: {}, sup: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};
   for (let i = 1; i < rows.length; i++) {
     const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);
-    if (!out[type]) continue;
+    if (type !== 'sec' && type !== 'sup') continue;
+    if (type === 'sec') {
+      const A = out.all, dk = Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd');
+      A.total++; if (dk === today) A.today++; if (now - d.getTime() < 7 * DAY) A.week++;
+      if (v && !seenAll[v]) { seenAll[v] = 1; A.uniq++; }
+      out.days[dk] = (out.days[dk] || 0) + 1;
+    }
     const o = out[type][id] = out[type][id] || { total: 0, today: 0, week: 0, uniq: 0 };
     o.total++;
     if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++;

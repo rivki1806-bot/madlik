@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-pal="logo" class="admin-page">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ניהול מדליק</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bellefair&family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;700&family=Assistant:wght@400;600;700&family=Secular+One&family=Varela+Round&family=Suez+One&family=Amatic+SC:wght@400;700&family=Gveret+Levin&family=Karantina:wght@400;700&family=Rubik:wght@400;500;700;800&family=Rubik+Bubbles&family=Rubik+Gemstones&family=Playpen+Sans+Hebrew:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="img/icon.png">
+<link rel="stylesheet" href="css/style.css?v=60">
+<link rel="stylesheet" href="css/poster.css?v=60">
+<link rel="stylesheet" href="css/worlds.css?v=60">
+<link rel="stylesheet" href="css/editor.css?v=60">
+<link rel="stylesheet" href="css/games.css?v=60">
+<link rel="stylesheet" href="css/theme-logo.css?v=60">
+<link rel="stylesheet" href="css/games-theme.css?v=60">
+</head>
+<body>
+<div class="intro" id="intro" aria-hidden="true"><img class="intro-logo" src="img/logo-mark.png" alt=""><div class="intro-line"></div></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="newsletter-bar" id="newsBar" role="region" aria-label="הרשמה לעדכונים">
+  <svg class="bell" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 22a2.4 2.4 0 0 0 2.4-2.4H9.6A2.4 2.4 0 0 0 12 22zm7-6.4V11c0-3.1-1.64-5.7-4.5-6.4V4a2.5 2.5 0 0 0-5 0v.6C6.63 5.3 5 7.9 5 11v4.6l-2 2V19h18v-1.4l-2-2z"/></svg>
+  <span class="news-text"><b>רוצה לקבל עדכונים</b> על חדשות באתר?</span>
+  <form id="newsForm" class="news-form">
+    <input type="email" required placeholder="המייל שלך" aria-label="כתובת מייל לקבלת עדכונים">
+    <button class="btn btn-ink btn-sm">כן, תעדכנו אותי</button>
+  </form>
+  <button class="news-close" id="newsClose" aria-label="סגירה">×</button>
+</div>
+
+<header class="site-header">
+  <a href="#/" class="logo" aria-label="מדליק – לעמוד הבית">
+    <img class="logo-img" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות">
+  </a>
+  <button class="menu-toggle" id="menuToggle" aria-label="תפריט">☰</button>
+  <nav class="main-nav" id="mainNav">
+    <a href="#/games">משחקים על המסך</a>
+    <a href="#/create">פעילויות להדפסה</a>
+    <a href="#/studio">סטודיו מיתוג</a>
+    <a href="#/recipes">מתכונים</a>
+    <a href="#/suppliers">בעלי עסקים</a>
+    <a href="#/me" class="nav-me">♡ האזור שלי</a>
+  </nav>
+</header>
+
+<main id="app" tabindex="-1"></main>
+
+<section class="scene" id="scene" aria-hidden="false"></section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <img class="footer-logo-img" src="img/logo-mark.png" alt="מדליק">
+      <p>כל מה שצריך לערב לביבות שמדליק שמחה בלבבות</p>
+    </div>
+    <div class="footer-links">
+      <a href="#/games">משחקים על המסך</a><a href="#/create">פעילויות להדפסה</a><a href="#/studio">מיתוג</a><a href="#/recipes">מתכונים</a><a href="#/suppliers">בעלי עסקים</a>
+    </div>
+    <div class="footer-links">
+      <a href="#/submit">שליחת רעיון</a><a href="#/advertise">רוצים לפרסם?</a>
+    </div>
+  </div>
+  <p class="copy">© מדליק · כל הזכויות שמורות</p>
+  <p class="credit"><button type="button" class="credit-btn" id="creditBtn" title="לחצו ליצירת קשר">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi>. פיתוח, אפיון ועיצוב: רבקי יוגב · <bdi dir="ltr">rivki1806@gmail.com</bdi> · <bdi dir="ltr">055-677-1806</bdi></button></p>
+</footer>
+
+<button class="to-top" id="toTop" aria-label="חזרה למעלה">↑</button>
+<div class="wipe" id="wipe" aria-hidden="true">מדליק</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="print-root" id="printRoot"></div>
+
+<script>window.MADLIK_ADMIN_PAGE=true;if(!/^#\/admin/.test(location.hash))location.hash='#/admin';</script>
+<script src="js/data.js?v=60"></script>
+<script src="js/data-more.js?v=60"></script>
+<script src="js/styles.js?v=60"></script>
+<script src="js/stage.js?v=60"></script>
+<script src="js/worlds.js?v=60"></script>
+<script src="js/editor.js?v=60"></script>
+<script src="js/editor-ui.js?v=60"></script>
+<script src="js/games-pro.js?v=60"></script>
+<script src="js/games-play.js?v=60"></script>
+<script src="js/battle.js?v=60"></script>
+<script src="js/memory.js?v=60"></script>
+<script src="js/game-art.js?v=60"></script>
+<script src="js/game-scenes-a.js?v=60"></script>
+<script src="js/game-scenes-b.js?v=60"></script>
+<script src="js/config.js?v=60"></script>
+<script src="js/app.js?v=60"></script>
+</body>
+</html>
