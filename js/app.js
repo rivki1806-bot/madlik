@@ -389,8 +389,11 @@ pages.creator.after = ([type], q) => {
 };
 
 function gameVars(s){ const p = gPalettes[s.palette||0], fnt = (D.fonts.find(x=>x.id===s.font)||D.fonts[0]).css; return `--gc1:${p.c};--gbg:${p.bg};--gf:${fnt}`; }
+const pzMen = '<svg class="pz-men" viewBox="0 0 54 40" aria-hidden="true"><path d="M4 14 q0 20 23 20 q23 0 23 -20" fill="none" stroke="#ffd23f" stroke-width="3" stroke-linecap="round"/><path d="M27 34 v5 M17 39 h20" stroke="#ffd23f" stroke-width="3" stroke-linecap="round"/>' + [4,11,18,27,36,43,50].map(x=>'<rect x="'+(x-1.4)+'" y="'+(x===27?4:11)+'" width="2.8" height="'+(x===27?22:15)+'" rx="1" fill="#fff"/><ellipse cx="'+x+'" cy="'+(x===27?2.5:9.5)+'" rx="2.2" ry="3.2" fill="#ffb703"/>').join('') + '</svg>';
+const pzHead = t => `<span class="pz-c a">✦</span><span class="pz-c b">✦</span><span class="pz-c c">✦</span><span class="pz-c d">✦</span><div class="pz-head">${pzMen}<h2>${esc(t)}</h2>${pzMen}</div>`;
+const isEmo = c => /^[\p{Extended_Pictographic}‍️\s]+$/u.test(c);
 function renderGame(type, s, cache){
-  const v = gameVars(s), title = `<div class="sheet-title">${esc(s.title)}</div>`, foot = '<small>מדליק</small>';
+  const v = gameVars(s), title = pzHead(s.title), foot = '<small>מדליק</small>';
   const sheets = (items, per, cols, cellFn) => chunk(items, per).map(pg=>`<div class="sheet" style="${v}">${title}<div class="g-cards" style="grid-template-columns:repeat(${cols},1fr)">${pg.map(cellFn).join('')}</div></div>`).join('') || '<div class="empty">הכנס מילים כדי לראות תצוגה</div>';
   if(GP.NEW.includes(type)) return GP.render(type, s, cache, v, title);
   const words = lines(s.words);
@@ -406,7 +409,7 @@ function renderGame(type, s, cache){
     const n = +s.size||5, need = n*n - (n===5?1:0), count = Math.min(200, Math.max(1, +s.count||1));
     if(words.length < need) return `<div class="empty">לבינגו ${n}×${n} צריך לפחות ${need} מילים. יש כרגע ${words.length}.</div>`;
     if(!cache.boards || cache.key !== words.join()+n+count){ cache.key = words.join()+n+count; cache.boards = Array.from({length:count}, ()=>shuffle(words).slice(0,need)); }
-    return cache.boards.map((b,bi)=>{ const cells = b.slice(); if(n===5) cells.splice(12,0,'🔥'); return `<div class="sheet" style="${v};--n:${n}">${title}<div class="bingo">${cells.map((c,i)=>`<div class="${n===5&&i===12?'free':''}">${esc(c)}</div>`).join('')}</div><p style="text-align:center;color:var(--gc1)">לוח מספר ${bi+1}</p></div>`; }).join('');
+    return cache.boards.map((b,bi)=>{ const cells = b.slice(); if(n===5) cells.splice(12,0,'🔥'); return `<div class="sheet" style="${v};--n:${n}">${title}<div class="bingo">${cells.map((c,i)=>`<div class="${n===5&&i===12?'free':isEmo(c)?'emo':''}">${esc(c)}</div>`).join('')}</div><p class="pz-note">מסמנים כל תמונה שמזהים · שורה מלאה = בינגו! <span class="pz-badge">לוח ${bi+1}</span></p></div>`; }).join('');
   }
   if(type==='wordsearch'){
     const n = +s.size||12, ws = words.map(w=>w.replace(/\s/g,'')).filter(w=>w.length<=n);
