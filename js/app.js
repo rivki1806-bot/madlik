@@ -151,7 +151,7 @@ pages.home = () => {
   return `
   <section class="hero" id="hero">
     <div class="hero-top"><span>חנוכה תשפ״ז</span><span>הכול בחינם</span><span>גללו ותראו מה קורה ↓</span></div>
-    <h1 class="hero-word"><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
+    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
     <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות • שמדליק שמחה בלבבות • ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
         <aside class="ad-rail" aria-label="מודעות">
       <span class="ad-label">מודעות</span>
@@ -863,6 +863,7 @@ function render(){
   if(name && pages[name].after) pages[name].after(params, q);
   let isAdmin = false; try{ isAdmin = !!sessionStorage.getItem('madlik_admin'); }catch(e){}
   if(!isAdmin && !ADMIN_PAGE) countHit(name, params, path);
+  if(!ADMIN_PAGE){ const T = {games:'משחקים דיגיטליים על המסך', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'בעלי עסקים לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
   if(window.MadlikFX) window.MadlikFX.onRender(app);
   if(window.MadlikWorlds) window.MadlikWorlds.apply(name, app);
   document.querySelectorAll('.main-nav a').forEach(a=>a.classList.toggle('active', path!=='/' && ('#'+path).startsWith(a.getAttribute('href'))));
