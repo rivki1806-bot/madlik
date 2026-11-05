@@ -139,7 +139,7 @@ function elias(words){
   setup();
 }
 
-/* ======================= חידון טלוויזיה ======================= */
+/* ======================= חידון חנוכה ======================= */
 function quiz(qz, secs){
   if(!qz || !qz.length) return toast('צריך לפחות שאלה אחת');
   const o = ov('gp-quiz'); secs = +secs || 20;

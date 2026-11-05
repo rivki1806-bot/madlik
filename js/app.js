@@ -18,6 +18,8 @@ function subscribe(email, source, name){
   if(!API()) return;
   try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'subscribe', email, source, name:name||''})}).catch(()=>{}); }catch(e){}
 }
+const API2 = () => String(window.MADLIK_API2 || '').trim();
+const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
 const ADMIN_PAGE = !!window.MADLIK_ADMIN_PAGE; // דף הניהול נפתח רק מהקובץ הייעודי, ולא מהאתר הציבורי
@@ -207,7 +209,7 @@ pages.home = () => {
   </section>
   ${band('', 1)}
   <div class="statement"><p>${stm}</p></div>
-  ${wshow('games','משחקים על המסך','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון טלוויזיה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
+  ${wshow('games','משחקים על המסך','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון חנוכה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
   ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
@@ -793,6 +795,7 @@ function bizTabHTML(){
   </div>`;
 }
 function initBiz(call, live, fail){
+  const call2 = body => API2() ? apiPost2(Object.assign({key:adminKey()}, body)).then(r => { if(!r.ok) throw new Error(r.error||'שגיאה'); return r; }) : Promise.reject(new Error('צריך להתקין את הקוד הנוסף של גוגל (עוד לא חוברה כתובת שנייה)'));
   const $ = id => document.getElementById(id), f = $('bzForm');
   let imgData = '', S = {sup:{}, tel:{}, web:{}}, L = [];
   const list = () => addedContent('suppliers');
@@ -822,7 +825,11 @@ function initBiz(call, live, fail){
     $('bzFileInfo').textContent = it.img ? 'יש תמונה (אפשר להחליף)' : 'לא נבחרה תמונה'; $('bzHead').textContent = 'עריכת עסק: ' + it.name; $('bzSave').textContent = 'שמירת השינויים'; prev(); f.scrollIntoView({behavior:'smooth', block:'start'});
   };
   const persist = (item, isNew) => {
-    if(live) return call(isNew ? {action:'addContent', kind:'suppliers', item} : {action:'updateContent', id:item.id, item}).then(refreshRemote);
+    if(live){
+      if(isNew) return call({action:'addContent', kind:'suppliers', item}).then(refreshRemote);
+      const old = () => call({action:'removeContent', id:item.id}).then(() => call({action:'addContent', kind:'suppliers', item})).then(refreshRemote); // בלי הקוד הנוסף: עריכה = מחיקה והוספה מחדש עם אותו מזהה
+      return API2() ? call2({action:'updateContent', id:item.id, item}).then(refreshRemote).catch(old) : old();
+    }
     const ex = store.get('extra_suppliers', []), i = ex.findIndex(x => x.id === item.id); if(i >= 0) ex[i] = item; else ex.push(item); store.set('extra_suppliers', ex); return Promise.resolve();
   };
   const num = o => o ? o.total : 0;
@@ -843,7 +850,7 @@ function initBiz(call, live, fail){
     if(f.elements.site.value.trim() && !it.site) return toast('הקישור לאתר לא תקין');
     btn.disabled = true;
     try{
-      if(imgData){ if(!live) throw new Error('העלאת תמונה דורשת חיבור לשרת של גוגל. אפשר להדביק קישור לתמונה'); const r = await call({action:'uploadImage', data:imgData}); it.img = r.url; }
+      if(imgData){ if(!live) throw new Error('העלאת תמונה דורשת חיבור לשרת של גוגל. אפשר להדביק קישור לתמונה'); const r = await call2({action:'uploadImage', data:imgData}); it.img = r.url; }
       else if(it.img && !safeImg(it.img)) throw new Error('קישור התמונה לא תקין. נתיב כמו img/ads/שם.jpg או כתובת שמתחילה ב־https');
       const isNew = !it.id; it.id = it.id || 'b' + Date.now().toString(36); it.homeAd = it.plan !== 'Basic'; it.ico = '';
       if(!it.img) delete it.img; if(!it.site) delete it.site;
@@ -861,7 +868,7 @@ function initBiz(call, live, fail){
       done.then(() => { toast('נמחק'); draw(); }).catch(fail);
     }
   };
-  if(live){ Promise.all([call({action:'stats'}), call({action:'records', kind:'leads'}).catch(() => ({records:[]}))]).then(([s, l]) => { S = Object.assign(S, s.stats); L = l.records; draw(); }).catch(() => {}); }
+  if(live){ Promise.all([call({action:'stats'}), call({action:'records', kind:'leads'}).catch(() => ({records:[]})), API2() ? call2({action:'webstats'}).catch(() => null) : Promise.resolve(null)]).then(([s, l, w]) => { S = Object.assign(S, s.stats); if(w && w.stats){ S.tel = Object.assign({}, S.tel, w.stats.tel); S.web = w.stats.web; } L = l.records; draw(); }).catch(() => {}); }
   else { S = localStats(); L = store.get('leads', []); draw(); }
 }
 
