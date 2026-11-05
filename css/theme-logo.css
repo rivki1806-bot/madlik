@@ -224,3 +224,54 @@ html[data-pal=logo] .chip.on{background:#ff7a2e;color:#fff;border-color:var(--in
 
 /* טקסט לקוראי מסך ולמנועי חיפוש, מקביל ללוגו שבכותרת */
 .sr-only{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ============================================================
+   מדור בעלי עסקים: עיצוב נקי ובהיר עם איור גדול וכפתור כתום
+   ============================================================ */
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]){--bg:#fffaf4;--fg:#2b2118;--fg2:#6b5a4a;--surface:#fff;--surface-ink:#2b2118;--surface-ink2:#6b5a4a;--a1:#ff7a2e;--on-a1:#fff;--line:#ffd9b8;--r:18px;--bw:2px;--sh:0 10px 26px -14px rgba(255,122,46,.45);--sh-hover:0 18px 34px -14px rgba(255,122,46,.6);
+  background-color:#fffaf4!important;background-image:radial-gradient(ellipse 80% 38% at 50% 0%,rgba(255,196,45,.2),transparent 70%),linear-gradient(180deg,#fff 0%,#fff7ee 45%,#ffeedd 100%)!important;background-size:auto!important;background-position:0 0!important;color:#2b2118}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) :is(.head-art,.head-art-biz,.opensign,.wshow-art,.amb){display:none!important}
+/* כותרת העמוד: ממורכזת, כמו בדוגמה */
+html[data-pal=logo] body[data-world=biz] .page-head,html[data-pal=logo] .wshow[data-w=biz] .page-head{text-align:center;background:linear-gradient(180deg,#fff,#ffe9d0);border-radius:0 0 28px 28px;padding-bottom:30px}
+html[data-pal=logo] body[data-world=biz] .page-head h1,html[data-pal=logo] .wshow[data-w=biz] .page-head h1{font-family:'Heebo','Assistant',sans-serif;font-weight:800;font-size:clamp(2rem,4.6vw,3.3rem);line-height:1.18;max-width:none!important;margin-inline:auto;color:#2b2118;text-shadow:none;animation:none}
+html[data-pal=logo] body[data-world=biz] .page-head p,html[data-pal=logo] .wshow[data-w=biz] .page-head p{max-width:none!important;margin-inline:auto;color:#6b5a4a;font-size:1.1rem}
+html[data-pal=logo] body[data-world=biz] .breadcrumb{justify-content:center}
+/* סינון */
+html[data-pal=logo] body[data-world=biz] .filters{background:#fff;border:2px solid #ffd9b8;border-radius:18px;padding:12px;gap:10px;box-shadow:0 10px 24px -16px rgba(255,122,46,.5)}
+html[data-pal=logo] body[data-world=biz] .filters :is(input,select){border:2px solid #ffe0c2;border-radius:12px;background:#fffaf4;color:#2b2118;min-height:46px;font-family:'Heebo','Assistant',sans-serif}
+html[data-pal=logo] body[data-world=biz] .filters :is(input,select):focus{outline:0;border-color:#ff7a2e;box-shadow:0 0 0 4px rgba(255,196,45,.4)}
+/* הכרטיס */
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card{position:relative;display:flex;flex-direction:column;gap:12px;padding:12px;background:#fff;border:2px solid #ffc999;border-radius:18px;box-shadow:0 10px 26px -14px rgba(255,122,46,.45);color:#2b2118;overflow:hidden;transform:none;rotate:0deg;transition:transform .2s,box-shadow .2s;font-family:'Heebo','Assistant',sans-serif}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card:hover{transform:translateY(-6px);box-shadow:0 20px 36px -14px rgba(255,122,46,.62)}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card::before,html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card::after,html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card .card-top::before,html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card .card-top::after{display:none!important}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card .card-top{height:196px;margin:0;padding:0;border:0;border-radius:12px;overflow:hidden;background:#ffe9d0}
+html[data-pal=logo] .sup-card .biz-art{width:100%;height:100%;display:block;transition:transform .6s cubic-bezier(.2,1,.3,1)}
+html[data-pal=logo] .sup-card:hover .biz-art{transform:scale(1.07)}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .sup-card .card-body{padding:2px 4px 0;display:grid;gap:7px;background:transparent}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .sup-card .card-body h3{font-family:'Heebo','Assistant',sans-serif;font-weight:800;font-size:1.22rem;line-height:1.25;color:#2b2118}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .sup-card .card-body p{color:#6b5a4a;font-size:.98rem;line-height:1.6;margin:0}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .sup-card .tags{display:flex;flex-wrap:wrap;gap:6px}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .sup-card .tag{background:#fff3e6;border:1px solid #ffd2a6;color:#a4531a;border-radius:999px;padding:.1em .8em;font-weight:700;font-size:.82rem;box-shadow:none}
+html[data-pal=logo] .sup-go{display:grid;place-items:center;min-height:48px;margin-top:auto;border-radius:12px;background:linear-gradient(180deg,#ffa347,#ff7a2e);color:#fff;font:800 1.6rem/1 'Heebo',sans-serif;box-shadow:0 6px 0 -2px #d9531a;transition:transform .2s,box-shadow .2s,letter-spacing .25s}
+html[data-pal=logo] .sup-card:hover .sup-go{transform:translateY(-2px);box-shadow:0 8px 0 -2px #d9531a;letter-spacing:.35em}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .badge-featured{top:22px;right:22px;left:auto;background:#ff7a2e;color:#fff;border:0;border-radius:999px;padding:.2em .9em;font-weight:800;box-shadow:0 4px 10px rgba(255,122,46,.5);transform:none}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .sup-card .fav-btn{top:22px;left:22px;background:rgba(255,255,255,.92);color:#ff7a2e;border:0;box-shadow:0 4px 10px rgba(0,0,0,.15)}
+/* פס "רוצים לפרסם?" כמו הפס התחתון בדוגמה */
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .ad-strip{display:flex;align-items:center;gap:14px;background:#fff1e0;border:2px solid #ffd2a6;border-radius:16px;padding:16px 22px;color:#2b2118;box-shadow:none;transform:none;rotate:0deg;animation:none}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .ad-strip b{font-family:'Heebo',sans-serif;font-weight:800;font-size:1.25rem;color:#2b2118}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .ad-strip span{color:#6b5a4a;font-weight:600}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .ad-strip i{margin-inline-start:auto;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#ff7a2e;color:#fff;font-style:normal;font-weight:800}
+/* התכניות וטופס הפרסום באותו סגנון */
+html[data-pal=logo] body[data-world=biz] .ad-title{font-family:'Heebo',sans-serif;font-weight:800;text-shadow:none;color:#2b2118}
+html[data-pal=logo] body[data-world=biz] .ad-title span{color:#ff7a2e}
+html[data-pal=logo] body[data-world=biz] .plan{background:#fff;border:2px solid #ffc999;border-radius:18px;box-shadow:0 10px 26px -14px rgba(255,122,46,.45);color:#2b2118;font-family:'Heebo',sans-serif}
+html[data-pal=logo] body[data-world=biz] .plan:hover{box-shadow:0 18px 34px -14px rgba(255,122,46,.6);transform:translateY(-5px)}
+html[data-pal=logo] body[data-world=biz] .plan .plan-name{background:#fff1e0;color:#a4531a;border-radius:999px}
+html[data-pal=logo] body[data-world=biz] .plan .plan-price{color:#ff7a2e}
+html[data-pal=logo] body[data-world=biz] .plan .plan-cta{background:linear-gradient(180deg,#ffa347,#ff7a2e);color:#fff;border-radius:12px;padding:.7em 1em;text-align:center;font-weight:800;box-shadow:0 6px 0 -2px #d9531a}
+html[data-pal=logo] body[data-world=biz] .ad-form,html[data-pal=logo] body[data-world=biz] .box{background:#fff;border:2px solid #ffd9b8;border-radius:18px;box-shadow:0 10px 24px -16px rgba(255,122,46,.4);color:#2b2118}
+@media (max-width:640px){html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .cards>.card.sup-card .card-top{height:176px}}
+html[data-pal=logo] :is(body[data-world=biz],.wshow[data-w=biz]) .ad-strip span{background:#ff7a2e!important;color:#fff!important;border:0!important;border-radius:999px;padding:.25em 1em;font-weight:800;box-shadow:none!important;transform:none!important;rotate:0deg}
+html[data-pal=logo] body[data-world=biz] #sl.cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+@media (max-width:980px){html[data-pal=logo] body[data-world=biz] #sl.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){html[data-pal=logo] body[data-world=biz] #sl.cards{grid-template-columns:1fr}}
