@@ -174,3 +174,30 @@ dialog.contact-dlg.out .contact-in{animation:ctOut .2s ease forwards}
 @keyframes ctJump{0%{transform:translateY(40px) scale(.4);opacity:0}60%{transform:translateY(-12px) scale(1.2);opacity:1}100%{transform:none}}
 @media (max-width:520px){.ct-two{grid-template-columns:1fr}.contact-in{padding:24px 18px 18px}}
 @media (prefers-reduced-motion:reduce){.contact-in,.ct-flame{animation:none}}
+
+/* ============================================================
+   הודעה בולטת שמכסה את הכניסה למדור בעלי עסקים לכמה שניות
+   ============================================================ */
+body.bn-lock{overflow:hidden}
+.biz-notice{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:18px;overflow:auto;
+  background:radial-gradient(circle at 50% 18%,rgba(255,226,120,.9),transparent 55%),repeating-linear-gradient(135deg,rgba(255,255,255,.1) 0 22px,transparent 22px 44px),linear-gradient(160deg,#4aa0ee,#2b6fc2 60%,#1f56a0);animation:bnFade .35s}
+.biz-notice.out{animation:bnOut .45s ease forwards;pointer-events:none}
+@keyframes bnFade{from{opacity:0}}
+@keyframes bnOut{to{opacity:0;transform:scale(1.04)}}
+.bn-card{position:relative;width:min(560px,100%);display:grid;justify-items:center;gap:12px;text-align:center;padding:44px 28px 26px;background:linear-gradient(180deg,#fffdf6,#fff1d0);color:#3d2a1f;border:4px solid #3d2a1f;border-radius:30px;box-shadow:10px 10px 0 #3d2a1f,0 30px 70px -18px rgba(0,0,0,.6);font-family:'Heebo','Assistant',sans-serif;animation:bnPop 1s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes bnPop{0%{opacity:0;transform:translateY(120px) scale(.5) rotate(-12deg)}45%{opacity:1;transform:translateY(-24px) scale(1.08) rotate(3deg)}65%{transform:translateY(8px) scale(.97) rotate(-2deg)}100%{opacity:1;transform:none}}
+.bn-ico{position:absolute;top:-38px;left:50%;margin-left:-40px;width:80px;height:80px;display:grid;place-items:center;font-size:2.7rem;background:linear-gradient(180deg,#ffd13c,#ff8a2e);border:4px solid #3d2a1f;border-radius:50%;box-shadow:4px 4px 0 #3d2a1f;animation:bnWave 2.4s ease-in-out infinite}
+@keyframes bnWave{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.12)}}
+.bn-kick{margin:0;padding:4px 16px;border-radius:999px;background:#3d2a1f;color:#ffc42d;font:800 .85rem 'Playpen Sans Hebrew','Assistant',sans-serif;letter-spacing:.14em}
+.bn-card h2{margin:0;font:400 clamp(1.8rem,5vw,2.6rem)/1.1 'Suez One','Heebo',serif;color:#3d2a1f}
+.bn-date{display:flex;align-items:center;gap:10px;margin:2px 0;padding:8px 22px;border-radius:18px;background:linear-gradient(100deg,#ff7a2e,#ffc42d);border:3px solid #3d2a1f;box-shadow:4px 4px 0 #3d2a1f;transform:rotate(-2deg);animation:bnDate 2.6s ease-in-out 1.2s infinite}
+.bn-date b{font:400 1.7rem 'Suez One','Heebo',serif;color:#3d2a1f}
+.bn-date span{font:400 2.1rem 'Rubik Bubbles','Suez One',sans-serif;color:#fff;-webkit-text-stroke:2px #3d2a1f;paint-order:stroke fill;direction:ltr}
+@keyframes bnDate{0%,100%{transform:rotate(-2deg) scale(1)}50%{transform:rotate(2deg) scale(1.07)}}
+.bn-text{margin:0;max-width:44ch;font:600 1.15rem/1.65 'Playpen Sans Hebrew','Heebo',sans-serif;color:#4b3326}
+.bn-ok{margin-top:6px;min-height:50px}
+.bn-bar{position:absolute;left:22px;right:22px;bottom:12px;height:6px;border-radius:99px;background:rgba(61,42,31,.14);overflow:hidden}
+.bn-bar i{display:block;height:100%;background:linear-gradient(90deg,#ff7a2e,#ffc42d);border-radius:99px;transform-origin:right;animation:bnBar linear forwards}
+@keyframes bnBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.bn-card{padding-bottom:36px}
+@media (prefers-reduced-motion:reduce){.bn-card,.bn-ico,.bn-date{animation:none}}

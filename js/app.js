@@ -608,6 +608,7 @@ pages.suppliers = () => {
   </div>`;
 };
 pages.suppliers.after = () => {
+  showBizNotice();
   const f = document.getElementById('sf'), l = document.getElementById('sl');
   const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('suppliers').filter(s=>(!v.q||JSON.stringify(s).includes(v.q))&&(!v.cat||s.cat===v.cat)&&(!v.region||s.region===v.region)&&(!v.price||s.price===v.price)).sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)); l.innerHTML = res.length ? res.map(supCard).join('') : '<div class="empty">אין עדיין עסקים שמתאימים. נסו אזור אחר.</div>'; };
   f.oninput = run; run();
@@ -862,6 +863,29 @@ window.addEventListener('hashchange', () => {
   setTimeout(() => { if(tok !== navTok) return; render(); top(); wipe.className = 'wipe out'; setTimeout(()=>{ if(tok === navTok) wipe.className = 'wipe'; }, 520); }, 430);
 });
 
+/* ---------- הודעה בולטת בכניסה למדור בעלי עסקים ---------- */
+const BIZ_NOTICE_UNTIL = new Date('2026-11-10T00:00:00+02:00').getTime(); // מיום שלישי 10.11.26 ההודעה כבר לא רלוונטית
+let bizClosedAt = 0;
+function showBizNotice(){
+  if(Date.now() >= BIZ_NOTICE_UNTIL || document.querySelector('.biz-notice') || Date.now() - bizClosedAt < 4000) return;
+  const SECS = 8, el = document.createElement('div');
+  el.className = 'biz-notice'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'bnT');
+  el.innerHTML = '<div class="bn-card"><div class="bn-ico" aria-hidden="true">🤝</div>' +
+    '<p class="bn-kick">בעלי עסקים</p><h2 id="bnT">שימו לב, זה מתחיל ביום שלישי</h2>' +
+    '<div class="bn-date"><b>שלישי</b><span>10.11.26</span></div>' +
+    '<p class="bn-text">הסכם עם העסקים שמעוניינים בפרסום חל החל מיום שלישי 10.11.26, ורק מאז תוכלו לצפות בהם ולהנות משירותם.</p>' +
+    '<button type="button" class="btn btn-gold bn-ok">הבנתי, להמשיך ←</button>' +
+    '<div class="bn-bar" aria-hidden="true"><i style="animation-duration:' + SECS + 's"></i></div></div>';
+  document.body.appendChild(el); document.body.classList.add('bn-lock');
+  let done = false;
+  const close = () => { if(done) return; done = true; clearTimeout(t); document.removeEventListener('keydown', key); bizClosedAt = Date.now(); el.classList.add('out'); document.body.classList.remove('bn-lock'); setTimeout(() => el.remove(), 450); };
+  const key = e => { if(e.key === 'Escape') close(); };
+  document.addEventListener('keydown', key);
+  el.querySelector('.bn-ok').onclick = close; el.querySelector('.bn-ok').focus({preventScroll:true});
+  const t = setTimeout(close, SECS * 1000);
+  window.addEventListener('hashchange', () => close(), {once:true});
+}
+
 /* ---------- יצירת קשר (נפתח מהקרדיט בתחתית) ---------- */
 function openContact(){
   const old = document.querySelector('dialog.contact-dlg'); if(old){ old.close(); old.remove(); }
@@ -889,10 +913,7 @@ function openContact(){
     if(!v.msg) return err.textContent = 'כתבו כמה מילים בהודעה.';
     v.page = location.hash || '#/';
     record('contact', v);
-    // בלי שרת מחובר ההודעה נשמרת רק בדפדפן, ולכן מציעים גם שליחה בוואטסאפ
-    const wa = 'https://wa.me/972556771806?text=' + encodeURIComponent('שלום, אני ' + v.name + ' מהאתר מדליק.\n' + v.msg + (v.phone ? '\nטלפון: ' + v.phone : ''));
     d.querySelector('.contact-in').innerHTML = '<button type="button" class="contact-x" data-c="close" aria-label="סגירה">×</button><div class="contact-ok"><div class="ct-flame">🔥</div><h2>תודה, ' + esc(v.name) + '!</h2><p>ההודעה נשלחה, ואחזור אליכם בקרוב.</p>' +
-      (API() ? '' : '<p class="contact-sub">כדי שההודעה תגיע בוודאות, אפשר לשלוח אותה גם בוואטסאפ:</p><a class="btn btn-gold" href="' + wa + '" target="_blank" rel="noopener">שליחה בוואטסאפ ←</a>') +
       '<button type="button" class="btn" data-c="close">סגירה</button></div>';
   };
   d.showModal(); const first = f.querySelector('input'); if(first) first.focus();
