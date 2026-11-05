@@ -1,0 +1,111 @@
+/* ============================================================
+   מדליק – ערכת צבעים "הלוגו": קרם חם, כתום שהופך לצהוב, ופירורי קונפטי כחולים.
+   פעילה רק כש־html[data-pal=logo]. בלי זה האתר נראה כמו שהיה.
+   ============================================================ */
+html[data-pal=logo]{
+  --ink:#3d2a1f;--navy:#3d2a1f;--blue:#4a9be0;--blue2:#4a9be0;
+  --orange:#ff7a2e;--cream:#fff8ee;--text:#3d2a1f;--text-dim:#8c7f74;
+  --abyss:#fff4e3;--sapphire:#fff8ee;--lg-y:#ffc42d;--lg-o:#ff7a2e;
+  --gold-1:#ffc42d;--gold-2:#ff9a2e;--gold-3:#ff7a2e;--gold-4:#d9531a;--flame:#ff7a2e;--hair:rgba(255,138,46,.55);
+  background:#fff8ee;color-scheme:light}
+html[data-pal=logo] body{color:var(--ink);background-color:#fff8ee;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='460' height='460'%3E%3Cg stroke-linecap='round' stroke-width='9' opacity='.5' fill='none'%3E%3Cpath d='M44 64l14-9' stroke='%234a9be0'/%3E%3Cpath d='M160 28l12 8' stroke='%23ff7a2e'/%3E%3Cpath d='M300 92l14-4' stroke='%23ffc42d'/%3E%3Cpath d='M398 40l8 13' stroke='%234a9be0'/%3E%3Cpath d='M92 206l12 7' stroke='%23ffc42d'/%3E%3Cpath d='M232 182l13-9' stroke='%23ff7a2e'/%3E%3Cpath d='M352 244l7 13' stroke='%234a9be0'/%3E%3Cpath d='M424 336l13-6' stroke='%23ff7a2e'/%3E%3Cpath d='M58 334l12 9' stroke='%234a9be0'/%3E%3Cpath d='M182 352l14-3' stroke='%23ffc42d'/%3E%3Cpath d='M304 404l9-12' stroke='%23ff7a2e'/%3E%3Cpath d='M118 432l12-8' stroke='%234a9be0'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse 70% 50% at 82% 6%,rgba(255,196,45,.32),transparent 70%),
+    radial-gradient(ellipse 60% 55% at 10% 42%,rgba(255,138,46,.18),transparent 70%),
+    radial-gradient(ellipse 80% 40% at 50% 100%,rgba(74,155,224,.16),transparent 70%);
+  background-size:460px 460px,auto,auto,auto}
+html[data-pal=logo] h1,html[data-pal=logo] h2,html[data-pal=logo] h3{color:var(--ink)}
+
+/* ---------- פס דיוור וכותרת ---------- */
+html[data-pal=logo] .newsletter-bar{background:linear-gradient(90deg,#ff7a2e,#ffb52e 60%,#ffc42d);color:var(--ink);border-bottom:3px solid var(--ink)}
+html[data-pal=logo] .newsletter-bar .news-text b{background:var(--ink);color:#fff8ee}
+html[data-pal=logo] .site-header,html[data-pal=logo] .site-header.scrolled{background:#fffaf2;border-bottom:3px solid #ffb04a;box-shadow:0 8px 24px -16px rgba(255,138,46,.6)}
+html[data-pal=logo] .main-nav a{color:var(--ink)}
+html[data-pal=logo] .main-nav a::after{background:linear-gradient(90deg,#ffc42d,#ff7a2e)}
+html[data-pal=logo] .main-nav a:hover,html[data-pal=logo] .main-nav a.active{color:#ff7a2e}
+html[data-pal=logo] .nav-me{border-color:var(--ink)}
+html[data-pal=logo] .nav-me:hover{background:var(--ink);color:#fff8ee!important}
+html[data-pal=logo] .menu-toggle{border-color:var(--ink);color:var(--ink);background:#fff}
+
+/* ---------- כפתורים ---------- */
+html[data-pal=logo] .btn{border-color:var(--ink);color:var(--ink)}
+html[data-pal=logo] .btn:hover{background:var(--ink);color:#fff8ee}
+html[data-pal=logo] .btn-gold{background:linear-gradient(180deg,#ffd13c,#ff8a2e);color:var(--ink);border-color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+html[data-pal=logo] .btn-gold:hover{background:linear-gradient(180deg,#ffd13c,#ff8a2e);color:var(--ink);box-shadow:6px 6px 0 var(--ink)}
+html[data-pal=logo] .btn-ink{background:var(--ink);color:#fff8ee;box-shadow:4px 4px 0 #ffc42d}
+html[data-pal=logo] .btn-ink:hover{background:var(--ink);color:#fff8ee;box-shadow:6px 6px 0 #ffc42d}
+
+/* ---------- הירו: כתם אפרסק כמו בלוגו ---------- */
+html[data-pal=logo] .hero{--mb:#c97a2f;--mc:#4a9be0;--f1:#ff7a2e;--f2:#ffe08a}
+html[data-pal=logo] .hero::before{content:"";position:absolute;left:50%;top:50%;width:min(92vw,1180px);aspect-ratio:1.55;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,214,150,.85),rgba(255,230,190,.45) 62%,transparent 74%);z-index:0;pointer-events:none}
+html[data-pal=logo] .hero-word{position:relative;z-index:1}
+html[data-pal=logo] .hero-logo{filter:drop-shadow(0 12px 18px rgba(255,138,46,.38))}
+html[data-pal=logo] .hero-top{border-bottom-color:var(--ink);color:var(--ink)}
+html[data-pal=logo] .tagline{color:var(--ink)}
+html[data-pal=logo] .tagline em{color:#ff7a2e}
+html[data-pal=logo] .search-big{background:#fff;border-color:var(--ink);box-shadow:5px 5px 0 #ffc42d}
+html[data-pal=logo] .search-big:focus-within{box-shadow:7px 7px 0 #ff7a2e}
+html[data-pal=logo] .search-big input::placeholder{color:#9a8b7e}
+html[data-pal=logo] .badge circle:first-of-type{fill:#fff;stroke:var(--ink)}
+html[data-pal=logo] .badge circle:nth-of-type(2){fill:#ff9a2e;stroke:var(--ink)}
+html[data-pal=logo] .ad-label{color:var(--ink)}
+html[data-pal=logo] .ad-card{background:linear-gradient(180deg,#ffd13c,#ff8a2e);color:var(--ink)}
+html[data-pal=logo] .ad-card.on:hover{box-shadow:12px 12px 0 #4a9be0}
+html[data-pal=logo] .ad-dots i{background:var(--ink)}
+html[data-pal=logo] .ad-dots i.on{background:#ff7a2e}
+
+/* ---------- סרט מילים, משפט, שמונה לילות ---------- */
+html[data-pal=logo] .band{background:linear-gradient(90deg,#ff7a2e,#ffb52e 55%,#ffc42d);color:var(--ink);border-block-color:var(--ink)}
+html[data-pal=logo] .band.cream{background:#fff}
+html[data-pal=logo] .statement .w.hl.on{color:#ff7a2e}
+html[data-pal=logo] .nights-stage[data-theme=orange]{--bg:#ff8a2e;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#fff8ee;--f1:#fff8ee;--f2:#ff8a2e}
+html[data-pal=logo] .nights-stage[data-theme=cream]{--bg:#fff3df;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#4a9be0;--f1:#ff7a2e;--f2:#fff8ee}
+html[data-pal=logo] .nights-stage[data-theme=blue]{--bg:#4a9be0;--fg:#ffffff;--mb:#fff8ee;--mc:#2c5f93;--f1:#ffc42d;--f2:#fff8ee}
+html[data-pal=logo] .nights-stage[data-theme=ink]{--bg:#ffc42d;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#ff7a2e;--f1:#ff7a2e;--f2:#fff8ee}
+html[data-pal=logo] .poster:nth-child(3n+1){--bg:#fff8ee;--fg:#3d2a1f}
+html[data-pal=logo] .poster:nth-child(3n+2){--bg:#ff9a2e;--fg:#3d2a1f}
+html[data-pal=logo] .poster:nth-child(3n+3){--bg:#4a9be0;--fg:#fff}
+html[data-pal=logo] .hs-bar{background:rgba(61,42,31,.18)}
+
+/* ---------- עולמות בעמוד הבית שהיו כהים ---------- */
+html[data-pal=logo] body[data-world=games],html[data-pal=logo] .wshow[data-w=games]{--bg:#ffb13a;--fg:#3d2a1f;--fg2:#6b4a33;--surface:#fff8ee;--surface-ink:#3d2a1f;--surface-ink2:#7a5a42;--a1:#4a9be0;--on-a1:#fff;--sh:0 16px 30px -14px rgba(120,60,0,.55);--sh-hover:0 26px 36px -14px rgba(120,60,0,.65);background-color:#ffb13a!important;background-image:radial-gradient(ellipse 60% 70% at 85% 0%,rgba(255,226,120,.8),transparent 70%),radial-gradient(circle,rgba(255,255,255,.22) 2px,transparent 2.6px)!important;background-size:auto,34px 34px!important}
+html[data-pal=logo] body[data-world=studio],html[data-pal=logo] .wshow[data-w=studio]{--bg:#ffe3bd;--fg:#3d2a1f;--fg2:#6b4a33;--surface:#fff;--surface-ink:#3d2a1f;--surface-ink2:#7a5a42;--a1:#ff7a2e;--on-a1:#fff;--line:#f0c590;--sh:0 20px 30px -16px rgba(120,60,0,.4);--sh-hover:0 26px 36px -16px rgba(255,122,46,.5);background-color:#ffe3bd!important;background-image:radial-gradient(circle,rgba(255,122,46,.2) 1.6px,transparent 2.2px),radial-gradient(circle,rgba(74,155,224,.2) 1.6px,transparent 2.2px)!important;background-size:30px 30px,30px 30px!important;background-position:0 0,15px 15px!important}
+html[data-pal=logo] body[data-world=biz],html[data-pal=logo] .wshow[data-w=biz]{--bg:#4a9be0;--fg:#fff;--fg2:#e4f1ff;--surface:#fff8ee;--surface-ink:#2c3e57;--surface-ink2:#566b86;--a1:#ff7a2e;--on-a1:#fff;--line:#2c5f93;--sh:0 18px 26px -14px rgba(20,60,110,.55);--sh-hover:0 26px 34px -14px rgba(20,60,110,.65);background-color:#4a9be0!important;background-image:radial-gradient(rgba(255,255,255,.18) 1.5px,transparent 2px)!important;background-size:28px 28px!important}
+
+/* ---------- סיום, סצנה וכותרת תחתונה ---------- */
+html[data-pal=logo] .big-link{color:var(--ink);border-top-color:var(--ink)}
+html[data-pal=logo] .big-link:last-child{border-bottom-color:var(--ink)}
+html[data-pal=logo] .big-link:hover{color:#ff7a2e}
+html[data-pal=logo] .scene::before{background:linear-gradient(#fff8ee,rgba(255,248,238,0))}
+html[data-pal=logo] .site-footer{background:#3d2a1f;border-top:4px solid #ffc42d;color:#fff8ee}
+html[data-pal=logo] .site-footer p,html[data-pal=logo] .copy{color:#e9d9c6}
+html[data-pal=logo] .footer-links a{color:#fff8ee}
+html[data-pal=logo] .footer-links a:hover{color:#ffc42d}
+
+
+/* שמונה הלילות עוברים בין עולמות: כולם בצבעי הלוגו */
+html[data-pal=logo] .nights-stage[data-theme=games]{--bg:#ffb13a;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#4a9be0;--f1:#ff7a2e;--f2:#fff8ee}
+html[data-pal=logo] .nights-stage[data-theme=create]{--bg:#fff3df;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#4a9be0;--f1:#ff7a2e;--f2:#fff}
+html[data-pal=logo] .nights-stage[data-theme=studio]{--bg:#ffe3bd;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#ff7a2e;--f1:#ff7a2e;--f2:#fff}
+html[data-pal=logo] .nights-stage[data-theme=recipes]{--bg:#ff7a2e;--fg:#fff8ee;--mb:#fff8ee;--mc:#ffc42d;--f1:#ffd23f;--f2:#fff}
+html[data-pal=logo] .nights-stage[data-theme=ideas]{--bg:#ffe8d6;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#4a9be0;--f1:#ff7a2e;--f2:#fff}
+html[data-pal=logo] .nights-stage[data-theme=biz]{--bg:#4a9be0;--fg:#fff;--mb:#fff8ee;--mc:#ff7a2e;--f1:#ffc42d;--f2:#fff}
+html[data-pal=logo] .nights-stage[data-theme=submit]{--bg:#fff8ee;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#4a9be0;--f1:#ff7a2e;--f2:#fff}
+html[data-pal=logo] .nights-stage[data-theme=me]{--bg:#ffc42d;--fg:#3d2a1f;--mb:#3d2a1f;--mc:#4a9be0;--f1:#ff7a2e;--f2:#fff8ee}
+html[data-pal=logo] .wshow .page-head h1,html[data-pal=logo] .wshow .page-head p,html[data-pal=logo] body[data-world] .page-head h1,html[data-pal=logo] body[data-world] .page-head p{color:var(--fg)}
+html[data-pal=logo] .wshow .card h3,html[data-pal=logo] body[data-world] .card h3{color:var(--surface-ink)}
+html[data-pal=logo] .scene{background:linear-gradient(180deg,#fff8ee 0%,#ffe9c9 62%,#ffd9a3 100%)}
+html[data-pal=logo] .wshow h1,html[data-pal=logo] .wshow h2,html[data-pal=logo] body[data-world] h1,html[data-pal=logo] body[data-world] .page-head h2{color:var(--fg)}
+html[data-pal=logo] .wshow .card h2,html[data-pal=logo] .wshow .card h3,html[data-pal=logo] body[data-world] .card h2,html[data-pal=logo] body[data-world] .card h3,html[data-pal=logo] .box h2,html[data-pal=logo] .box h3{color:var(--surface-ink,var(--ink))}
+html[data-pal=logo] body[data-world=create],html[data-pal=logo] .wshow[data-w=create]{--bg:#fff3df;--fg:#3d2a1f;--fg2:#6b4a33;--surface-ink:#3d2a1f;--surface-ink2:#7a5a42;background-color:#fff3df!important;background-image:linear-gradient(rgba(255,138,46,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(255,138,46,.2) 1px,transparent 1px)!important;background-size:34px 34px!important}
+
+/* ---------- תיקוני קריאות בדפים הפנימיים ---------- */
+html[data-pal=logo] .main-nav a:hover,html[data-pal=logo] .main-nav a.active{color:#d9531a}
+html[data-pal=logo] .breadcrumb,html[data-pal=logo] .breadcrumb a{color:inherit}
+html[data-pal=logo] .breadcrumb a{text-decoration:underline;text-underline-offset:3px}
+html[data-pal=logo] body:not([data-world]) .page-head h1,html[data-pal=logo] body:not([data-world]) .page-head p,html[data-pal=logo] body:not([data-world]) .breadcrumb{color:var(--ink)}
+html[data-pal=logo] .cust-rib{background:linear-gradient(100deg,#4aa0ee,#2b6fc2);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.25);box-shadow:0 0 0 3px #fff,0 8px 18px -6px rgba(43,111,194,.7)}
+html[data-pal=logo] .tag-new{background:#d9531a!important}
+html[data-pal=logo] ::selection{background:#ffc42d;color:var(--ink)}
+html[data-pal=logo] .newsletter-bar .btn-ink,html[data-pal=logo] .btn.btn-ink{color:#fff8ee!important}
