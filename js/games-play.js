@@ -17,8 +17,8 @@ function beep(f, d, type, vol){
 const fanfare = () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, .18, 'triangle', .14), i*120));
 function confetti(){
   if(reduce) return; const b = document.createElement('div'); b.className = 'gp-confetti';
-  const cols = ['#ff6a00','#ffd23f','#2f80ed','#ec008c','#3ddc97','#ffffff'];
-  b.innerHTML = Array.from({length:70}, (_, i) => `<i style="--x:${(Math.random()*100).toFixed(1)}vw;--d:${(1.6+Math.random()*1.6).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s;--c:${cols[i%cols.length]};--r:${Math.round(Math.random()*720-360)}deg"></i>`).join('');
+  const cols = ['#ffd23f','#f7c548','#5b93ff','#ffffff','#ff9a2a','#8fd0ff'];
+  b.innerHTML = Array.from({length:84}, (_, i) => `<i class="${i%4===0?'coin':''}" style="--x:${(Math.random()*100).toFixed(1)}vw;--d:${(1.6+Math.random()*1.6).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s;--c:${cols[i%cols.length]};--r:${Math.round(Math.random()*720-360)}deg"></i>`).join('');
   document.body.appendChild(b); setTimeout(() => b.remove(), 3800);
 }
 function toast(t){ const el = document.getElementById('toast'); if(!el) return; el.textContent = t; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('show'), 2600); }
@@ -26,7 +26,8 @@ function toast(t){ const el = document.getElementById('toast'); if(!el) return; 
 /* ---------- חלון משחק על כל המסך ---------- */
 function ov(cls){
   const el = document.createElement('div'); el.className = 'gp-ov ' + (cls || ''); el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
-  el.innerHTML = `<div class="gp-bar"><button class="gp-mute" aria-pressed="${muted}">${muted ? 'צליל: כבוי' : 'צליל: פועל'}</button><button class="gp-x" aria-label="סגירת המשחק">× סגירה</button></div><div class="gp-body"></div>`;
+  const SKY = '<div class="gp-sky" aria-hidden="true"><i class="gp-garland"></i>' + [[8,26,9,0],[22,18,12,-4],[37,34,10,-7],[55,22,13,-2],[70,30,9,-9],[84,20,11,-5],[94,28,14,-11]].map(([x,s,d,dl]) => '<b style="--x:'+x+'%;--s:'+s+'px;--d:'+d+'s;--dl:'+dl+'s"></b>').join('') + '</div>';
+  el.innerHTML = SKY + `<div class="gp-bar"><button class="gp-mute" aria-pressed="${muted}">${muted ? 'צליל: כבוי' : 'צליל: פועל'}</button><button class="gp-x" aria-label="סגירת המשחק">× סגירה</button></div><div class="gp-body"></div>`;
   document.body.appendChild(el); document.body.classList.add('gp-lock');
   const T = [];
   const close = () => { T.forEach(t => { clearInterval(t); clearTimeout(t); }); cancelAnimationFrame(el._raf); el.remove(); document.body.classList.remove('gp-lock'); document.removeEventListener('keydown', key); };
@@ -59,17 +60,17 @@ function elias(words){
   const G = {n:2, names:TEAM_NAMES.slice(), time:60, target:30, pen:true, teams:[], turn:0, deck:[], log:[], sec:0, round:1};
   const next = () => { if(!G.deck.length) G.deck = shuffle(words); return G.deck.pop(); };
   function setup(){
-    o.body.innerHTML = `<div class="gp-card gp-setup"><p class="gp-kick">אליאס על המסך</p><h2>מכינות את המשחק</h2>
+    o.body.innerHTML = `<div class="gp-card gp-setup"><p class="gp-kick">אליאס על המסך</p><h2>מכינים את המשחק</h2>
       ${teamsSetup(G, 4)}${seg('time', [[30,'30 שניות'],[60,'דקה'],[90,'דקה וחצי']], G.time, 'זמן לכל סבב')}${seg('target', [[20,'20'],[30,'30'],[50,'50']], G.target, 'משחקים עד')}
       <label class="gp-check"><input type="checkbox" id="gpPen" ${G.pen ? 'checked' : ''}> דילוג מוריד נקודה (כמו בכללים המקוריים)</label>
-      <button class="gp-go" data-go="start">מתחילות ←</button>
+      <button class="gp-go" data-go="start">מתחילים ←</button>
       <button class="gp-link" data-go="rules">איך משחקים?</button></div>`;
     o.focus();
   }
   function ready(){
     const t = G.teams[G.turn];
     o.body.innerHTML = `<div class="gp-card gp-ready" style="--tc:${t.col}"><p class="gp-kick">סבב ${G.round}</p><h2>התור של <b>${esc(t.name)}</b></h2>
-      <p>בחרו מסבירה. כשהיא מוכנה ומחזיקה את המסך מול עצמה, לוחצים.</p>${board(G.teams)}
+      <p>בחרו מסביר. כשהוא מוכן ומחזיק את המסך מול עצמו, לוחצים.</p>${board(G.teams)}
       <button class="gp-go" data-go="count">${G.time === 60 ? 'מתחילים את הדקה' : 'מתחילים'} ←</button></div>`;
     o.focus();
   }
@@ -98,14 +99,14 @@ function elias(words){
     w.innerHTML = `<span class="${ok ? 'from-ok' : 'from-skip'}">${esc(G.word)}</span>`; o.body.querySelector('#gpPts').textContent = pts();
   }
   function lastWord(){
-    o.body.innerHTML = `<div class="gp-card gp-last"><p class="gp-kick">נגמר הזמן!</p><h2>המילה האחרונה פתוחה לכולן</h2><div class="gp-word small"><span>${esc(G.word)}</span></div>
-      <p>מי ניחשה אותה ראשונה?</p><div class="gp-seg wide">${G.teams.map((t, i) => `<button data-last="${i}" style="--tc:${t.col}">${esc(t.name)}</button>`).join('')}<button data-last="-1">אף אחת</button></div></div>`;
+    o.body.innerHTML = `<div class="gp-card gp-last"><p class="gp-kick">נגמר הזמן!</p><h2>המילה האחרונה פתוחה לכולם</h2><div class="gp-word small"><span>${esc(G.word)}</span></div>
+      <p>מי ניחש אותה ראשון?</p><div class="gp-seg wide">${G.teams.map((t, i) => `<button data-last="${i}" style="--tc:${t.col}">${esc(t.name)}</button>`).join('')}<button data-last="-1">אף קבוצה</button></div></div>`;
     o.focus();
   }
   function summary(){
     const t = G.teams[G.turn];
     o.body.innerHTML = `<div class="gp-card gp-sum" style="--tc:${t.col}"><p class="gp-kick">סיכום הסבב של ${esc(t.name)}</p><h2><b id="gpTot">${pts()}</b> נקודות</h2>
-      <p class="hint">טעיתן בסימון? לחיצה על מילה מחליפה בין "ניחשו" ל"דילוג".</p>
+      <p class="hint">טעיתם בסימון? לחיצה על מילה מחליפה בין "ניחשו" ל"דילוג".</p>
       <div class="gp-logs">${G.log.map((x, i) => `<button class="gp-log ${x.ok ? 'ok' : 'no'}" data-log="${i}" aria-pressed="${x.ok}">${esc(x.w)} <i>${x.ok ? '✓' : '✕'}</i></button>`).join('') || '<p>לא היו מילים בסבב הזה.</p>'}</div>
       <button class="gp-go" data-go="apply">מוסיפים לניקוד וממשיכים ←</button></div>`;
     o.focus();
@@ -143,7 +144,7 @@ function quiz(qz, secs){
   if(!qz || !qz.length) return toast('צריך לפחות שאלה אחת');
   const o = ov('gp-quiz'); secs = +secs || 20;
   const Q = {n:3, names:TEAM_NAMES.slice(), teams:[], i:0};
-  function setup(){ o.body.innerHTML = `<div class="gp-card gp-setup"><p class="gp-kick">חידון על המסך</p><h2>${qz.length} שאלות, מי תנצח?</h2>${teamsSetup(Q, 6)}<button class="gp-go" data-go="start">מתחילות ←</button><button class="gp-link" data-go="rules">איך משחקים?</button></div>`; o.focus(); }
+  function setup(){ o.body.innerHTML = `<div class="gp-card gp-setup"><p class="gp-kick">חידון על המסך</p><h2>${qz.length} שאלות, מי ינצח?</h2>${teamsSetup(Q, 6)}<button class="gp-go" data-go="start">מתחילים ←</button><button class="gp-link" data-go="rules">איך משחקים?</button></div>`; o.focus(); }
   function question(){
     const q = qz[Q.i], last = Q.i === qz.length - 1;
     o.body.innerHTML = `<div class="qz-play"><div class="qz-head"><span>שאלה ${Q.i+1} מתוך ${qz.length}</span>${last && qz.length > 1 ? '<span class="qz-dbl">שאלת הכפל! ×2</span>' : ''}</div>
@@ -156,7 +157,7 @@ function quiz(qz, secs){
   function reveal(){
     clearInterval(Q.iv); const p = o.body.querySelector('.qz-play'); if(!p || p.classList.contains('revealed')) return;
     const q = qz[Q.i]; p.classList.add('revealed'); p.querySelectorAll('.qz-tile').forEach((t, k) => t.classList.toggle('right', k === q.ans)); beep(784, .25, 'triangle');
-    p.querySelector('.qz-ctl').innerHTML = `<div class="qz-who"><p>מי צדקה?</p>${Q.teams.map((t, k) => `<button data-team="${k}" aria-pressed="false" style="--tc:${t.col}">${esc(t.name)}</button>`).join('')}</div><button class="gp-go" data-go="score">עדכון הניקוד ←</button>`;
+    p.querySelector('.qz-ctl').innerHTML = `<div class="qz-who"><p>מי צדק?</p>${Q.teams.map((t, k) => `<button data-team="${k}" aria-pressed="false" style="--tc:${t.col}">${esc(t.name)}</button>`).join('')}</div><button class="gp-go" data-go="score">עדכון הניקוד ←</button>`;
     o.focus();
   }
   function score(){
@@ -269,7 +270,7 @@ function crossword(cw, title){
 function cipher(cp, title){
   if(!cp || !cp.tokens.some(t => t.b)) return toast('צריך הודעה בעברית');
   const o = ov('gp-cp'); const words = U.cipherWords(cp);
-  o.body.innerHTML = `<div class="cp-play"><p class="gp-kick">${esc(title || 'הצופן הסודי')}</p><h2>מפענחות את ההודעה</h2>
+  o.body.innerHTML = `<div class="cp-play"><p class="gp-kick">${esc(title || 'הצופן הסודי')}</p><h2>מפענחים את ההודעה</h2>
     ${cp.kind === 'crypto' ? U.cipherKeyHTML(cp) : `<details class="cp-keybox" open><summary>מפתח הצופן</summary>${U.cipherKeyHTML(cp)}</details>`}
     <div class="cp-msg cp-live">${words.map(w => `<span class="cp-w">${w.map(t => t.b ? `<label class="cp-l" data-code="${esc(t.code)}" data-b="${t.b}" data-ch="${esc(t.ch)}"><i>${esc(t.code)}</i><input maxlength="2" autocomplete="off" ${cp.hints.includes(t.b) ? `readonly value="${esc(t.ch)}"` : ''} aria-label="האות שמסתתרת מאחורי ${esc(t.code)}"></label>` : `<span class="cp-p">${esc(t.sp)}</span>`).join('')}</span>`).join('')}</div>
     <div class="cw-btns"><button data-go="check">בדיקה</button><button data-go="hint">עוד רמז</button><button data-go="reveal">גילוי הפתרון</button></div><p class="cw-msg" aria-live="polite"></p></div>`;
@@ -300,7 +301,7 @@ function candles(entries, title){
       <div class="cd-word" aria-live="polite">${[...e.w].map(ch => (isHeb(ch) || /[A-Za-z0-9]/.test(ch)) ? `<span class="cd-l" data-b="${base(ch)}" data-ch="${esc(ch)}"></span>` : ch === ' ' ? '<span class="cd-gap"></span>' : `<span class="cd-p">${esc(ch)}</span>`).join('')}</div>
       ${e.hint ? `<button class="cd-hint" data-go="hint">רמז</button><p class="cd-hint-t" hidden>${esc(e.hint)}</p>` : ''}
       <div class="cd-kb" role="group" aria-label="מקלדת אותיות">${HEB.map(ch => `<button data-k="${ch}" aria-label="האות ${ch}">${ch}</button>`).join('')}</div>
-      <form class="cd-guess"><input placeholder="יודעות את כל המילה?" aria-label="ניחוש כל המילה"><button class="gp-link">ניחוש</button></form>
+      <form class="cd-guess"><input placeholder="יודעים את כל המילה?" aria-label="ניחוש כל המילה"><button class="gp-link">ניחוש</button></form>
       <p class="cd-msg" aria-live="assertive"></p><div class="cd-next"></div></div>`;
     setCandles(); o.body.querySelector('.cd-kb button').focus({preventScroll:true});
   }

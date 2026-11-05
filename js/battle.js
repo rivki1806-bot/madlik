@@ -8,7 +8,7 @@ const RAW = {
   easy: ['סביבון|לסובב,משחק,אותיות,נס','לביבה|תפוח אדמה,לטגן,שמן,מחבת','סופגנייה|ריבה,אבקת סוכר,לטגן,בצק','חנוכייה|נרות,להדליק,שמונה,שמש','נר|אש,להדליק,פתילה,שעווה',
     'מתנה|עטיפה,לקבל,יום הולדת,הפתעה','שוקולד|מתוק,קקאו,ממתק,חום','גפרור|אש,להדליק,קופסה,ראש','שמש|נר,חנוכייה,להדליק,חם','אור|חושך,מנורה,להדליק,אש','חלון|זכוכית,בית,לפתוח,וילון',
     'ריבה|תות,מתוק,למרוח,צנצנת','מחבת|לטגן,מטבח,שמן,ביצה','שמן|זית,לטגן,פך,נוזל','מטבע|כסף,שקל,עגול,זהב','בלון|אוויר,לנפח,צבעוני,לפוצץ','עוגה|יום הולדת,נרות,קצפת,לאפות',
-    'כוכב|שמיים,לילה,לנצנץ,נקודות','שיר|לשיר,מילים,לחן,זמרת','ממתק|סוכר,מתוק,ילדים,סוכרייה','כובע|ראש,לחבוש,שמש,צמר','מטרייה|גשם,לפתוח,רטוב,חורף'],
+    'פנס|אור,לילה,להאיר,סוללה','שיר|לשיר,מילים,לחן,זמרת','ממתק|סוכר,מתוק,ילדים,סוכרייה','כובע|ראש,לחבוש,שמש,צמר','מטרייה|גשם,לפתוח,רטוב,חורף'],
   medium: ['מכבים|יהודה,יוונים,מלחמה,גיבורים','פך שמן|נס,מקדש,טהור,שמונה','בית המקדש|ירושלים,כהן,קדוש,חורבן','דמי חנוכה|כסף,מטבעות,ילדים,לקבל','פרסומי ניסא|חלון,להראות,נס,לפרסם',
     'אנטיוכוס|יווני,מלך,רשע,מכבים','מתתיהו|כהן,מכבים,אבא,מודיעין','אבקת סוכר|לבן,לפזר,מתוק,סופגנייה','פתילה|נר,להדליק,חוט,שמן','מסיבה|ריקודים,מוזיקה,חברים,חגיגה',
     'מגש|להגיש,אוכל,אירוח,כלי','הפתעה|לא יודעים,מתנה,לגלות,פתאום','סבתא|אמא,נכדים,עוגיות,זקנה','מטבח|לבשל,כיריים,מקרר,אוכל','פנס|אור,חושך,סוללה,להאיר','שלג|קר,לבן,חורף,לרדת',
@@ -25,10 +25,10 @@ const LINKS = [['שמש','פתילה','גפרור','הדלקת נרות'],['רי
 const CATS = ['מאכלים מטוגנים','דברים שיש במטבח','דברים שמאירים','שירי חנוכה','מילים שמתחילות באות ס','דברים כחולים','מתנות שכיף לקבל','דמויות מהתנ״ך','משחקי קופסה','דברים שיש בחורף',
   'פירות','דברים שעושים במסיבה','מקומות בארץ','דברים שמסתובבים','דברים מתוקים','בגדים','שמות של פרחים','כלי נגינה','דברים עגולים','בעלי חיים','דברים שיש בכיתה','צבעים','דברים שאפשר לטגן','משהו שנותנים במתנה'];
 const TYPES = {
-  explain:{n:'הסבר במילים אחרות', d:'מסבירות את המילה בלי להגיד אותה. כל ניחוש נכון שווה נקודה.'},
-  mime:   {n:'פנטומימה', d:'מציגות את המילה בלי דיבור בכלל. רק תנועות!'},
-  link:   {n:'מה הקשר?', d:'שלוש מילים על המסך. מוצאות מה מחבר ביניהן.'},
-  taboo:  {n:'טאבו', d:'מסבירות את המילה בלי להשתמש במילים האסורות.'},
+  explain:{n:'הסבר במילים אחרות', d:'מסבירים את המילה בלי להגיד אותה. כל ניחוש נכון שווה נקודה.'},
+  mime:   {n:'פנטומימה', d:'מציגים את המילה בלי דיבור בכלל. רק תנועות!'},
+  link:   {n:'מה הקשר?', d:'שלוש מילים על המסך. מוצאים מה מחבר ביניהן.'},
+  taboo:  {n:'טאבו', d:'מסבירים את המילה בלי להשתמש במילים האסורות.'},
   blitz:  {n:'אתגר בזק', d:'כמה שיותר דברים שמתאימים לקטגוריה. כל תשובה טובה שווה נקודה.'},
   memory: {n:'זיכרון', d:'מילים מופיעות לכמה שניות ונעלמות. כמה תזכרו?'}
 };
@@ -68,10 +68,10 @@ function play(initial){
   function setup(){
     const opt = (v, t, d) => `<button class="bt-src ${B.src === v ? 'on' : ''}" data-src="${v}" aria-pressed="${B.src === v}"><b>${t}</b><span>${d}</span></button>`;
     o.body.innerHTML = `<div class="gp-card gp-setup bt-setup"><p class="gp-kick">קרב המילים</p><h2>איך תרצו לשחק?</h2>
-      <div class="bt-srcs">${opt('bank','מאגר מילים מוכן',`${bankFor().length} מילים לחנוכה, ברמה ${LEVEL[B.level]}`)}${opt('mine','מאגר מילים אישי','שמות, מקומות, בדיחות פנימיות. מה שתרצו')}${opt('mix','לערבב','המאגר המוכן ועוד המילים שלכן')}</div>
-      ${B.src !== 'bank' ? `<label class="bt-ta"><span>המילים שלכן <i class="hint">אפשר להדביק גם 100 מילים בבת אחת: שורה לכל מילה או עם פסיקים. לטאבו: מילה: אסורה, אסורה</i></span>
+      <div class="bt-srcs">${opt('bank','מאגר מילים מוכן',`${bankFor().length} מילים לחנוכה, ברמה ${LEVEL[B.level]}`)}${opt('mine','מאגר מילים אישי','שמות, מקומות, בדיחות פנימיות. מה שתרצו')}${opt('mix','לערבב','המאגר המוכן ועוד המילים שלכם')}</div>
+      ${B.src !== 'bank' ? `<label class="bt-ta"><span>המילים שלכם <i class="hint">אפשר להדביק גם 100 מילים בבת אחת: שורה לכל מילה או עם פסיקים. לטאבו: מילה: אסורה, אסורה</i></span>
         <textarea id="btText" rows="6" placeholder="שרה, הדודה רחל, הכינרת, הלביבה של סבתא...">${esc(B.text)}</textarea>
-        <span class="bt-cnt"><b id="btMine">${mine().length}</b> מילים שלכן · <button class="gp-link" data-go="save">שמירת המאגר לפעם הבאה</button>${loadPool() ? ' · <button class="gp-link" data-go="load">טעינת המאגר השמור</button>' : ''}</span></label>` : ''}
+        <span class="bt-cnt"><b id="btMine">${mine().length}</b> מילים שלכם · <button class="gp-link" data-go="save">שמירת המאגר לפעם הבאה</button>${loadPool() ? ' · <button class="gp-link" data-go="load">טעינת המאגר השמור</button>' : ''}</span></label>` : ''}
       ${P.seg('level', [['easy','קל'],['medium','בינוני'],['hard','מאתגר']], B.level, 'רמת קושי')}
       ${P.seg('time', [[30,'30 שניות'],[45,'45 שניות'],[60,'דקה']], B.time, 'משך כל סבב')}
       ${P.seg('size', [[20,'20'],[40,'40'],[60,'60'],[9999,'הכול']], B.size, 'כמה מילים במשחק')}
@@ -107,9 +107,9 @@ function play(initial){
   }
   function intro(){
     const t = B.teams[B.turn], ty = TYPES[B.type];
-    const extra = B.type === 'memory' ? `<p>יופיעו <b>${memN()}</b> מילים למשך <b>${memView()}</b> שניות. אחר כך יש ${B.time} שניות להיזכר.</p>` : B.type === 'blitz' ? '<p>המנחה לוחצת "+1" על כל תשובה טובה.</p>' : B.type === 'link' ? '<p>מצאתן קשר? המנחה מאשרת. אפשר לפתור כמה שלישיות בסבב.</p>' : '';
+    const extra = B.type === 'memory' ? `<p>יופיעו <b>${memN()}</b> מילים למשך <b>${memView()}</b> שניות. אחר כך יש ${B.time} שניות להיזכר.</p>` : B.type === 'blitz' ? '<p>המנחה לוחץ "+1" על כל תשובה טובה.</p>' : B.type === 'link' ? '<p>מצאתם קשר? המנחה מאשר. אפשר לפתור כמה שלישיות בסבב.</p>' : '';
     o.body.innerHTML = `<div class="gp-card bt-intro" style="--tc:${t.col}"><p class="gp-kick">${esc(t.name)} · אתגר</p><h2>${ty.n}</h2><p class="bt-d">${ty.d}</p>${extra}
-      <button class="gp-go" data-go="go">מתחילות! (${B.time} שניות) ←</button></div>`;
+      <button class="gp-go" data-go="go">מתחילים! (${B.time} שניות) ←</button></div>`;
     o.focus();
   }
   const memN = () => ({easy:6, medium:8, hard:10})[B.level];
@@ -149,7 +149,7 @@ function play(initial){
       timer(memView(), () => {
         o.body.querySelectorAll('.bt-m').forEach(c => c.classList.add('hide'));
         o.body.querySelector('.gp-top').outerHTML = top();
-        o.body.querySelector('.bt-mem').insertAdjacentHTML('beforeend', '<p class="bt-memhint">המילים נעלמו! אומרות בקול את כל מה שזוכרות.</p><div class="gp-acts"><button class="gp-go" data-go="memdone">סיימנו להיזכר</button></div>');
+        o.body.querySelector('.bt-mem').insertAdjacentHTML('beforeend', '<p class="bt-memhint">המילים נעלמו! אומרים בקול את כל מה שזוכרים.</p><div class="gp-acts"><button class="gp-go" data-go="memdone">סיימנו להיזכר</button></div>');
         timer(B.time, memMark);
       });
     }
@@ -163,7 +163,7 @@ function play(initial){
   function nextLink(){
     const bankLinks = B.src !== 'mine' ? LINKS : [];
     if(bankLinks.length && (B.src === 'bank' || Math.random() < .5)){ const l = bankLinks[Math.floor(Math.random()*bankLinks.length)]; B.link = {w:shuffle(l.slice(0, 3)), a:l[3]}; }
-    else { const w = shuffle(B.all).slice(0, 3).map(x => x.w); B.link = {w, a:'אין תשובה אחת נכונה! הקבוצה ממציאה קשר, והמנחה מחליטה אם הוא משכנע.'}; }
+    else { const w = shuffle(B.all).slice(0, 3).map(x => x.w); B.link = {w, a:'אין תשובה אחת נכונה! הקבוצה ממציאה קשר, והמנחה מחליט אם הוא משכנע.'}; }
   }
   const linkHTML = () => `<span class="bt-trio">${B.link.w.map(w => `<b>${esc(w)}</b>`).join('<i>+</i>')}</span><p class="bt-ans" hidden>${esc(B.link.a)}</p>`;
   function bump(n){ B.pts = Math.max(0, B.pts + n); const p = o.body.querySelector('#gpPts'); if(p){ p.textContent = B.pts; p.parentNode.classList.remove('pop'); void p.offsetWidth; p.parentNode.classList.add('pop'); } }
@@ -173,7 +173,7 @@ function play(initial){
   }
   function memMark(){
     clearInterval(B.iv);
-    o.body.innerHTML = `<div class="gp-card gp-sum"><p class="gp-kick">זיכרון: מה זכרתן?</p><h2><b id="gpTot">0</b> נקודות</h2><p class="hint">המנחה לוחצת על כל מילה שהקבוצה זכרה.</p>
+    o.body.innerHTML = `<div class="gp-card gp-sum"><p class="gp-kick">זיכרון: מה זכרתם?</p><h2><b id="gpTot">0</b> נקודות</h2><p class="hint">המנחה לוחץ על כל מילה שהקבוצה זכרה.</p>
       <div class="gp-logs">${B.mem.map((w, i) => `<button class="gp-log no" data-mem="${i}" aria-pressed="false">${esc(w)} <i>✕</i></button>`).join('')}</div>
       <button class="gp-go" data-go="apply">מוסיפים לניקוד וממשיכים ←</button></div>`;
     B.pts = 0; o.focus();
@@ -183,7 +183,7 @@ function play(initial){
     const listable = ['explain','mime','taboo'].includes(B.type);
     if(listable) B.pts = B.log.filter(x => x.ok).length;
     o.body.innerHTML = `<div class="gp-card gp-sum" style="--tc:${B.teams[B.turn].col}"><p class="gp-kick">נגמר הזמן! ${TYPES[B.type].n}</p><h2><b id="gpTot">${B.pts}</b> נקודות</h2>
-      ${listable ? `<p class="hint">טעיתן בסימון? לחיצה על מילה מתקנת.</p><div class="gp-logs">${B.log.map((x, i) => `<button class="gp-log ${x.ok ? 'ok' : 'no'}" data-log="${i}" aria-pressed="${x.ok}">${esc(x.w)} <i>${x.ok ? '✓' : '✕'}</i></button>`).join('') || '<p>לא היו מילים בסבב.</p>'}</div>` : ''}
+      ${listable ? `<p class="hint">טעיתם בסימון? לחיצה על מילה מתקנת.</p><div class="gp-logs">${B.log.map((x, i) => `<button class="gp-log ${x.ok ? 'ok' : 'no'}" data-log="${i}" aria-pressed="${x.ok}">${esc(x.w)} <i>${x.ok ? '✓' : '✕'}</i></button>`).join('') || '<p>לא היו מילים בסבב.</p>'}</div>` : ''}
       <div class="bt-fix">תיקון ידני: <button data-go="fixm">−1</button><button data-go="fixp">+1</button></div>
       <button class="gp-go" data-go="apply">מוסיפים לניקוד וממשיכים ←</button></div>`;
     o.focus();
@@ -261,19 +261,19 @@ function play(initial){
 /* ---------- חיבור למערכת המשחקים: הוראות, שדות, תצוגה והפעלה ---------- */
 const G = window.GamesPro;
 G.RULES.battle = {title:'איך משחקים קרב המילים?', intro:'משחק קבוצות על המסך עם 6 סוגי אתגרים. בכל תור גלגל האתגרים בוחר אתגר אחר, וכל סבב נמשך 30 שניות.',
-  need:['מסך או מקרן','2 עד 4 קבוצות','מנחה שלוחצת על הכפתורים'],
-  steps:['בוחרות מאגר: המאגר המוכן, המילים שלכן, או שילוב של שניהם. אפשר להדביק גם 100 מילים בבת אחת.','בוחרות רמת קושי, משך סבב, כמה מילים וסוגי אתגרים.','בכל תור מסובבים את גלגל האתגרים, והוא בוחר את האתגר של הקבוצה.','כשהזמן נגמר, האתר מסכם את הנקודות, והתור עובר לקבוצה הבאה.','אפשר להוסיף ולהסיר מילים באמצע המשחק, בכפתור "המילים במשחק" למעלה.'],
+  need:['מסך או מקרן','2 עד 4 קבוצות','מנחה שלוחץ על הכפתורים'],
+  steps:['בוחרים מאגר: המאגר המוכן, המילים שלכם, או שילוב של שניהם. אפשר להדביק גם 100 מילים בבת אחת.','בוחרים רמת קושי, משך סבב, כמה מילים וסוגי אתגרים.','בכל תור מסובבים את גלגל האתגרים, והוא בוחר את האתגר של הקבוצה.','כשהזמן נגמר, האתר מסכם את הנקודות, והתור עובר לקבוצה הבאה.','אפשר להוסיף ולהסיר מילים באמצע המשחק, בכפתור "המילים במשחק" למעלה.'],
   ok:['הסבר במילים אחרות: מסבירים בלי להגיד את המילה','פנטומימה: מציגים בלי דיבור','מה הקשר?: שלוש מילים, מוצאים מה מחבר ביניהן','טאבו: מסבירים בלי המילים האסורות','אתגר בזק: כמה שיותר דברים מהקטגוריה','זיכרון: זוכרים מילים שנעלמו מהמסך'],
-  score:['כל ניחוש נכון, קשר שנמצא, תשובה בזק או מילה שנזכרה: נקודה','אחרי מספר הסבבים שבחרתן: פודיום המנצחות'],
-  tip:'המאגר האישי נשמר בדפדפן ומחכה לכן בפעם הבאה. לטאבו עם מילים אסורות משלכן, כותבים: מילה: אסורה, אסורה. בלי רשימה כזאת, האתר בונה כללים לבד.'};
+  score:['כל ניחוש נכון, קשר שנמצא, תשובה בזק או מילה שנזכרה: נקודה','אחרי מספר הסבבים שבחרתם: פודיום המנצחים'],
+  tip:'המאגר האישי נשמר בדפדפן ומחכה לכם בפעם הבאה. לטאבו עם מילים אסורות משלכם, כותבים: מילה: אסורה, אסורה. בלי רשימה כזאת, האתר בונה כללים לבד.'};
 G.NEW.unshift('battle'); G.PLAYABLE.push('battle');
 G.DEFAULTS.battle = {title:'קרב המילים', words:''};
-const f0 = G.fields; G.fields = (type, s) => type === 'battle' ? `<label>המילים שלכן (לא חובה) <span class="hint">שורה לכל מילה או עם פסיקים. אפשר גם 100 בבת אחת. בלי מילים, משחקים עם המאגר המוכן</span><textarea name="words" rows="10" placeholder="שרה, הדודה רחל, הכינרת...">${esc(s.words)}</textarea></label>` : f0(type, s);
+const f0 = G.fields; G.fields = (type, s) => type === 'battle' ? `<label>המילים שלכם (לא חובה) <span class="hint">שורה לכל מילה או עם פסיקים. אפשר גם 100 בבת אחת. בלי מילים, משחקים עם המאגר המוכן</span><textarea name="words" rows="10" placeholder="שרה, הדודה רחל, הכינרת...">${esc(s.words)}</textarea></label>` : f0(type, s);
 const r0 = G.render; G.render = (type, s, cache, v, title) => {
   if(type !== 'battle') return r0(type, s, cache, v, title);
   const m = parseWords(s.words);
   return `<div class="bt-preview no-print"><p class="gp-kick">קרב המילים</p><h3>6 אתגרים במשחק אחד</h3><div class="bt-types static">${Object.values(TYPES).map((t, i) => `<div><i>${i+1}</i><b>${t.n}</b><small>${t.d}</small></div>`).join('')}</div>
-    <p>${m.length ? `<b>${m.length}</b> מילים שלכן, ועוד ${BANK.length} במאגר המוכן` : `מאגר מוכן של ${BANK.length} מילים לחנוכה, בשלוש רמות קושי`}.</p>
+    <p>${m.length ? `<b>${m.length}</b> מילים שלכם, ועוד ${BANK.length} במאגר המוכן` : `מאגר מוכן של ${BANK.length} מילים לחנוכה, בשלוש רמות קושי`}.</p>
     <button type="button" class="gp-go bt-start" data-play="1">מתחילים בקרב! ←</button></div>`
     + (m.length ? U.chunk(m, 12).map(pg => `<div class="sheet" style="${v}">${title}<div class="g-cards" style="grid-template-columns:repeat(3,1fr)">${pg.map(x => `<div class="g-card">${esc(x.w)}<small>מדליק</small></div>`).join('')}</div></div>`).join('') : '');
 };

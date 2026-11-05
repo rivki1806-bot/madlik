@@ -172,7 +172,7 @@ input,select,textarea,button{font:inherit}
 .marquee{overflow:hidden;border-block:1px solid var(--hair);background:rgba(4,13,28,.45);backdrop-filter:blur(6px);padding:16px 0;transform:rotate(-1.2deg);margin:10px -10px 40px}
 .marquee-track{display:flex;gap:50px;width:max-content;animation:marq 40s linear infinite;font-family:var(--f-display);font-size:1.9rem;white-space:nowrap}
 .marquee-track span{display:flex;align-items:center;gap:50px}
-.marquee-track span::after{content:"✦";color:var(--flame);font-size:1rem}
+.marquee-track span::after{content:"•";color:var(--flame);font-size:1rem}
 .marquee-track span:nth-child(odd){color:transparent;-webkit-text-stroke:1px var(--gold-2)}
 .marquee-track span:nth-child(even){color:var(--cream)}
 @keyframes marq{to{transform:translateX(50%)}}
@@ -338,7 +338,7 @@ input,select,textarea,button{font:inherit}
 .mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;width:min(780px,95vw)}
 .mem-card{aspect-ratio:3/4;border-radius:16px;background:#1a56b0;border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;color:transparent;font-size:1.1rem;text-align:center;padding:6px;user-select:none;transition:transform .4s var(--ease),background .3s}
 .mem-card:hover{transform:translateY(-4px)}
-.mem-card::before{content:"✦";color:var(--gold-2);font-size:1.6rem;position:absolute}
+.mem-card::before{content:"◆";color:var(--gold-2);font-size:1.6rem;position:absolute}
 .mem-card{position:relative}
 .mem-card.open,.mem-card.done{background:var(--gold);color:#071a38;transform:rotateY(180deg) scaleX(-1)}
 .mem-card.open::before,.mem-card.done::before{content:none}

@@ -13,8 +13,6 @@ function menorah(o){
   const xs = [cx-220,cx-165,cx-110,cx-55,cx+55,cx+110,cx+165,cx+220];
   // i=1 הנר הימני ביותר (ההדלקה בעברית מתחילה מימין), i=0 השמש
   const list = [{x:cx, y:cupY-50, i:0}].concat(xs.map((x,k)=>({x, y:cupY, i:8-k})));
-  const star = (x,y,r) => { const p = a => [0,1,2].map(k=>{ const t=(a+k*120)*Math.PI/180; return `${(x+r*Math.sin(t)).toFixed(1)},${(y-r*Math.cos(t)).toFixed(1)}`; }).join(' ');
-    return `<polygon points="${p(0)}" fill="none" style="stroke:var(--mb)" stroke-width="5"/><polygon points="${p(180)}" fill="none" style="stroke:var(--mb)" stroke-width="5"/>`; };
   const candle = c => {
     const top = c.y-64, d = c.i===0 ? .5 : 1+(c.i-1)*.28;
     const anim = o.scroll ? '' : ` style="animation-delay:${d}s,${(d+.7).toFixed(2)}s"`;

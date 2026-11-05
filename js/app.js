@@ -57,7 +57,7 @@ function loadRemote(){
 const addedContent = k => API() ? ((remote && remote[k]) || []) : store.get('extra_'+k, []);
 const ADMIN_COLS = {
   subs: [['date','תאריך'],['cat','קטגוריה'],['title','כותרת'],['text','תוכן'],['name','שם'],['email','מייל'],['status','סטטוס']],
-  leads: [['date','תאריך'],['supplier','עסק'],['name','שם'],['phone','טלפון'],['email','מייל'],['count','משתתפות'],['msg','פרטים']],
+  leads: [['date','תאריך'],['supplier','עסק'],['name','שם'],['phone','טלפון'],['email','מייל'],['count','משתתפים'],['msg','פרטים']],
   ads: [['date','תאריך'],['biz','עסק'],['name','קשר'],['phone','טלפון'],['pkg','חבילה'],['cat','תחום'],['region','אזור']],
   users: [['date','תאריך'],['name','שם'],['email','מייל'],['marketing','דיוור']]
 };
@@ -98,14 +98,14 @@ document.addEventListener('click', e=>{
 const bgs = ['#d6e4ee','#e4f0e2','#fff3d6','#f3e9da','#e8eef7'];
 // משחק על המסך = אפשר לשחק בו באתר. כל השאר: פעילויות להדפסה
 const isScreenGame = g => !!g.battle || (g.format||[]).includes('על המסך');
-const customRib = '<span class="cust-rib" aria-label="אפשר להתאים אישית"><i>✨</i> התאמה אישית</span>';
-const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn('games',g.id)}${(g.battle||g.words||g.quartets)?customRib:''}<div class="card-top" style="--bg:${bgs[i%5]}">${gameArt(g)}</div><div class="card-body"><h3>${esc(g.title)}</h3><p>${esc(g.short)}</p><div class="tags"><span class="tag">${esc(g.type)}</span><span class="tag">${esc(g.min)}–${esc(g.max)} משתתפות</span>${(g.format||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div></a>`;
+const customRib = '<span class="cust-rib" aria-label="אפשר להתאים אישית"><i>🎨</i> התאמה אישית</span>';
+const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn('games',g.id)}${(g.battle||g.words||g.quartets)?customRib:''}<div class="card-top" style="--bg:${bgs[i%5]}">${gameArt(g)}</div><div class="card-body"><h3>${esc(g.title)}</h3><p>${esc(g.short)}</p><div class="tags"><span class="tag">${esc(g.type)}</span><span class="tag">${esc(g.min)}–${esc(g.max)} משתתפים</span>${(g.format||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div></a>`;
 const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
 const supCard = (s,i=0) => `<a class="card sup-card" href="#/supplier/${esc(s.id)}">${s.featured?'<span class="badge-featured">מומלץ</span>':''}${favBtn('suppliers',s.id)}<div class="card-top" style="--bg:${bgs[(i+3)%5]}">${art(s)}</div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.text)}</p><div class="tags"><span class="tag">${esc(s.cat)}</span><span class="tag"> ${esc(s.region)}</span><span class="tag">${esc(s.price)}</span></div></div></a>`;
 const tplCard = t => `<a class="card" href="#/studio/${esc(t.id)}"><div class="card-top" style="--bg:#f3e9da">${art(t)}</div><div class="card-body"><h3>${esc(t.title)}</h3><p>${t.w}×${t.h} מ״מ</p></div></a>`;
 const creatorCard = c => `<a class="card" href="#/create/${esc(c.id)}">${customRib}<div class="card-top" style="--bg:#fff3d6">${gameArt(c)}</div><div class="card-body"><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p><div class="tags">${c.isNew?'<span class="tag tag-new">חדש!</span>':''}<span class="tag tag-gold">חינם</span></div></div></a>`;
 const gameArt = x => (window.MadlikArt && MadlikArt.get(x)) || art(x);
-const art = x => { const n = String(x.title||x.name||'').replace(/["'״׳]/g,'').trim(); return `<span class="card-letter">${esc(n[0]||'✦')}</span>`; };
+const art = x => { const n = String(x.title||x.name||'').replace(/["'״׳]/g,'').trim(); return `<span class="card-letter">${esc(n[0]||'•')}</span>`; };
 const pageHead = (title, text, crumb) => `<div class="page-head"><div class="wrap">${crumb?`<div class="breadcrumb"><a href="#/">ראשי</a> › ${crumb}</div>`:''}<h1${String(title).length>22?' class="long"':''}>${title}</h1>${text?`<p>${text}</p>`:''}</div></div>`;
 
 /* ---------- עמודים ---------- */
@@ -137,9 +137,9 @@ pages.home = () => {
   const fx = window.MadlikFX;
   const games = content('games').slice(0,8), recipes = content('recipes').slice(0,8);
   const nights = [
-    ['משחקים מוכנים','אליאס, רביעיות, בינגו וטריוויה. מדפיסות או מקרינות, ויוצאים לדרך.','#/games','למשחקים'],
-    ['משחק משלך','מכניסות את המילים שלך ומקבלות משחק מעוצב עם טיימר. בלי הרשמה.','#/create','ליצירה'],
-    ['מיתוג לערב','הזמנה, תפריט, מדבקה לבקבוק. כותבות שם ותאריך, מורידות ומדפיסות.','#/studio','לסטודיו'],
+    ['משחקים מוכנים','אליאס, רביעיות, בינגו וטריוויה. מדפיסים או מקרינים, ויוצאים לדרך.','#/games','למשחקים'],
+    ['משחק משלך','מכניסים את המילים שלך ומקבלים משחק מעוצב עם טיימר. בלי הרשמה.','#/create','ליצירה'],
+    ['מיתוג לערב','הזמנה, תפריט, מדבקה לבקבוק. כותבים שם ותאריך, מורידים ומדפיסים.','#/studio','לסטודיו'],
     ['מתכונים','לביבות לכמה סועדות שתרצי. הכמויות מתחשבות לבד.','#/recipes','למתכונים'],
     ['רוצים לפרסם?','העסק שלך על המסך הראשי, בשלוש תכניות פשוטות.','#/advertise','לתכניות'],
     ['בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג ומפעילות. לפי אזור ולפי מחיר.','#/suppliers','לעסקים'],
@@ -159,7 +159,7 @@ pages.home = () => {
   <section class="hero" id="hero">
     <div class="hero-top"><span>חנוכה תשפ״ז</span><span>הכול בחינם</span><span>גללי ותראי מה קורה ↓</span></div>
     <h1 class="hero-word"><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
-    <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות ✦ שמדליק שמחה בלבבות ✦ ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
+    <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות • שמדליק שמחה בלבבות • ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
         <aside class="ad-rail" aria-label="מודעות">
       <span class="ad-label">מודעות</span>
       <div class="ad-stack">${ads.join('')}</div>
@@ -167,7 +167,7 @@ pages.home = () => {
     </aside>
     <div class="hero-copy">
       <p class="tagline">כל מה שצריך לערב לביבות<br><em>שמדליק שמחה בלבבות</em></p>
-      <form class="search-big" id="heroSearch"><input type="search" name="q" placeholder="מה מחפשות? למשל: משחק לקבוצה גדולה" aria-label="חיפוש"><button class="btn btn-gold">חיפוש</button></form>
+      <form class="search-big" id="heroSearch"><input type="search" name="q" placeholder="מה מחפשים? למשל: משחק לקבוצה גדולה" aria-label="חיפוש"><button class="btn btn-gold">חיפוש</button></form>
     </div>
   </section>
   ${band('', 1)}
@@ -181,7 +181,7 @@ pages.home = () => {
     </div>
   </section>
   ${wshow('games','משחקים על המסך','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון טלוויזיה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
-  ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכן ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
+  ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)).slice(0,3).map(creatorCard).join(''))}
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
   ${wshow('biz','בעלי עסקים','בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילות ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
@@ -203,16 +203,16 @@ pages.search = (p,q) => {
   const term = (q.q||'').trim(); const m = x => JSON.stringify(x).includes(term);
   const g = content('games').filter(m), r = content('recipes').filter(m), s = content('suppliers').filter(m);
   const block = (t,arr,fn) => arr.length?`<h2>${t}</h2><div class="cards" style="margin-bottom:30px">${arr.map(fn).join('')}</div>`:'';
-  return pageHead('תוצאות חיפוש', `חיפשת: "${esc(term)}"`, 'חיפוש') + `<div class="wrap">${(g.length+r.length+s.length)?block('משחקים',g,gameCard)+block('מתכונים',r,recipeCard)+block('בעלי עסקים',s,supCard):'<div class="empty">לא נמצאו תוצאות. נסי מילה אחרת.</div>'}</div>`;
+  return pageHead('תוצאות חיפוש', `חיפשת: "${esc(term)}"`, 'חיפוש') + `<div class="wrap">${(g.length+r.length+s.length)?block('משחקים',g,gameCard)+block('מתכונים',r,recipeCard)+block('בעלי עסקים',s,supCard):'<div class="empty">לא נמצאו תוצאות. נסה מילה אחרת.</div>'}</div>`;
 };
 
 /* משחקים */
 pages.games = () => {
   const all = content('games').filter(isScreenGame);
   const types = [...new Set(all.map(g=>g.type))], formats = [...new Set(all.flatMap(g=>g.format||[]))], ages = [...new Set(all.map(g=>g.age))];
-  return pageHead('משחקים דיגיטליים אטרקטיביים על המסך', 'מקרינים על המסך ומשחקים: קבוצות, טיימר, צלילים וניקוד. ובכל משחק אפשר לשים את המילים שלכן.', 'משחקים על המסך') + `
+  return pageHead('משחקים דיגיטליים אטרקטיביים על המסך', 'מקרינים על המסך ומשחקים: קבוצות, טיימר, צלילים וניקוד. ובכל משחק אפשר לשים את המילים שלכם.', 'משחקים על המסך') + `
   <div class="wrap">
-    <h2 class="sec-h">בונות משחק משלכן ומשחקות על המסך</h2>
+    <h2 class="sec-h">בונים משחק משלכם ומשחקים על המסך</h2>
     <div class="cards">${D.creators.filter(c=>canPlay(c.id)).map(creatorCard).join('')}</div>
     <h2 class="sec-h">משחקים מוכנים על המסך</h2>
     <form class="filters" id="gf" onsubmit="return false">
@@ -220,11 +220,11 @@ pages.games = () => {
       <select name="type"><option value="">כל הסוגים</option>${types.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
       <select name="format"><option value="">כל הצורות</option>${formats.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
       <select name="age"><option value="">כל הגילאים</option>${ages.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
-      <input type="number" name="n" min="1" placeholder="מספר משתתפות" style="width:150px">
+      <input type="number" name="n" min="1" placeholder="מספר משתתפים" style="width:150px">
       <label class="check" style="display:flex;align-items:center;gap:6px"><input type="checkbox" name="noequip"> בלי ציוד</label>
     </form>
     <div class="cards" id="gl"></div>
-    <div class="box center" style="margin-top:30px"><h3>מחפשות משהו להדפיס?</h3><a class="btn btn-gold" href="#/create">לפעילויות להדפסה בהתאמה אישית</a></div>
+    <div class="box center" style="margin-top:30px"><h3>מחפשים משהו להדפיס?</h3><a class="btn btn-gold" href="#/create">לפעילויות להדפסה בהתאמה אישית</a></div>
   </div>`;
 };
 pages.games.after = () => {
@@ -232,7 +232,7 @@ pages.games.after = () => {
   const run = () => {
     const v = Object.fromEntries(new FormData(f)); const n = +v.n;
     const res = content('games').filter(isScreenGame).filter(g => (!v.q || JSON.stringify(g).includes(v.q)) && (!v.type || g.type===v.type) && (!v.format || (g.format||[]).includes(v.format)) && (!v.age || g.age===v.age) && (!n || (n>=g.min && n<=g.max)) && (!v.noequip || !g.equip));
-    l.innerHTML = res.length ? res.map(gameCard).join('') : '<div class="empty">אין משחק שמתאים לכל המסננים. נסי להוריד אחד.</div>';
+    l.innerHTML = res.length ? res.map(gameCard).join('') : '<div class="empty">אין משחק שמתאים לכל המסננים. נסה להוריד אחד.</div>';
   };
   f.oninput = run; run();
 };
@@ -251,7 +251,7 @@ pages.game = ([id]) => {
       ${g.qa?`<div class="box"><h3>השאלות</h3><ol>${g.qa.map(([q,a])=>`<li>${esc(q)} <span class="muted">– ${esc(a)}</span></li>`).join('')}</ol></div>`:''}
       ${g.words?`<div class="box"><h3>המילים במשחק</h3><div class="tags">${g.words.map(w=>`<span class="tag">${esc(w)}</span>`).join('')}</div></div>`:''}
     </div>
-    <aside class="box"><ul class="meta-list"><li><span>סוג</span><b>${esc(g.type)}</b></li><li><span>משתתפות</span><b>${esc(g.min)}–${esc(g.max)}</b></li><li><span>גיל</span><b>${esc(g.age)}</b></li><li><span>זמן</span><b>${esc(g.time)}</b></li><li><span>ציוד</span><b>${g.equip?'צריך':'לא צריך'}</b></li></ul></aside>
+    <aside class="box"><ul class="meta-list"><li><span>סוג</span><b>${esc(g.type)}</b></li><li><span>משתתפים</span><b>${esc(g.min)}–${esc(g.max)}</b></li><li><span>גיל</span><b>${esc(g.age)}</b></li><li><span>זמן</span><b>${esc(g.time)}</b></li><li><span>ציוד</span><b>${g.equip?'צריך':'לא צריך'}</b></li></ul></aside>
   </div>`;
 };
 pages.game.after = ([id]) => {
@@ -285,17 +285,17 @@ const creatorDefaults = {
   quartets:{title:'רביעיות שלנו', groups:'מאכלי חנוכה: לביבה, סופגנייה, גביבה, פשטידה\nאותיות הסביבון: נ, ג, ה, ש\nבהדלקת נרות: שמש, גפרור, פתילה, שמן'},
   bingo:{title:'בינגו חנוכה', words:D.games.find(g=>g.id==='bingo-hanukkah').words.join('\n'), count:10, size:5},
   whoami:{title:'מי אני?', words:'יהודה המכבי\nסביבון\nסופגנייה\nהשמש\nפך השמן\nאנטיוכוס\nחנוכייה\nלביבה'},
-  cards:{title:'כרטיסיות שאלות', words:'מה הזיכרון הכי מתוק שלך מחנוכה?\nאיזה מילוי סופגנייה את הכי אוהבת?\nאם היית נר – איזה נר היית?\nמה מדליק לך את הלב?\nמה המסורת המשפחתית שלכן בחנוכה?\nאיזה שיר חנוכה את הכי אוהבת?'},
+  cards:{title:'כרטיסיות שאלות', words:'מה הזיכרון הכי מתוק שלך מחנוכה?\nאיזה מילוי סופגנייה את הכי אוהבת?\nאם היית נר – איזה נר היית?\nמה מדליק לך את הלב?\nמה המסורת המשפחתית שלכם בחנוכה?\nאיזה שיר חנוכה את הכי אוהבת?'},
   memory:{title:'זיכרון חנוכה', words:'סביבון\nלביבה\nסופגנייה\nחנוכייה\nשמש\nפך שמן\nמכבים\nנר'},
   wordsearch:{title:'תפזורת חנוכה', words:'סביבון\nלביבה\nסופגניה\nחנוכיה\nשמש\nמכבים\nשמן\nנס', size:12}
 };
 const GP = window.GamesPro || {DEFAULTS:{}, NEW:[], PLAYABLE:[], fields:()=>null, autoRules(){}};
 Object.assign(creatorDefaults, GP.DEFAULTS);
 const canPlay = type => ['memory','cards'].includes(type) || GP.PLAYABLE.includes(type);
-pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרות פעילות, מכניסות את המילים שלכן, ומקבלות דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + `<div class="wrap">
-  <h2 class="sec-h">מעצבות פעילות משלכן</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)).map(creatorCard).join('')}</div>
+pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרים פעילות, מכניסים את המילים שלכם, ומקבלים דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + `<div class="wrap">
+  <h2 class="sec-h">מעצבים פעילות משלכם</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)).map(creatorCard).join('')}</div>
   <h2 class="sec-h">פעילויות מוכנות</h2><div class="cards">${content('games').filter(g=>!isScreenGame(g)).map(gameCard).join('')}</div>
-  <div class="box center" style="margin-top:30px"><h3>רוצות לשחק על המסך?</h3><a class="btn btn-gold" href="#/games">למשחקים הדיגיטליים על המסך</a></div></div>`;
+  <div class="box center" style="margin-top:30px"><h3>רוצים לשחק על המסך?</h3><a class="btn btn-gold" href="#/games">למשחקים הדיגיטליים על המסך</a></div></div>`;
 
 function getGameState(type, q){
   const s = Object.assign({palette:0, font:'frank'}, creatorDefaults[type], q.d ? dec(q.d) : {});
@@ -323,7 +323,7 @@ pages.creator = ([type], q) => {
         <button type="button" class="btn btn-light" id="doShare"> קישור לשיתוף</button>
         <button type="button" class="btn btn-light" id="doSave">♡ שמירה</button>
       </div>
-      <p class="hint">להורדה כ-PDF: בחלון ההדפסה בחרי "שמירה כ-PDF".</p>
+      <p class="hint">להורדה כ-PDF: בחלון ההדפסה בחר "שמירה כ-PDF".</p>
     </form>
     <div class="preview-area" id="pv"></div>
   </div>`;
@@ -353,7 +353,7 @@ pages.creator.after = ([type], q) => {
 function gameVars(s){ const p = gPalettes[s.palette||0], fnt = (D.fonts.find(x=>x.id===s.font)||D.fonts[0]).css; return `--gc1:${p.c};--gbg:${p.bg};--gf:${fnt}`; }
 function renderGame(type, s, cache){
   const v = gameVars(s), title = `<div class="sheet-title">${esc(s.title)}</div>`, foot = '<small>מדליק</small>';
-  const sheets = (items, per, cols, cellFn) => chunk(items, per).map(pg=>`<div class="sheet" style="${v}">${title}<div class="g-cards" style="grid-template-columns:repeat(${cols},1fr)">${pg.map(cellFn).join('')}</div></div>`).join('') || '<div class="empty">הכניסי מילים כדי לראות תצוגה</div>';
+  const sheets = (items, per, cols, cellFn) => chunk(items, per).map(pg=>`<div class="sheet" style="${v}">${title}<div class="g-cards" style="grid-template-columns:repeat(${cols},1fr)">${pg.map(cellFn).join('')}</div></div>`).join('') || '<div class="empty">הכנס מילים כדי לראות תצוגה</div>';
   if(GP.NEW.includes(type)) return GP.render(type, s, cache, v, title);
   const words = lines(s.words);
   if(type==='elias' || type==='cards') return sheets(words, 12, 3, w=>`<div class="g-card" style="${type==='cards'?'font-size:1rem':''}">${esc(w)}${foot}</div>`);
@@ -368,7 +368,7 @@ function renderGame(type, s, cache){
     const n = +s.size||5, need = n*n - (n===5?1:0), count = Math.min(200, Math.max(1, +s.count||1));
     if(words.length < need) return `<div class="empty">לבינגו ${n}×${n} צריך לפחות ${need} מילים. יש כרגע ${words.length}.</div>`;
     if(!cache.boards || cache.key !== words.join()+n+count){ cache.key = words.join()+n+count; cache.boards = Array.from({length:count}, ()=>shuffle(words).slice(0,need)); }
-    return cache.boards.map((b,bi)=>{ const cells = b.slice(); if(n===5) cells.splice(12,0,'★'); return `<div class="sheet" style="${v};--n:${n}">${title}<div class="bingo">${cells.map((c,i)=>`<div class="${n===5&&i===12?'free':''}">${esc(c)}</div>`).join('')}</div><p style="text-align:center;color:var(--gc1)">לוח מספר ${bi+1}</p></div>`; }).join('');
+    return cache.boards.map((b,bi)=>{ const cells = b.slice(); if(n===5) cells.splice(12,0,'🔥'); return `<div class="sheet" style="${v};--n:${n}">${title}<div class="bingo">${cells.map((c,i)=>`<div class="${n===5&&i===12?'free':''}">${esc(c)}</div>`).join('')}</div><p style="text-align:center;color:var(--gc1)">לוח מספר ${bi+1}</p></div>`; }).join('');
   }
   if(type==='wordsearch'){
     const n = +s.size||12, ws = words.map(w=>w.replace(/\s/g,'')).filter(w=>w.length<=n);
@@ -459,9 +459,9 @@ pages.edit.after = (p, q) => {
 
 pages.design = ([id], q) => {
   const t = D.templates.find(x=>x.id===id); if(!t) return notFound();
-  const s = Object.assign({theme:'gold-blue', font:'frank', deco:'✦'}, t.fields, q.d?dec(q.d):{});
+  const s = Object.assign({theme:'gold-blue', font:'frank', deco:'❖'}, t.fields, q.d?dec(q.d):{});
   const fl = {pre:'שורה עליונה', title:'כותרת', sub:'תת־כותרת', body:'פרטים', foot:'שורה תחתונה'};
-  return pageHead(esc(t.title), 'משלימות את הפרטים, בוחרות צבעים – ומורידות.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
+  return pageHead(esc(t.title), 'משלימים את הפרטים, בוחרים צבעים – ומורידים.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
   <div class="wrap builder">
     <form class="box form builder-panel" id="df">
       ${Object.keys(fl).map(k=> (k==='body' ? `<label>${fl[k]}<textarea name="body" rows="5">${esc(s.body)}</textarea></label>` : `<label>${fl[k]}<input name="${k}" value="${esc(s[k])}"></label>`)).join('')}
@@ -477,7 +477,7 @@ pages.design = ([id], q) => {
         <button type="button" class="btn btn-light" id="dShare"> שיתוף</button>
         <button type="button" class="btn btn-light" id="dSave">♡ שמירה</button>
       </div>
-      <p class="hint">${t.repeat?'בהדפסה הדף יתמלא בכמה עותקים, מוכנים לגזירה.':'להורדה כ-PDF: בחלון ההדפסה בחרי "שמירה כ-PDF".'} הלוגו לא נשמר בקישור השיתוף.</p>
+      <p class="hint">${t.repeat?'בהדפסה הדף יתמלא בכמה עותקים, מוכנים לגזירה.':'להורדה כ-PDF: בחלון ההדפסה בחר "שמירה כ-PDF".'} הלוגו לא נשמר בקישור השיתוף.</p>
     </form>
     <div class="preview-area" id="dv" style="display:flex;align-items:center;justify-content:center"></div>
   </div>`;
@@ -485,7 +485,7 @@ pages.design = ([id], q) => {
 pages.design.after = ([id], q) => {
   const t = D.templates.find(x=>x.id===id); if(!t) return;
   const f = document.getElementById('df'), dv = document.getElementById('dv');
-  const s = Object.assign({theme:'gold-blue', font:'frank', deco:'✦'}, t.fields, q.d?dec(q.d):{});
+  const s = Object.assign({theme:'gold-blue', font:'frank', deco:'❖'}, t.fields, q.d?dec(q.d):{});
   let logo = '';
   const read = () => Object.assign(s, Object.fromEntries(new FormData(f)));
   const one = () => designHTML(t, s, logo);
@@ -508,7 +508,7 @@ pages.design.after = ([id], q) => {
       window.html2canvas(d, {scale:3, backgroundColor:null}).then(cv=>{ d.style.zoom = z; const a = document.createElement('a'); a.download = 'madlik-'+t.id+'.png'; a.href = cv.toDataURL('image/png'); a.click(); }); };
     if(window.html2canvas) return go();
     toast('מכינה את התמונה...');
-    const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; sc.onload = go; sc.onerror = () => toast('לא הצלחתי לטעון – נסי הדפסה ל-PDF'); document.head.appendChild(sc);
+    const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; sc.onload = go; sc.onerror = () => toast('לא הצלחתי לטעון – נסה הדפסה ל-PDF'); document.head.appendChild(sc);
   };
 };
 function designHTML(t, s, logo){
@@ -637,7 +637,7 @@ pages.supplier = ([id]) => {
   return pageHead(esc(s.name), esc(s.text), `<a href="#/suppliers">בעלי עסקים</a> › ${esc(s.name)}`) + `
   <div class="wrap detail">
     <div class="box"><h2>שליחת פנייה</h2>
-      <form class="form" id="lf"><div class="two-col"><label>שם<input name="name" required></label><label>טלפון<input name="phone" type="tel" required></label></div><label>מייל<input name="email" type="email"></label><div class="two-col"><label>תאריך האירוע<input name="date" type="date"></label><label>מספר משתתפות<input name="count" type="number" min="1"></label></div><label>פרטים<textarea name="msg"></textarea></label><button class="btn btn-gold">שליחה</button></form>
+      <form class="form" id="lf"><div class="two-col"><label>שם<input name="name" required></label><label>טלפון<input name="phone" type="tel" required></label></div><label>מייל<input name="email" type="email"></label><div class="two-col"><label>תאריך האירוע<input name="date" type="date"></label><label>מספר משתתפים<input name="count" type="number" min="1"></label></div><label>פרטים<textarea name="msg"></textarea></label><button class="btn btn-gold">שליחה</button></form>
     </div>
     <aside class="box"><ul class="meta-list"><li><span>תחום</span><b>${esc(s.cat)}</b></li><li><span>אזור</span><b>${esc(s.region)}</b></li><li><span>מחיר</span><b>${esc(s.price)}</b></li><li><span>טלפון</span><b><a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></b></li><li><span>מייל</span><b><a href="mailto:${esc(s.email)}">${esc(s.email)}</a></b></li></ul><div class="btn-row"><button class="btn btn-light" data-fav="suppliers|${esc(s.id)}">${isFav('suppliers',s.id)?'♥':'♡'} שמירה</button></div></aside>
   </div>`;
@@ -694,7 +694,7 @@ pages.admin = () => {
   if(ADMIN_COLS[tab]) body = live ? '<div id="rList"><div class="empty">טוענת...</div></div>' : tbl(store.get(tab,[]), ADMIN_COLS[tab]);
   if(tab==='add') body = `<div class="two-col">
     <form class="box form" data-add="suppliers"><h3>עסק חדש</h3><label>שם<input name="name" required></label><div class="two-col"><label>תחום<input name="cat" required></label><label>אזור<select name="region"><option>צפון</option><option>חיפה</option><option>שרון</option><option>מרכז</option><option>ירושלים</option><option>שפלה</option><option>דרום</option></select></label></div><div class="two-col"><label>טלפון<input name="phone"></label><label>מייל<input name="email"></label></div><div class="two-col"><label>מחיר<select name="price"><option>₪</option><option>₪₪</option><option>₪₪₪</option></select></label><label>אייקון<input name="ico" value=""></label></div><label>תיאור<textarea name="text"></textarea></label><label class="check"><input type="checkbox" name="featured"> מומלץ (מופיע ראשון ברשימה)</label><label class="check"><input type="checkbox" name="homeAd"> מודעה בהרצה בעמוד הראשי (Premium / Pro)</label><button class="btn btn-gold">הוספה</button></form>
-    <form class="box form" data-add="games"><h3>משחק חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>סוג<input name="type" value="מילים"></label><label>גיל<input name="age" value="כל הגילאים"></label></div><div class="two-col"><label>מינימום משתתפות<input type="number" name="min" value="4"></label><label>מקסימום<input type="number" name="max" value="50"></label></div><label>תיאור קצר<input name="short"></label><label>איך משחקים<textarea name="how"></textarea></label><label>מילים (לא חובה, שורה לכל מילה)<textarea name="words"></textarea></label><button class="btn btn-gold">הוספה</button></form>
+    <form class="box form" data-add="games"><h3>משחק חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>סוג<input name="type" value="מילים"></label><label>גיל<input name="age" value="כל הגילאים"></label></div><div class="two-col"><label>מינימום משתתפים<input type="number" name="min" value="4"></label><label>מקסימום<input type="number" name="max" value="50"></label></div><label>תיאור קצר<input name="short"></label><label>איך משחקים<textarea name="how"></textarea></label><label>מילים (לא חובה, שורה לכל מילה)<textarea name="words"></textarea></label><button class="btn btn-gold">הוספה</button></form>
     <form class="box form" data-add="recipes"><h3>מתכון חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>קטגוריה<input name="cat" value="לביבות"></label><label>כשרות<select name="diet"><option>פרווה</option><option>חלבי</option><option>בשרי</option></select></label></div><div class="two-col"><label>זמן (דקות)<input type="number" name="time" value="30"></label><label>סועדות<input type="number" name="serves" value="6"></label></div><label>רמה<select name="level"><option>קל</option><option>בינוני</option><option>מאתגר</option></select></label><label>מצרכים <span class="hint">שורה לכל מצרך: כמות | יחידה | שם</span><textarea name="ing" placeholder="2 | כוסות | קמח"></textarea></label><label>שלבי הכנה <span class="hint">שורה לכל שלב</span><textarea name="steps"></textarea></label><button class="btn btn-gold">הוספה</button></form>
   </div>
   <div class="box"><h3>תוכן שהוספת</h3>${['games','recipes','suppliers'].map(k=>addedContent(k).map(x=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span>${esc(x.title||x.name)} <span class="muted">(${k})</span></span><button class="btn btn-sm btn-light" data-del-extra="${k}|${esc(x.id)}">מחיקה</button></div>`).join('')).join('') || '<p class="muted">עוד לא הוספת.</p>'}</div>`;
