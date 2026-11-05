@@ -332,7 +332,7 @@ const printFileCard = x => `<a class="card" href="${x.href}" target="_blank" rel
 pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרים פעילות, מכניסים את המילים שלכם, ומקבלים דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + `<div class="wrap">
   <h2 class="sec-h">מעצבים פעילות משלכם</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').map(creatorCard).join('')}</div>
   <h2 class="sec-h">דפי צביעה וחוברת פעילות</h2><div class="cards">${PRINT_FILES.map(printFileCard).join('')}</div>
-  <h2 class="sec-h">פעילויות מוכנות</h2><div class="cards">${content('games').filter(g=>!isScreenGame(g)).map(gameCard).join('')}</div>
+  <h2 class="sec-h">פעילויות מוכנות</h2><div class="cards">${content('games').filter(g=>!isScreenGame(g)&&!['quartets-hanukkah','bingo-hanukkah','who-am-i'].includes(g.id)).map(gameCard).join('')}</div>
   <div class="box center" style="margin-top:30px"><h3>רוצים לשחק על המסך?</h3><a class="btn btn-gold" href="#/games">למשחקים הדיגיטליים על המסך</a></div></div>`;
 
 function getGameState(type, q){
