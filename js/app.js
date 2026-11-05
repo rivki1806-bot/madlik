@@ -74,9 +74,19 @@ function copyLink(url){
   const full = location.href.split('#')[0] + url;
   (navigator.clipboard ? navigator.clipboard.writeText(full) : Promise.reject()).then(()=>toast('הקישור הועתק '), ()=>prompt('העתיקי את הקישור:', full));
 }
-function printHTML(html){
+// קרדיט קבוע על כל מה שמדפיסים או שומרים: בכל דף, ואם אין דפים אז שורה אחת בסוף
+const SITE_HOST = 'madlik.autoclick.co.il';
+function withCredit(html){
+  const t = document.createElement('div'); t.innerHTML = html;
+  const line = '<div class="sheet-credit">הורדה מאתר מדליק · <bdi dir="ltr">' + SITE_HOST + '</bdi></div>';
+  const sheets = t.querySelectorAll('.sheet');
+  if(sheets.length) sheets.forEach(s => { if(!s.querySelector('.sheet-credit')) s.insertAdjacentHTML('beforeend', line); });
+  else if(!t.querySelector('.sheet-credit')) t.insertAdjacentHTML('beforeend', line.replace('sheet-credit', 'sheet-credit solo'));
+  return t.innerHTML;
+}
+function printHTML(html, o){
   const root = document.getElementById('printRoot');
-  root.innerHTML = html;
+  root.innerHTML = (o && o.credit === false) ? html : withCredit(html); // במדור המיתוג אין קרדיט
   setTimeout(()=>{ window.print(); }, 300);
 }
 window.addEventListener('afterprint', ()=>{ document.getElementById('printRoot').innerHTML=''; });
@@ -253,7 +263,7 @@ pages.game.after = ([id]) => {
 
 function overlay(){
   const el = document.createElement('div'); el.className = 'overlay';
-  el.innerHTML = '<button class="close-x" aria-label="סגירה">×</button><div class="ov-body" style="display:flex;flex-direction:column;align-items:center"></div>';
+  el.innerHTML = '<button class="close-x" aria-label="סגירה">×</button><div class="ov-body" style="display:flex;flex-direction:column;align-items:center"></div><div class="gp-credit">משחקים באתר מדליק · <bdi dir="ltr">' + SITE_HOST + '</bdi></div>';
   document.body.appendChild(el);
   const close = () => { el.remove(); clearInterval(el._t); document.removeEventListener('keydown', onKey); };
   const onKey = e => { if(e.key==='Escape') close(); };
@@ -317,7 +327,7 @@ pages.creator.after = ([type], q) => {
   const s = getGameState(type, q);
   let cache = null; // כדי שהבינגו/תפזורת לא יתערבבו בכל הקלדה
   const read = () => { const v = Object.fromEntries(new FormData(f)); f.querySelectorAll('input[type=checkbox][name]').forEach(cb => v[cb.name] = cb.checked); Object.assign(s, v); return s; };
-  const draw = (reshuffle) => { read(); if(reshuffle || !cache) cache = null; pv.innerHTML = renderGame(type, s, cache || (cache = {})); };
+  const draw = (reshuffle) => { read(); if(reshuffle || !cache) cache = null; pv.innerHTML = withCredit(renderGame(type, s, cache || (cache = {}))); };
   f.oninput = () => draw(false);
   f.onclick = e => { const b = e.target.closest('[data-pal]'); if(!b) return; s.palette = +b.dataset.pal; f.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on', x===b)); draw(false); };
   draw(true);
@@ -481,9 +491,9 @@ pages.design.after = ([id], q) => {
   window.addEventListener('resize', onResize);
   draw();
   document.getElementById('dPrint').onclick = () => {
-    if(!t.repeat) return printHTML(one());
+    if(!t.repeat) return printHTML(one(), {credit:false});
     const cols = Math.max(1, Math.floor(190/(t.w+4))), rows = Math.max(1, Math.floor(277/(t.h+4)));
-    printHTML(`<div class="sheet-labels" style="grid-template-columns:repeat(${cols},${t.w}mm)">${Array(cols*rows).fill(one()).join('')}</div>`);
+    printHTML(`<div class="sheet-labels" style="grid-template-columns:repeat(${cols},${t.w}mm)">${Array(cols*rows).fill(one()).join('')}</div>`, {credit:false});
   };
   document.getElementById('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
   document.getElementById('dSave').onclick = () => { read(); store.push('saved', {kind:'עיצוב', title:t.title+' – '+s.title, link:`#/studio/${t.id}?d=${enc(s)}`}); toast('נשמר באזור האישי ♡'); };

@@ -364,7 +364,8 @@ function mount(host, opts){
   /* --- ייצוא --- */
   function cleanClone(scale){
     const c = cv.cloneNode(true); $$(c, '.selbox,.guide-v,.guide-h').forEach(x => x.remove()); c.classList.remove('grid'); c.removeAttribute('id');
-    c.style.transform = scale ? `scale(${scale})` : 'none'; c.style.transformOrigin = '0 0'; return c;
+    c.style.transform = scale ? `scale(${scale})` : 'none'; c.style.transformOrigin = '0 0';
+    return c;
   }
   function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
   async function exportPNG(){

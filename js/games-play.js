@@ -27,7 +27,7 @@ function toast(t){ const el = document.getElementById('toast'); if(!el) return; 
 function ov(cls){
   const el = document.createElement('div'); el.className = 'gp-ov ' + (cls || ''); el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
   const SKY = '<div class="gp-sky" aria-hidden="true"><i class="gp-garland"></i>' + [[8,26,9,0],[22,18,12,-4],[37,34,10,-7],[55,22,13,-2],[70,30,9,-9],[84,20,11,-5],[94,28,14,-11]].map(([x,s,d,dl]) => '<b style="--x:'+x+'%;--s:'+s+'px;--d:'+d+'s;--dl:'+dl+'s"></b>').join('') + '</div>';
-  el.innerHTML = SKY + `<div class="gp-bar"><button class="gp-mute" aria-pressed="${muted}">${muted ? 'צליל: כבוי' : 'צליל: פועל'}</button><button class="gp-x" aria-label="סגירת המשחק">× סגירה</button></div><div class="gp-body"></div>`;
+  el.innerHTML = SKY + `<div class="gp-bar"><button class="gp-mute" aria-pressed="${muted}">${muted ? 'צליל: כבוי' : 'צליל: פועל'}</button><button class="gp-x" aria-label="סגירת המשחק">× סגירה</button></div><div class="gp-body"></div><div class="gp-credit">משחקים באתר מדליק · <bdi dir="ltr">madlik.autoclick.co.il</bdi></div>`;
   document.body.appendChild(el); document.body.classList.add('gp-lock');
   const T = [];
   const close = () => { T.forEach(t => { clearInterval(t); clearTimeout(t); }); cancelAnimationFrame(el._raf); el.remove(); document.body.classList.remove('gp-lock'); document.removeEventListener('keydown', key); };
