@@ -295,3 +295,22 @@ html[data-pal=logo] .ad-stack{margin-top:18px}
   .sheet-credit.solo{position:fixed;left:0;right:0;bottom:3mm;margin:0}
   .gp-credit{display:none!important}
 }
+
+/* ============================================================
+   "ראית את זה?" כבאנר אנכי שצמוד לקצה השמאלי של העמוד
+   ============================================================ */
+@media (min-width:981px){
+  html[data-pal=logo] .ad-rail{left:0;top:112px;width:200px}
+  html[data-pal=logo] .ad-stack{margin-top:28px;min-height:350px}
+  html[data-pal=logo] .ad-card{border-left:0;border-radius:0 24px 24px 0;padding:42px 18px 18px;gap:14px;transform:translateX(-26px);box-shadow:6px 6px 0 var(--ink),0 24px 40px -14px rgba(255,138,46,.65)}
+  html[data-pal=logo] .ad-card.on{transform:none}
+  html[data-pal=logo] .ad-card.on:hover{transform:translateX(6px);box-shadow:10px 8px 0 var(--ink),0 28px 44px -14px rgba(255,138,46,.7)}
+  html[data-pal=logo] .ad-card::after{top:-26px;right:14px}
+  html[data-pal=logo] .ad-card b{font-size:1.55rem}
+  html[data-pal=logo] .ad-card span{font-size:1rem;line-height:1.55}
+  html[data-pal=logo] .ad-card em{align-self:stretch;text-align:center;font-size:.9rem}
+  html[data-pal=logo] .ad-rail.in .ad-card.on{animation:adSlide 1s cubic-bezier(.2,1.2,.4,1) both,adNudge 4.4s ease-in-out 1.1s infinite}
+  html[data-pal=logo] .ad-dots{margin-top:16px;padding-inline-start:14px}
+}
+@keyframes adSlide{0%{opacity:0;transform:translateX(-130%)}50%{opacity:1;transform:translateX(18px)}68%{transform:translateX(-6px)}84%{transform:translateX(4px)}100%{opacity:1;transform:none}}
+@keyframes adNudge{0%,100%{translate:0 0}50%{translate:7px 0}}
