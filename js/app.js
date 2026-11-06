@@ -597,7 +597,8 @@ function designHTML(t, s, logo){
   let one;
   if(st){
     const k = st.tpl, zoom = Math.max(2, (t.w/t.h)/1.414*1.3), pl = small ? k.pl : k.plb;
-    const bg = small ? `background:#222 url(${st.img}) ${k.focus[0]}% ${k.focus[1]}%/auto ${Math.round(zoom*100)}% no-repeat` : `background:#222 url(${st.img}) center/cover no-repeat`;
+    const wide = !small && t.w / t.h > 1.1 && st.landscape === false;
+    const bg = small ? `background:#222 url(${st.img}) ${k.focus[0]}% ${k.focus[1]}%/auto ${Math.round(zoom*100)}% no-repeat` : (wide ? `background:#efe3cf url(${st.img}) center/contain no-repeat` : `background:#222 url(${st.img}) center/cover no-repeat`);
     const just = small ? 'center' : (k.pos === 'bottom' ? 'flex-end' : k.pos === 'top' ? 'flex-start' : 'center');
     const pad = small ? '' : ';padding:7% 6%';
     one = `<div class="design styled ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${k.ink};--d-title:${k.title};--d-acc:${k.acc};--d-font:${fnt};${bg};justify-content:${just}${pad}${t.css?';'+t.css:''}">

@@ -4,7 +4,6 @@
   D.styles = [
     {
       id: 'burgundy-gold',
-      legacy: true,
       name: 'בורדו וזהב',
       desc: 'יוקרתי וחם, עם חנוכייה מוזהבת',
       img: 'img/styles/burgundy-gold.webp',
@@ -13,7 +12,9 @@
       title: {color: '#f3dfa4', fill: 'gold', font: 'Frank Ruhl Libre'},
       sub:   {color: '#f0d78c', font: 'Assistant'},
       plate: '#4e0f26',                            // צבע לוחית טקסט בגדלים שאינם אנכיים
-      ribbon: {x: .5, y: .185, w: .46, h: .075, face: '#f8f4ea', ink: '#59152c'}
+      ribbon: {x: .5, y: .185, w: .46, h: .075, face: '#f8f4ea', ink: '#59152c'},
+      landscape: false,
+      tpl: {ink: '#f0d78c', title: '#f3dfa4', acc: '#d4a64a', pl: 'rgba(78,15,38,.88)', plb: '', pos: 'bottom', focus: [50,48], dark: 1}
     },
     {
       id: 'cream-florals', name: 'פרחים קרם וזהב', desc: 'עדין, חמים ויוקרתי',
