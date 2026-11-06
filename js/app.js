@@ -521,12 +521,12 @@ pages.design = ([id], q) => {
   const fl = {pre:'שורה עליונה', title:'כותרת', sub:'תת־כותרת', body:'פרטים', foot:'שורה תחתונה'};
   return pageHead(esc(t.title), 'בוחרים שפה, משלימים את הטקסט, והדף מוכן בדיוק כמו שיודפס.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
   <div class="wrap builder">
-    <form class="box form builder-panel" id="df">
+    <form class="box form builder-panel ed-lite" id="df">
       <div><b>שפה עיצובית</b><div class="st-pick" id="stPick">${styles.map(x=>`<button type="button" class="stp ${s.style===x.id?'on':''}" data-style="${esc(x.id)}" title="${esc(x.name)}"><img src="${esc(x.thumb||x.img)}" alt="${esc(x.name)}" loading="lazy"></button>`).join('')}<button type="button" class="stp stp-plain ${s.style?'':'on'}" data-style="" title="בלי תמונה">בלי</button></div></div>
       ${Object.keys(fl).map(k=> (k==='body' ? `<label>${fl[k]}<textarea name="body" rows="4">${esc(s.body)}</textarea></label>` : `<label>${fl[k]}<input name="${k}" value="${esc(s[k])}"></label>`)).join('')}
       <div id="themeBox"><b>ערכת צבעים</b><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div>
       <div class="two-col">
-        <label>גופן<select name="font">${D.fonts.map(f=>`<option value="${f.id}" ${s.font===f.id?'selected':''}>${f.name}</option>`).join('')}</select></label>
+        <div class="tp-font"><b>גופן</b><button type="button" class="fcard" id="tpFont"><span class="fcard-pv" id="tpPv">חנוכה שמח</span><span class="fcard-m"><b id="tpName"></b><small id="tpCat"></small></span><span class="fcard-go">ספריית גופנים · ${window.MadlikFonts ? window.MadlikFonts.LIST.length : 300} ‹</span></button><div class="brow"><button type="button" class="bold-c" id="tpBold" aria-pressed="false" aria-label="מודגש" title="מודגש"><b>ב</b></button><span class="brow-t"><b>מודגש</b><small id="tpBoldT">כבוי</small></span></div></div>
         <label>קישוט<select name="deco">${D.decos.map(d=>`<option ${s.deco===d?'selected':''} value="${d}">${d||'בלי'}</option>`).join('')}</select></label>
       </div>
       <label>לוגו או תמונה <span class="hint">לא חובה</span><input type="file" accept="image/*" id="logoIn"></label>
@@ -554,6 +554,18 @@ pages.design.after = ([id], q) => {
     el.style.zoom = fit * zoomK;
     document.getElementById('themeBox').style.display = s.style ? 'none' : '';
   };
+  const F = window.MadlikFonts;
+  const syncFont = () => {
+    const lf = D.fonts.find(x => x.id === s.font), meta = F && F.BY[s.font], bold = (s.fw || 0) >= 600;
+    const css = lf ? lf.css : "'" + s.font + "',sans-serif";
+    const pv = document.getElementById('tpPv'); pv.style.fontFamily = css; pv.style.fontWeight = s.fw || 400; pv.textContent = meta && !meta.he ? 'Happy Hanukkah' : 'חנוכה שמח';
+    document.getElementById('tpName').textContent = lf ? lf.name : s.font; document.getElementById('tpCat').textContent = meta ? (meta.he ? 'עברית · ' : '') + F.CAT[meta.c] : 'גופן מובנה';
+    const bb = document.getElementById('tpBold'); bb.classList.toggle('on', bold); bb.setAttribute('aria-pressed', bold); document.getElementById('tpBoldT').textContent = bold ? 'פעיל' : 'כבוי';
+  };
+  syncFont();
+  document.getElementById('tpFont').onclick = () => { if(!F) return; read(); F.open({font:s.font, text:s.title, weight:s.fw, bold:(s.fw || 0) >= 600, he:true,
+    onPick: n => { s.font = n; syncFont(); draw(); F.ensure(n).then(draw); }, onBold: on => { s.fw = on ? 700 : 400; syncFont(); draw(); }}); };
+  document.getElementById('tpBold').onclick = () => { s.fw = (s.fw || 0) >= 600 ? 400 : 700; syncFont(); draw(); };
   f.oninput = draw;
   f.onclick = e => {
     const sb = e.target.closest('[data-style]');
@@ -565,7 +577,7 @@ pages.design.after = ([id], q) => {
   const onResize = () => document.body.contains(f) ? draw() : window.removeEventListener('resize', onResize);
   window.addEventListener('resize', onResize);
   draw();
-  document.getElementById('dPrint').onclick = () => { read(); const sh = sheetHTML(t, s, logo); printHTML(sh.html, {credit:false, page:sh.page, margin:0}); };
+  document.getElementById('dPrint').onclick = () => { read(); const go = () => { const sh = sheetHTML(t, s, logo); printHTML(sh.html, {credit:false, page:sh.page, margin:0}); }; (F && F.BY[s.font] ? F.ensure(s.font) : Promise.resolve()).then(go); };
   document.getElementById('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
   document.getElementById('dSave').onclick = () => { read(); store.push('saved', {kind:'עיצוב', title:t.title+' – '+s.title, link:`#/studio/${t.id}?d=${enc(s)}`}); toast('נשמר באזור האישי ♡'); };
   document.getElementById('dPng').onclick = () => {
@@ -591,7 +603,8 @@ function sheetHTML(t, s, logo){
 
 function designHTML(t, s, logo){
   const st = s.style ? (D.styles || []).find(x => x.id === s.style && x.tpl) : null;
-  const fnt = (D.fonts.find(x=>x.id===s.font)||D.fonts[0]).css;
+  const lf = D.fonts.find(x=>x.id===s.font), fnt = lf ? lf.css : (window.MadlikFonts && window.MadlikFonts.BY[s.font] ? `'${s.font}','Assistant',sans-serif` : D.fonts[0].css);
+  if(!lf && window.MadlikFonts && window.MadlikFonts.BY[s.font]) window.MadlikFonts.ensure(s.font);
   const fs = Math.min(t.w, t.h)/32, small = Math.min(t.w,t.h) < 80, em = t.fs || fs*(small?1.6:1);
   const logoImg = logo ? `<img class="d-logo" src="${logo}" alt="">` : '';
   let one;
@@ -601,7 +614,7 @@ function designHTML(t, s, logo){
     const bg = small ? `background:#222 url(${st.img}) ${k.focus[0]}% ${k.focus[1]}%/auto ${Math.round(zoom*100)}% no-repeat` : (wide ? `background:#efe3cf url(${st.img}) center/contain no-repeat` : `background:#222 url(${st.img}) center/cover no-repeat`);
     const just = small ? 'center' : (k.pos === 'bottom' ? 'flex-end' : k.pos === 'top' ? 'flex-start' : 'center');
     const pad = small ? '' : ';padding:7% 6%';
-    one = `<div class="design styled ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${k.ink};--d-title:${k.title};--d-acc:${k.acc};--d-font:${fnt};${bg};justify-content:${just}${pad}${t.css?';'+t.css:''}">
+    one = `<div class="design styled ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${k.ink};--d-title:${k.title};--d-acc:${k.acc};--d-font:${fnt}${s.fw?';font-weight:'+s.fw:''};${bg};justify-content:${just}${pad}${t.css?';'+t.css:''}">
       <div class="d-plate" style="background:${pl||'transparent'};border-radius:${small?'1.1em':'4mm'};padding:${pl?(small?'.45em .8em':'1.2em 2.2em'):'0'}">
         ${logoImg}${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
         <div class="d-title">${esc(s.title)}</div>
@@ -611,7 +624,7 @@ function designHTML(t, s, logo){
       </div></div>`;
   } else {
     const th = D.themes.find(x=>x.id===s.theme)||D.themes[0];
-    one = `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${th.ink};--d-title:${th.title};--d-acc:${th.acc};--d-font:${fnt};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
+    one = `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${th.ink};--d-title:${th.title};--d-acc:${th.acc};--d-font:${fnt}${s.fw?';font-weight:'+s.fw:''};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
     ${t.nofr?'':'<div class="d-frame"></div>'}
     ${logo?logoImg:(s.deco&&!small?`<div class="d-deco">${esc(s.deco)}</div>`:'')}
     ${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
