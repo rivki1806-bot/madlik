@@ -251,33 +251,12 @@ pages.games = () => {
   return `<div class="gp"><div class="wrap gp-wrap">
     <header class="gp-top"><h1>משחקים על המסך</h1><span class="gp-line"></span></header>
     <div class="cards gp-tools">${tools.map(creatorCard).join('')}</div>
-    <h2 class="gp-sub">משחקים מוכנים</h2>
-    <form class="filters gp-bar" id="gf" onsubmit="return false">
-      <div class="gp-bar-top">
-        <input type="search" name="q" placeholder="חיפוש" aria-label="חיפוש משחק">
-        <div class="gp-chips" id="gpChips" role="group" aria-label="סינון לפי צורה"><button type="button" class="on" data-f="">הכול</button>${formats.map(f => `<button type="button" data-f="${esc(f)}">${esc(f)}</button>`).join('')}</div>
-      </div>
-      <details class="gp-adv"><summary>עוד סינונים</summary><div class="gp-adv-in">
-        <select name="type"><option value="">כל הסוגים</option>${types.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
-        <select name="format"><option value="">כל הצורות</option>${formats.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
-        <select name="age"><option value="">כל הגילאים</option>${ages.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
-        <input type="number" name="n" min="1" placeholder="משתתפים" aria-label="מספר משתתפים">
-        <label class="check" style="display:flex;align-items:center;gap:6px"><input type="checkbox" name="noequip"> בלי ציוד</label>
-      </div></details>
-    </form>
     <div class="cards gp-list" id="gl"></div>
   </div></div>`;
 };
 pages.games.after = () => {
-  const f = document.getElementById('gf'), l = document.getElementById('gl'), chips = [...document.querySelectorAll('#gpChips button')];
-  const run = () => {
-    const v = Object.fromEntries(new FormData(f)); const n = +v.n;
-    const res = content('games').filter(isScreenGame).filter(g => (!v.q || JSON.stringify(g).includes(v.q)) && (!v.type || g.type===v.type) && (!v.format || (g.format||[]).includes(v.format)) && (!v.age || g.age===v.age) && (!n || (n>=g.min && n<=g.max)) && (!v.noequip || !g.equip));
-    l.innerHTML = res.length ? res.map(gameCard).join('') : '<div class="empty">אין משחק שמתאים. נסו להוריד סינון.</div>';
-    chips.forEach(b => b.classList.toggle('on', b.dataset.f === (f.elements.format.value || '')));
-  };
-  f.oninput = run; run();
-  document.getElementById('gpChips').onclick = e => { const b = e.target.closest('button'); if(!b) return; f.elements.format.value = b.dataset.f; run(); };
+  const l = document.getElementById('gl');
+  l.innerHTML = content('games').filter(isScreenGame).map(gameCard).join('');
 };
 
 pages.game = ([id]) => {

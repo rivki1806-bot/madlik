@@ -61,3 +61,26 @@ html[data-pal] body[data-world=create] .pc-list .cards{margin-bottom:6px}
 
 /* בלי חנוכייה וסביבונים בתחתית כל העמודים */
 #scene{display:none!important}
+
+/* ============================================================
+   מדור "משחקים על המסך" בעמוד הבית: אותו מראה נקי כמו בעמוד המשחקים
+   ============================================================ */
+html[data-pal] body .wshow[data-w=games]{background:#fcf7ec!important;background-image:none!important;color:#0a2244!important;padding:clamp(40px,5vw,72px) 0!important;min-height:0!important}
+html[data-pal] body .wshow[data-w=games]::before,html[data-pal] body .wshow[data-w=games]::after{display:none!important}
+.wshow[data-w=games] .wshow-in{max-width:1120px!important;margin:0 auto!important;padding:0 24px!important;display:block!important}
+.wshow[data-w=games] .wshow-text{display:flex!important;align-items:center;gap:18px;flex-wrap:wrap;margin:0 0 26px!important;max-width:none!important;padding:0!important;text-align:right}
+.wshow[data-w=games] .wshow-art,.wshow[data-w=games] .wshow-kicker,.wshow[data-w=games] .wshow-text p{display:none!important}
+html[data-pal] body .wshow[data-w=games] .wshow-text h2{font:500 clamp(1.5rem,2.6vw,2.1rem)/1.2 'Rubik',sans-serif!important;color:#0a2244!important;margin:0!important;text-shadow:none!important;max-width:none!important}
+.wshow[data-w=games] .wshow-text::after{content:"";flex:1;height:1px;background:rgba(10,34,68,.12);order:2;min-width:40px}
+html[data-pal] body .wshow[data-w=games] .wshow-text .btn{order:3;background:transparent!important;color:#0a2244!important;border:1px solid rgba(10,34,68,.2)!important;box-shadow:none!important;border-radius:999px!important;min-height:42px;padding:0 20px!important;font:500 .9rem 'Rubik',sans-serif!important}
+html[data-pal] body .wshow[data-w=games] .wshow-text .btn:hover{background:#0a2244!important;color:#fbf1dc!important}
+.wshow[data-w=games] .wshow-cards{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))!important;gap:clamp(18px,2.2vw,28px)!important;transform:none!important;padding:0!important;margin:0!important}
+.wshow[data-w=games] .card{background:#fffdf8!important;border:1px solid rgba(10,34,68,.12)!important;border-radius:20px!important;box-shadow:none!important;padding:8px 8px 4px!important;rotate:0deg!important;animation:none!important;overflow:hidden;color:#0a2244!important;transition:transform .35s var(--s-ease),border-color .3s,box-shadow .35s!important}
+.wshow[data-w=games] .card::before,.wshow[data-w=games] .card::after{display:none!important}
+.wshow[data-w=games] .card:hover{transform:translateY(-4px)!important;border-color:rgba(10,34,68,.3)!important;box-shadow:0 22px 30px -26px rgba(10,34,68,.5)!important}
+.wshow[data-w=games] .card .card-top{border-radius:14px!important;overflow:hidden;border:0!important;box-shadow:none!important}
+.wshow[data-w=games] .card .card-body{padding:14px 12px 16px!important;display:grid;gap:6px}
+.wshow[data-w=games] .card .card-body h3{font:500 1.08rem/1.35 'Rubik',sans-serif!important;color:#0a2244!important;margin:0!important}
+.wshow[data-w=games] .card .card-body p{display:none!important}
+.wshow[data-w=games] .card .tag{background:transparent!important;border:1px solid rgba(10,34,68,.12)!important;color:#6c7893!important;border-radius:999px!important;padding:1px 10px;font:500 .72rem 'Rubik',sans-serif!important}
+.gp-list{margin-top:clamp(36px,5vw,60px)}
