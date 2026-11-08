@@ -515,7 +515,7 @@ pages.edit.after = (p, q) => {
 };
 
 const TP_SWATCHES = ['#ffffff','#111111','#f7f2e8','#4e0f26','#d4a64a','#e4572e','#ff6a00','#1a56b0','#2f80ed','#14a38a','#7b57c9','#ec008c'];
-const tpDefault = q => ({theme:'gold-blue', font: q.style ? 'suez' : 'frank', style: q.style || '', fsz:100, bz:100, tcol:'', icol:'', pos:'', bx:'', by:'', ls:0, lh:100, po:100, bb:0, tsh:0});
+const tpDefault = q => ({theme:'gold-blue', font: q.style ? 'suez' : 'frank', style: q.style || '', fsz:100, bz:100, tcol:'', icol:'', pos:'', bx:'', by:'', ls:0, lh:100, po:100, bb:0, tsh:0, tx:0, ty:0, lx:0, ly:0, lz:100});
 const tpStyle = s => s.style ? (D.styles || []).find(x => x.id === s.style && x.tpl) : null;
 const tpDefColors = s => { const st = tpStyle(s), th = D.themes.find(x => x.id === s.theme) || D.themes[0]; return st ? {t: st.tpl.title, i: st.tpl.ink} : {t: th.title, i: th.ink}; };
 const TPI = {
@@ -585,7 +585,12 @@ pages.design = ([id], q) => {
         <button type="button" class="btn btn-light" id="dSave">♡ שמירה</button>
       </div>
     </form>
-    <div class="tp-stage"><div class="tp-mode" id="tpMode"></div><div class="preview-area" id="dv" data-mode="text"></div><p class="tp-hint"><span>${t.repeat ? 'הדף המלא כפי שיודפס, עם כל המדבקות' : 'הדף כפי שיודפס'}</span><span id="tpModeH"></span></p></div>
+    <div class="tp-stage"><div class="tp-mode" id="tpMode"></div>
+      <div class="tp-vtools"><button type="button" class="tp-vb tp-add" id="tpAddLogo">＋ לוגו / תמונה</button><span class="tp-zs"><button type="button" class="tp-vb" id="tpZout" aria-label="הקטנת התצוגה">−</button><b id="tpZl">100%</b><button type="button" class="tp-vb" id="tpZin" aria-label="הגדלת התצוגה">+</button><button type="button" class="tp-vb" id="tpZfit">התאמה</button></span></div>
+      <div class="tp-viewport"><div class="preview-area" id="dv" data-mode="text"></div>
+        <div class="tp-ovl" id="tpOvl" hidden><div class="tp-sel" id="tpSel"><i class="tp-hd" data-h="se" title="גוררים לשינוי גודל"></i></div><div class="tp-float" id="tpFloat"></div></div></div>
+      <p class="tp-hint"><span>${t.repeat ? 'הדף המלא כפי שיודפס, עם כל המדבקות' : 'הדף כפי שיודפס'}</span><span id="tpModeH"></span></p>
+  </div>
   </div>`;
 };
 
@@ -650,51 +655,145 @@ pages.design.after = ([id], q) => {
   /* ---------- ציור הדף ---------- */
   const draw = () => {
     read(); const sh = sheetHTML(t, s, logo); dv.innerHTML = sh.html;
-    const el = dv.firstElementChild, fit = Math.min(1, (dv.clientWidth - 24) / el.offsetWidth);
-    el.style.zoom = fit * zoomK;
+    const el = dv.firstElementChild, fit = Math.min(1, (dv.clientWidth - 96) / el.offsetWidth, (Math.max(420, innerHeight * .72)) / el.offsetHeight) * .82;
+    el.style.zoom = Math.max(.05, fit * zoomK); placeOverlay();
   };
   let raf = 0; const drawSoon = () => { if(raf) return; raf = requestAnimationFrame(() => { raf = 0; draw(); }); };
 
-  /* ---------- גרירת הרקע, זום בגלגל ולחיצה על טקסט ---------- */
+  /* ---------- עריכה ישירה על התצוגה: גרירה, שינוי גודל, עריכה במקום ---------- */
+  let sel = null, selIdx = 0, editing = null, editEnd = null;
+  const TXT = '.d-pre,.d-title,.d-sub,.d-body,.d-foot';
+  const designs = () => [...dv.querySelectorAll('.design')];
+  const unionRect = els => { let r = null; els.forEach(e => { const b = e.getBoundingClientRect(); if(!b.width) return; r = r ? {left: Math.min(r.left, b.left), top: Math.min(r.top, b.top), right: Math.max(r.right, b.right), bottom: Math.max(r.bottom, b.bottom)} : {left: b.left, top: b.top, right: b.right, bottom: b.bottom}; }); return r; };
+  const objRect = () => {
+    const d = designs()[selIdx] || designs()[0]; if(!d) return null;
+    if(sel === 'logo'){ const l = d.querySelector('.d-logo'); if(!l) return null; const b = l.getBoundingClientRect(); return {left: b.left, top: b.top, right: b.right, bottom: b.bottom}; }
+    const pl = d.querySelector('.d-plate'); if(pl){ const b = pl.getBoundingClientRect(); return {left: b.left, top: b.top, right: b.right, bottom: b.bottom}; }
+    return unionRect([...d.querySelectorAll(TXT)]);
+  };
+  function floatHTML(){
+    if(sel === 'logo') return '<button type="button" data-fa="lm" title="הקטנה">−</button><button type="button" data-fa="lp" title="הגדלה">+</button><button type="button" data-fa="rep">החלפה</button><button type="button" data-fa="reset" title="איפוס מיקום וגודל">⟲</button><button type="button" data-fa="del" class="danger">מחיקה</button>';
+    const d = tpDefColors(s), col = s.tcol || d.t;
+    return `<button type="button" data-fa="szm" title="הקטנת הטקסט">A−</button><button type="button" data-fa="szp" title="הגדלת הטקסט">A+</button><button type="button" data-fa="bold" aria-pressed="${(+s.fw || 0) >= 600}" title="מודגש"><b>ב</b></button><button type="button" data-fa="font" title="החלפת גופן">גופן</button><button type="button" data-fa="color" title="צבע הטקסט"><i class="fcol" style="background:${col}"></i></button><button type="button" data-fa="reset" title="איפוס מיקום">⟲</button>`;
+  }
+  function placeOverlay(){
+    const ov = $('tpOvl'); if(!sel || editing){ ov.hidden = true; return; }
+    const r = objRect(); if(!r){ ov.hidden = true; return; }
+    const v = $('tpOvl').parentElement.getBoundingClientRect(), box = $('tpSel'), fl = $('tpFloat');
+    box.style.cssText = `left:${r.left - v.left}px;top:${r.top - v.top}px;width:${r.right - r.left}px;height:${r.bottom - r.top}px`;
+    fl.innerHTML = floatHTML(); ov.hidden = false;
+    const fh = fl.offsetHeight || 44, fw = fl.offsetWidth || 260;
+    let top = r.top - v.top - fh - 12; if(top < 4) top = r.bottom - v.top + 12;
+    let left = (r.left + r.right) / 2 - v.left - fw / 2; left = Math.max(4, Math.min(v.width - fw - 4, left));
+    fl.style.top = top + 'px'; fl.style.left = left + 'px';
+  }
+  const select = (type, idx) => { sel = type; selIdx = idx || 0; placeOverlay(); };
+  dv.addEventListener('scroll', () => placeOverlay());
+  window.addEventListener('scroll', () => placeOverlay(), {passive: true});
+
+  const applyTextOff = () => dv.querySelectorAll('.d-tg').forEach(el => { el.style.transform = (s.tx || s.ty) ? `translate(${s.tx}mm,${s.ty}mm)` : ''; });
+  const applyLogo = () => dv.querySelectorAll('.d-logo').forEach(el => { el.style.setProperty('--lx', (s.lx || 0) + 'mm'); el.style.setProperty('--ly', (s.ly || 0) + 'mm'); });
+  const logoWidth = () => ((Math.min(t.w, t.h) < 80 ? 46 : 28) * (+s.lz || 100) / 100);
+
   let drag = null;
   dv.addEventListener('pointerdown', e => {
-    const d = e.target.closest('.design.styled'); if(!d || e.button) return;
-    const st = tpStyle(s); if(!st) return;
-    const info = bgInfo(t, s, st), pxmm = d.getBoundingClientRect().width / t.w;
-    drag = {x: e.clientX, y: e.clientY, px: info.px, py: info.py, info, pxmm, moved: false, target: e.target, id: e.pointerId};
+    if(e.button || (e.target.isContentEditable)) return;
+    if(editEnd && !e.target.closest('.editing')) editEnd();
+    const d = e.target.closest('.design'); if(!d) return;
+    const idx = designs().indexOf(d), pxmm = d.getBoundingClientRect().width / t.w;
+    let kind = null;
+    if(e.target.closest('.d-logo')) kind = 'logo';
+    else if(e.target.closest(TXT + ',.d-plate')) kind = 'text';
+    else if(tpStyle(s) && d.classList.contains('styled')) kind = 'bg';
+    if(!kind){ sel = null; placeOverlay(); return; }
+    const info = kind === 'bg' ? bgInfo(t, s, tpStyle(s)) : null;
+    drag = {kind, idx, x: e.clientX, y: e.clientY, pxmm, moved: false, id: e.pointerId, info, px: info && info.px, py: info && info.py, ox: kind === 'logo' ? +s.lx || 0 : +s.tx || 0, oy: kind === 'logo' ? +s.ly || 0 : +s.ty || 0};
     try{ dv.setPointerCapture(e.pointerId); }catch(x){}
   });
   dv.addEventListener('pointermove', e => {
     if(!drag) return;
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if(!drag.moved && Math.hypot(dx, dy) < 4) return;
-    if(!drag.moved){ drag.moved = true; dv.classList.add('dragging'); }
-    const i = drag.info, dxm = dx / drag.pxmm, dym = dy / drag.pxmm;
-    const nx = (t.w - i.iw) < -.01 ? Math.max(0, Math.min(100, drag.px + dxm / (t.w - i.iw) * 100)) : drag.px;
-    const ny = (t.h - i.ih) < -.01 ? Math.max(0, Math.min(100, drag.py + dym / (t.h - i.ih) * 100)) : drag.py;
-    s.bx = Math.round(nx * 10) / 10; s.by = Math.round(ny * 10) / 10;
-    dv.querySelectorAll('.design.styled').forEach(el => { el.style.backgroundPosition = s.bx + '% ' + s.by + '%'; });
+    if(!drag.moved){ drag.moved = true; dv.classList.add('dragging'); if(drag.kind !== 'bg') select(drag.kind, drag.idx); }
+    const dxm = dx / drag.pxmm, dym = dy / drag.pxmm;
+    if(drag.kind === 'bg'){
+      const i = drag.info;
+      const nx = (t.w - i.iw) < -.01 ? Math.max(0, Math.min(100, drag.px + dxm / (t.w - i.iw) * 100)) : drag.px;
+      const ny = (t.h - i.ih) < -.01 ? Math.max(0, Math.min(100, drag.py + dym / (t.h - i.ih) * 100)) : drag.py;
+      s.bx = Math.round(nx * 10) / 10; s.by = Math.round(ny * 10) / 10;
+      dv.querySelectorAll('.design.styled').forEach(el => { el.style.backgroundPosition = s.bx + '% ' + s.by + '%'; });
+    } else if(drag.kind === 'text'){
+      s.tx = Math.round((drag.ox + dxm) * 10) / 10; s.ty = Math.round((drag.oy + dym) * 10) / 10; applyTextOff(); placeOverlay();
+    } else {
+      s.lx = Math.round((drag.ox + dxm) * 10) / 10; s.ly = Math.round((drag.oy + dym) * 10) / 10; applyLogo(); placeOverlay();
+    }
   });
   const endDrag = () => {
     if(!drag) return; const d = drag; drag = null; dv.classList.remove('dragging');
     try{ dv.releasePointerCapture(d.id); }catch(x){}
     if(d.moved){ push(); return; }
-    if(tab === 'bg') return;
-    const m = d.target.closest && d.target.closest('.d-pre,.d-title,.d-sub,.d-body,.d-foot'); if(!m) return;
-    const name = m.className.match(/d-(pre|title|sub|body|foot)/)[1];
-    if(tab !== 'text') setTab('text');
-    const inp = f.elements[name]; if(!inp || inp.disabled) return;
-    inp.focus(); if(inp.select) inp.select(); inp.closest('label').scrollIntoView({block:'center', behavior:'smooth'});
-    inp.closest('label').classList.add('flash'); setTimeout(() => inp.closest('label').classList.remove('flash'), 1400);
+    if(d.kind === 'bg'){ sel = null; placeOverlay(); return; }
+    select(d.kind, d.idx);
+    if(d.kind === 'text' && tab !== 'text' && tab !== 'font' && tab !== 'color') setTab('text');
   };
   dv.addEventListener('pointerup', endDrag); dv.addEventListener('pointercancel', endDrag);
+
+  /* שינוי גודל בידית הפינתית */
+  let rs = null;
+  $('tpSel').addEventListener('pointerdown', e => {
+    if(!e.target.closest('.tp-hd')) return; e.preventDefault(); e.stopPropagation();
+    const r = objRect(); if(!r) return; const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
+    rs = {cx, cy, d0: Math.max(10, Math.hypot(e.clientX - cx, e.clientY - cy)), v0: sel === 'logo' ? (+s.lz || 100) : (+s.fsz || 100), id: e.pointerId};
+    try{ e.target.setPointerCapture(e.pointerId); }catch(x){}
+  });
+  $('tpSel').addEventListener('pointermove', e => {
+    if(!rs) return; const k = Math.hypot(e.clientX - rs.cx, e.clientY - rs.cy) / rs.d0;
+    if(sel === 'logo'){ s.lz = Math.round(Math.max(20, Math.min(500, rs.v0 * k))); dv.querySelectorAll('.d-logo').forEach(el => el.style.setProperty('--lw', logoWidth() + '%')); placeOverlay(); }
+    else { s.fsz = Math.round(Math.max(30, Math.min(300, rs.v0 * k))); setRange(f.querySelector('[data-sk=fsz]'), s.fsz); drawSoon(); }
+  });
+  const endRs = () => { if(rs){ rs = null; push(); } };
+  $('tpSel').addEventListener('pointerup', endRs); $('tpSel').addEventListener('pointercancel', endRs);
+
+  /* סרגל הכלים הצף */
+  $('tpFloat').addEventListener('click', e => {
+    const b = e.target.closest('[data-fa]'); if(!b) return; const a = b.dataset.fa;
+    if(a === 'szm' || a === 'szp'){ s.fsz = Math.max(30, Math.min(300, (+s.fsz || 100) + (a === 'szp' ? 8 : -8))); setRange(f.querySelector('[data-sk=fsz]'), s.fsz); draw(); push(); }
+    else if(a === 'bold'){ s.fw = (+s.fw || 0) >= 600 ? 400 : 700; syncFont(); draw(); push(); }
+    else if(a === 'font'){ $('tpFont').click(); }
+    else if(a === 'color'){ ctarget = 'tcol'; setTab('color'); syncColor(); }
+    else if(a === 'lm' || a === 'lp'){ s.lz = Math.max(20, Math.min(500, (+s.lz || 100) + (a === 'lp' ? 12 : -12))); draw(); push(); }
+    else if(a === 'rep'){ $('logoIn').click(); }
+    else if(a === 'del'){ logo = ''; $('logoIn').value = ''; sel = null; draw(); push(); }
+    else if(a === 'reset'){ if(sel === 'logo'){ s.lx = 0; s.ly = 0; s.lz = 100; } else { s.tx = 0; s.ty = 0; } draw(); push(); }
+  });
+
+  /* עריכת טקסט במקום: לחיצה כפולה */
+  dv.addEventListener('dblclick', e => {
+    const m = e.target.closest(TXT); if(!m || m.isContentEditable) return;
+    const name = m.className.match(/d-(pre|title|sub|body|foot)/)[1];
+    editing = m; sel = null; placeOverlay();
+    m.contentEditable = 'true'; m.classList.add('editing'); m.focus();
+    const rg = document.createRange(); rg.selectNodeContents(m); const sl = getSelection(); sl.removeAllRanges(); sl.addRange(rg);
+    const onIn = () => { s[name] = m.innerText.replace(/\n+$/, ''); const inp = f.elements[name]; if(inp && !inp.disabled) inp.value = s[name]; };
+    const onKeyEd = ev => { if(ev.key === 'Enter' && name !== 'body' && !ev.shiftKey){ ev.preventDefault(); m.blur(); } else if(ev.key === 'Escape'){ m.blur(); } };
+    m.addEventListener('input', onIn); m.addEventListener('keydown', onKeyEd);
+    const finish = () => { if(editEnd !== finish) return; editEnd = null; m.removeEventListener('input', onIn); m.removeEventListener('keydown', onKeyEd); m.removeEventListener('blur', finish); editing = null; onIn(); draw(); push(); select('text', selIdx); };
+    editEnd = finish; m.addEventListener('blur', finish);
+  });
+
+  /* זום בגלגל העכבר: בלשונית הרקע */
   dv.addEventListener('wheel', e => {
     if(tab !== 'bg' || !tpStyle(s) || !e.target.closest('.design.styled')) return;
     e.preventDefault(); s.bz = Math.max(100, Math.min(320, (+s.bz || 100) - e.deltaY * .2));
     setRange(f.querySelector('[data-sk=bz]'), s.bz); drawSoon(); push();
   }, {passive: false});
 
-  /* ---------- אירועי הטופס ---------- */
+  /* זום התצוגה עצמה */
+  const setZoom = k => { zoomK = Math.max(.4, Math.min(2.6, k)); const z = $('zm'); z.value = Math.round(zoomK * 100); z.style.setProperty('--p', pctv(+z.value, 40, 260)); $('zmO').textContent = z.value + '%'; $('tpZl').textContent = z.value + '%'; draw(); };
+  $('tpZin').onclick = () => setZoom(zoomK * 1.2); $('tpZout').onclick = () => setZoom(zoomK / 1.2); $('tpZfit').onclick = () => setZoom(1);
+  $('tpAddLogo').onclick = () => $('logoIn').click();
+
+/* ---------- אירועי הטופס ---------- */
   f.oninput = e => {
     const el = e.target;
     if(el.dataset.sk){ s[el.dataset.sk] = +el.value; setRange(el, +el.value); draw(); push(); return; }
@@ -720,11 +819,17 @@ pages.design.after = ([id], q) => {
   $('tpFont').onclick = () => { if(!F) return; read(); F.open({font:s.font, text:s.title, weight:s.fw, bold:(+s.fw || 0) >= 600, he:true,
     onPick: n => { s.font = n; syncFont(); draw(); F.ensure(n).then(draw); push(); }, onBold: on => { s.fw = on ? 700 : 400; syncFont(); draw(); push(); }}); };
   $('tpBold').onclick = () => { s.fw = (+s.fw || 0) >= 600 ? 400 : 700; syncFont(); draw(); push(); };
-  $('zm').oninput = e => { zoomK = e.target.value / 100; e.target.style.setProperty('--p', pctv(+e.target.value, 40, 260)); $('zmO').textContent = e.target.value + '%'; draw(); };
-  $('logoIn').onchange = e => { const file = e.target.files[0]; if(!file) return; if(file.size > 5e6) return toast('הקובץ גדול מדי (עד 5MB)'); const r = new FileReader(); r.onload = () => { logo = r.result; draw(); }; r.readAsDataURL(file); };
+  $('zm').oninput = e => setZoom(e.target.value / 100);
+  $('logoIn').onchange = e => { const file = e.target.files[0]; if(!file) return; if(file.size > 5e6) return toast('הקובץ גדול מדי (עד 5MB)'); const r = new FileReader(); r.onload = () => { logo = r.result; s.lx = 0; s.ly = 0; sel = 'logo'; selIdx = 0; draw(); push(); }; r.readAsDataURL(file); };
   const onKey = e => {
     if(!document.body.contains(f)){ document.removeEventListener('keydown', onKey); return; }
     const tg = e.target, typing = tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT'), mod = e.ctrlKey || e.metaKey;
+    if(!typing && !editing && sel && !mod){
+      const st = e.shiftKey ? 5 : 1, ar = {ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st]}[e.key];
+      if(ar){ e.preventDefault(); if(sel === 'logo'){ s.lx = (+s.lx || 0) + ar[0]; s.ly = (+s.ly || 0) + ar[1]; applyLogo(); } else { s.tx = (+s.tx || 0) + ar[0]; s.ty = (+s.ty || 0) + ar[1]; applyTextOff(); } placeOverlay(); push(); return; }
+      if((e.key === 'Delete' || e.key === 'Backspace') && sel === 'logo'){ e.preventDefault(); logo = ''; $('logoIn').value = ''; sel = null; draw(); push(); return; }
+      if(e.key === 'Escape'){ sel = null; placeOverlay(); return; }
+    }
     if(typing || !mod) return;
     if(e.key.toLowerCase() === 'z' && !e.shiftKey){ e.preventDefault(); $('tpUndo').click(); }
     else if(e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey)){ e.preventDefault(); $('tpRedo').click(); }
@@ -791,7 +896,8 @@ function designHTML(t, s, logo){
   if(lsv) typo += `;--d-ls:${(lsv / 100).toFixed(3)}em`;
   if(lhv !== 100) typo += `;--d-lh:${(1.4 * lhv / 100).toFixed(2)};--d-lt:${(1.1 * lhv / 100).toFixed(2)}`;
   const tshadow = +s.tsh ? ' tsh' : '';
-  const logoImg = logo ? `<img class="d-logo" src="${logo}" alt="">` : '';
+  const logoImg = logo ? `<img class="d-logo" src="${logo}" alt="" draggable="false" style="--lw:${(small ? 46 : 28) * (+s.lz || 100) / 100}%;--lx:${+s.lx || 0}mm;--ly:${+s.ly || 0}mm">` : '';
+  const tg = (+s.tx || +s.ty) ? `transform:translate(${+s.tx || 0}mm,${+s.ty || 0}mm)` : '';
   let one;
   if(st){
     const k = st.tpl, base = small ? k.pl : k.plb, g = bgInfo(t, s, st);
@@ -802,8 +908,8 @@ function designHTML(t, s, logo){
     const pos = s.pos || k.pos, just = small ? 'center' : (pos === 'bottom' ? 'flex-end' : pos === 'top' ? 'flex-start' : 'center');
     const pad = small ? '' : ';padding:7% 6%', tc = s.tcol || k.title, ic = s.icol || k.ink;
     one = `<div class="design styled${tshadow} ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || k.acc};--d-font:${fnt}${typo};${bg}${bright};justify-content:${just}${pad}${t.css?';'+t.css:''}">
-      <div class="d-plate" style="background:${pl||'transparent'};border-radius:${small?'1.1em':'4mm'};padding:${pl&&pl!=='transparent'?(small?'.45em .8em':'1.2em 2.2em'):'0'}">
-        ${logoImg}${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
+      ${logoImg}<div class="d-plate d-tg" style="background:${pl||'transparent'};border-radius:${small?'1.1em':'4mm'};padding:${pl&&pl!=='transparent'?(small?'.45em .8em':'1.2em 2.2em'):'0'};${tg}">
+        ${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
         <div class="d-title">${esc(s.title)}</div>
         ${s.sub?`<div class="d-sub">${esc(s.sub)}</div>`:''}
         ${s.body&&!small?`<div class="d-body">${esc(s.body)}</div>`:''}
@@ -813,13 +919,13 @@ function designHTML(t, s, logo){
     const th = D.themes.find(x=>x.id===s.theme)||D.themes[0], tc = s.tcol || th.title, ic = s.icol || th.ink;
     one = `<div class="design${tshadow} ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || th.acc};--d-font:${fnt}${typo};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
     ${t.nofr?'':'<div class="d-frame"></div>'}
-    ${logoImg}
+    ${logoImg}<div class="d-txt d-tg" style="${tg}">
     ${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
     <div class="d-title">${esc(s.title)}</div>
     ${s.sub?`<div class="d-sub">${esc(s.sub)}</div>`:''}
     ${s.body&&!small?`<div class="d-body">${esc(s.body)}</div>`:''}
     ${s.foot&&!small?`<div class="d-foot">${esc(s.foot)}</div>`:''}
-  </div>`;
+  </div></div>`;
   }
   return t.pair ? `<div class="d-pair">${one}<i class="d-fold"></i>${one}</div>` : one;
 }
