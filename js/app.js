@@ -514,23 +514,40 @@ pages.edit.after = (p, q) => {
   ME.mount(document.getElementById('edHost'), state && state.layers ? {state} : o);
 };
 
+const TP_SWATCHES = ['#ffffff','#111111','#f7f2e8','#4e0f26','#d4a64a','#e4572e','#ff6a00','#1a56b0','#2f80ed','#14a38a','#7b57c9','#ec008c'];
+const tpDefault = q => ({theme:'gold-blue', font: q.style ? 'suez' : 'frank', style: q.style || '', fsz:100, bz:100, tcol:'', icol:'', pos:'', bx:'', by:''});
+const tpStyle = s => s.style ? (D.styles || []).find(x => x.id === s.style && x.tpl) : null;
+const tpDefColors = s => { const st = tpStyle(s), th = D.themes.find(x => x.id === s.theme) || D.themes[0]; return st ? {t: st.tpl.title, i: st.tpl.ink} : {t: th.title, i: th.ink}; };
+
 pages.design = ([id], q) => {
   const t = D.templates.find(x=>x.id===id); if(!t) return notFound();
   const styles = (D.styles || []).filter(x => !x.legacy);
-  const s = Object.assign({theme:'gold-blue', font: q.style ? 'suez' : 'frank', deco:'❖', style: q.style || ''}, t.fields, q.d?dec(q.d):{});
+  const s = Object.assign(tpDefault(q), t.fields, q.d ? dec(q.d) : {});
   const fl = {pre:'שורה עליונה', title:'כותרת', sub:'תת־כותרת', body:'פרטים', foot:'שורה תחתונה'};
-  return pageHead(esc(t.title), 'בוחרים שפה, משלימים את הטקסט, והדף מוכן בדיוק כמו שיודפס.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
+  const pal = (() => { const st = tpStyle(s); return (st ? st.palette.slice(0, 5) : []).concat(TP_SWATCHES).filter((c, i, a) => a.indexOf(c) === i); })();
+  return pageHead(esc(t.title), 'בוחרים שפה, משלימים את הטקסט, גוררים את הרקע למקום הנכון, והדף מוכן בדיוק כמו שיודפס.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
   <div class="wrap builder">
     <form class="box form builder-panel ed-lite" id="df">
-      <div><b>שפה עיצובית</b><div class="st-pick" id="stPick">${styles.map(x=>`<button type="button" class="stp ${s.style===x.id?'on':''}" data-style="${esc(x.id)}" title="${esc(x.name)}"><img src="${esc(x.thumb||x.img)}" alt="${esc(x.name)}" loading="lazy"></button>`).join('')}<button type="button" class="stp stp-plain ${s.style?'':'on'}" data-style="" title="בלי תמונה">בלי</button></div></div>
-      ${Object.keys(fl).map(k=> (k==='body' ? `<label>${fl[k]}<textarea name="body" rows="4">${esc(s.body)}</textarea></label>` : `<label>${fl[k]}<input name="${k}" value="${esc(s[k])}"></label>`)).join('')}
-      <div id="themeBox"><b>ערכת צבעים</b><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div>
-      <div class="two-col">
-        <div class="tp-font"><b>גופן</b><button type="button" class="fcard" id="tpFont"><span class="fcard-pv" id="tpPv">חנוכה שמח</span><span class="fcard-m"><b id="tpName"></b><small id="tpCat"></small></span><span class="fcard-go">ספריית גופנים · ${window.MadlikFonts ? window.MadlikFonts.LIST.length : 300} ‹</span></button><div class="brow"><button type="button" class="bold-c" id="tpBold" aria-pressed="false" aria-label="מודגש" title="מודגש"><b>ב</b></button><span class="brow-t"><b>מודגש</b><small id="tpBoldT">כבוי</small></span></div></div>
-        <label>קישוט<select name="deco">${D.decos.map(d=>`<option ${s.deco===d?'selected':''} value="${d}">${d||'בלי'}</option>`).join('')}</select></label>
-      </div>
-      <label>לוגו או תמונה <span class="hint">לא חובה</span><input type="file" accept="image/*" id="logoIn"></label>
-      <label>גודל התצוגה <input type="range" id="zm" min="40" max="260" value="100"></label>
+      <div class="tp-top"><button type="button" class="tp-ib" id="tpUndo" disabled title="ביטול (Ctrl+Z)">↶ ביטול</button><button type="button" class="tp-ib" id="tpRedo" disabled title="שחזור (Ctrl+Y)">↷ שחזור</button><button type="button" class="tp-ib" id="tpReset" title="חזרה להתחלה">איפוס הכול</button></div>
+      <section class="tp-c"><h3 class="tp-h"><i>1</i>הטקסט <small>אפשר גם ללחוץ על הטקסט בתצוגה</small></h3>
+        ${Object.keys(fl).map(k => (k === 'body' ? `<label data-fld="body">${fl[k]}<textarea name="body" rows="3">${esc(s.body)}</textarea></label>` : `<label data-fld="${k}">${fl[k]}<input name="${k}" value="${esc(s[k])}"></label>`)).join('')}</section>
+      <section class="tp-c"><h3 class="tp-h"><i>2</i>גופן וצבע</h3>
+        <div class="tp-font"><button type="button" class="fcard" id="tpFont"><span class="fcard-pv" id="tpPv">חנוכה שמח</span><span class="fcard-m"><b id="tpName"></b><small id="tpCat"></small></span><span class="fcard-go">ספריית גופנים · ${window.MadlikFonts ? window.MadlikFonts.LIST.length : 300} ‹</span></button><div class="brow"><button type="button" class="bold-c" id="tpBold" aria-pressed="false" aria-label="מודגש" title="מודגש"><b>ב</b></button><span class="brow-t"><b>מודגש</b><small id="tpBoldT">כבוי</small></span></div></div>
+        <label class="pc"><span>גודל הטקסט</span><input type="range" data-sk="fsz" min="50" max="200" step="1" value="${+s.fsz || 100}" aria-label="גודל הטקסט"><output>${+s.fsz || 100}%</output></label>
+        <div class="seg tp-seg" role="group" aria-label="מה לצבוע"><button type="button" data-ct="tcol" aria-pressed="true">צבע הכותרת</button><button type="button" data-ct="icol" aria-pressed="false">צבע שאר הטקסט</button></div>
+        <label class="pc pc-c"><span>צבע</span><span class="cpick" style="--c:#ffffff"><input type="color" id="tpColor" value="#ffffff" aria-label="צבע הטקסט"><code>#ffffff</code></span></label>
+        <div class="sw-row" id="tpSw" role="group" aria-label="צבעים מהירים">${pal.map(c => `<button type="button" class="sw" data-sw="${c}" style="--c:${c}" aria-label="צבע ${c}" title="${c}"></button>`).join('')}<button type="button" class="tp-def" id="tpColDef" title="חזרה לצבע של השפה העיצובית">ברירת מחדל</button></div>
+        <div class="seg tp-seg" id="tpPosBox" role="group" aria-label="מיקום הטקסט"><button type="button" data-pos="top">למעלה</button><button type="button" data-pos="center">במרכז</button><button type="button" data-pos="bottom">למטה</button><button type="button" data-pos="">אוטומטי</button></div>
+      </section>
+      <section class="tp-c"><h3 class="tp-h"><i>3</i>שפה עיצובית ורקע</h3>
+        <div class="st-pick" id="stPick">${styles.map(x=>`<button type="button" class="stp ${s.style===x.id?'on':''}" data-style="${esc(x.id)}" title="${esc(x.name)}"><img src="${esc(x.thumb||x.img)}" alt="${esc(x.name)}" loading="lazy"></button>`).join('')}<button type="button" class="stp stp-plain ${s.style?'':'on'}" data-style="" title="בלי תמונה">בלי</button></div>
+        <div id="bgBox"><label class="pc"><span>זום הרקע</span><input type="range" data-sk="bz" min="100" max="320" step="1" value="${+s.bz || 100}" aria-label="זום הרקע"><output>${+s.bz || 100}%</output></label>
+          <div class="tp-bgrow"><span class="tp-tip">גוררים את התמונה בתצוגה כדי להזיז אותה בתוך המוצר</span><button type="button" class="tp-ib" id="tpBgReset">איפוס רקע</button></div></div>
+        <div id="themeBox"><b>ערכת צבעים</b><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div>
+      </section>
+      <section class="tp-c"><h3 class="tp-h"><i>4</i>לוגו ותצוגה</h3>
+        <label>לוגו או תמונה <span class="hint">לא חובה</span><input type="file" accept="image/*" id="logoIn"></label>
+        <label class="pc"><span>גודל התצוגה</span><input type="range" id="zm" min="40" max="260" value="100" aria-label="גודל התצוגה"><output id="zmO">100%</output></label></section>
       <div class="btn-row">
         <button type="button" class="btn btn-gold" id="dPrint"> הדפסה / PDF</button>
         <button type="button" class="btn" id="dPng"> הורדה כתמונה</button>
@@ -539,48 +556,136 @@ pages.design = ([id], q) => {
       </div>
       <p class="hint">${t.repeat?'מה שרואים בתצוגה הוא הדף המלא כפי שיודפס, עם כל המדבקות.':'להורדה כ-PDF: בחלון ההדפסה בחר "שמירה כ-PDF".'} הלוגו לא נשמר בקישור השיתוף.</p>
     </form>
-    <div class="preview-area" id="dv"></div>
+    <div class="tp-stage"><div class="preview-area" id="dv"></div><p class="tp-hint"><span>גוררים את הרקע כדי להזיז אותו</span><span>לחיצה על טקסט מעבירה לעריכה שלו</span></p></div>
   </div>`;
 };
+
 pages.design.after = ([id], q) => {
   const t = D.templates.find(x=>x.id===id); if(!t) return;
-  const f = document.getElementById('df'), dv = document.getElementById('dv');
-  const s = Object.assign({theme:'gold-blue', font: q.style ? 'suez' : 'frank', deco:'❖', style: q.style || ''}, t.fields, q.d?dec(q.d):{});
-  let logo = '', zoomK = 1;
+  const f = document.getElementById('df'), dv = document.getElementById('dv'), F = window.MadlikFonts;
+  const s = Object.assign(tpDefault(q), t.fields, q.d ? dec(q.d) : {});
+  const init = JSON.stringify(s);
+  let logo = '', zoomK = 1, ctarget = 'tcol';
+  const $ = x => document.getElementById(x);
+  const pctv = (v, a, b) => Math.max(0, Math.min(100, (v - a) / (b - a) * 100)).toFixed(1) + '%';
   const read = () => Object.assign(s, Object.fromEntries(new FormData(f)));
+
+  /* ---------- היסטוריה (ביטול ושחזור) ---------- */
+  let hist = [JSON.stringify(s)], hi = 0, pushT = 0;
+  const histBtns = () => { $('tpUndo').disabled = hi < 1; $('tpRedo').disabled = hi >= hist.length - 1; };
+  const push = () => { clearTimeout(pushT); pushT = setTimeout(() => { read(); const j = JSON.stringify(s); if(j === hist[hi]) return; hist = hist.slice(0, hi + 1); hist.push(j); hi = hist.length - 1; histBtns(); }, 350); };
+  const restore = j => { Object.keys(s).forEach(k => delete s[k]); Object.assign(s, JSON.parse(j)); syncUI(); draw(); histBtns(); };
+
+  /* ---------- סנכרון הממשק למצב ---------- */
+  const setRange = (el, v, unit) => { el.value = v; el.style.setProperty('--p', pctv(+v, +el.min, +el.max)); const o = el.nextElementSibling; if(o && o.tagName === 'OUTPUT') o.textContent = Math.round(v) + (unit || '%'); };
+  function syncFont(){
+    const lf = D.fonts.find(x => x.id === s.font), meta = F && F.BY[s.font], bold = (+s.fw || 0) >= 600;
+    const css = lf ? lf.css : "'" + s.font + "',sans-serif";
+    const pv = $('tpPv'); pv.style.fontFamily = css; pv.style.fontWeight = s.fw || 400; pv.textContent = meta && !meta.he ? 'Happy Hanukkah' : 'חנוכה שמח';
+    $('tpName').textContent = lf ? lf.name : s.font; $('tpCat').textContent = meta ? (meta.he ? 'עברית · ' : '') + F.CAT[meta.c] : 'גופן מובנה';
+    const bb = $('tpBold'); bb.classList.toggle('on', bold); bb.setAttribute('aria-pressed', bold); $('tpBoldT').textContent = bold ? 'פעיל' : 'כבוי';
+  }
+  function syncColor(){
+    const d = tpDefColors(s), cur = s[ctarget] || (ctarget === 'tcol' ? d.t : d.i), inp = $('tpColor');
+    inp.value = /^#[0-9a-f]{6}$/i.test(cur) ? cur : '#000000'; const cp = inp.parentElement; cp.style.setProperty('--c', inp.value); cp.querySelector('code').textContent = s[ctarget] ? inp.value : inp.value + ' (ברירת מחדל)';
+    f.querySelectorAll('[data-ct]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ct === ctarget));
+    $('tpSw').querySelectorAll('.sw').forEach(b => b.classList.toggle('on', s[ctarget] && b.dataset.sw.toLowerCase() === s[ctarget].toLowerCase()));
+  }
+  function syncUI(){
+    ['pre','title','sub','body','foot'].forEach(k => { const el = f.elements[k]; if(el) el.value = s[k] == null ? '' : s[k]; });
+    setRange(f.querySelector('[data-sk=fsz]'), +s.fsz || 100); setRange(f.querySelector('[data-sk=bz]'), +s.bz || 100);
+    f.querySelectorAll('.stp').forEach(b => b.classList.toggle('on', b.dataset.style === (s.style || '')));
+    f.querySelectorAll('.swatch').forEach(b => b.classList.toggle('on', b.dataset.theme === s.theme));
+    f.querySelectorAll('[data-pos]').forEach(b => b.setAttribute('aria-pressed', (s.pos || '') === b.dataset.pos));
+    syncFont(); syncColor(); showBoxes();
+  }
+  function showBoxes(){
+    const st = tpStyle(s), small = Math.min(t.w, t.h) < 80;
+    $('themeBox').style.display = s.style ? 'none' : ''; $('bgBox').style.display = st ? '' : 'none';
+    $('tpPosBox').style.display = st && !small ? '' : 'none';
+  }
+
+  /* ---------- ציור הדף ---------- */
   const draw = () => {
     read(); const sh = sheetHTML(t, s, logo); dv.innerHTML = sh.html;
     const el = dv.firstElementChild, fit = Math.min(1, (dv.clientWidth - 24) / el.offsetWidth);
-    el.style.zoom = fit * zoomK;
-    document.getElementById('themeBox').style.display = s.style ? 'none' : '';
+    el.style.zoom = fit * zoomK; showBoxes();
   };
-  const F = window.MadlikFonts;
-  const syncFont = () => {
-    const lf = D.fonts.find(x => x.id === s.font), meta = F && F.BY[s.font], bold = (s.fw || 0) >= 600;
-    const css = lf ? lf.css : "'" + s.font + "',sans-serif";
-    const pv = document.getElementById('tpPv'); pv.style.fontFamily = css; pv.style.fontWeight = s.fw || 400; pv.textContent = meta && !meta.he ? 'Happy Hanukkah' : 'חנוכה שמח';
-    document.getElementById('tpName').textContent = lf ? lf.name : s.font; document.getElementById('tpCat').textContent = meta ? (meta.he ? 'עברית · ' : '') + F.CAT[meta.c] : 'גופן מובנה';
-    const bb = document.getElementById('tpBold'); bb.classList.toggle('on', bold); bb.setAttribute('aria-pressed', bold); document.getElementById('tpBoldT').textContent = bold ? 'פעיל' : 'כבוי';
+
+  /* ---------- גרירת הרקע ולחיצה על טקסט ---------- */
+  let drag = null;
+  dv.addEventListener('pointerdown', e => {
+    const d = e.target.closest('.design.styled'); if(!d || e.button) return;
+    const st = tpStyle(s); if(!st) return;
+    const info = bgInfo(t, s, st), pxmm = d.getBoundingClientRect().width / t.w;
+    drag = {x: e.clientX, y: e.clientY, px: info.px, py: info.py, info, pxmm, moved: false, target: e.target, id: e.pointerId};
+    try{ dv.setPointerCapture(e.pointerId); }catch(x){}
+  });
+  dv.addEventListener('pointermove', e => {
+    if(!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if(!drag.moved && Math.hypot(dx, dy) < 4) return;
+    if(!drag.moved){ drag.moved = true; dv.classList.add('dragging'); }
+    const i = drag.info, dxm = dx / drag.pxmm, dym = dy / drag.pxmm;
+    const nx = (t.w - i.iw) < -.01 ? Math.max(0, Math.min(100, drag.px + dxm / (t.w - i.iw) * 100)) : drag.px;
+    const ny = (t.h - i.ih) < -.01 ? Math.max(0, Math.min(100, drag.py + dym / (t.h - i.ih) * 100)) : drag.py;
+    s.bx = Math.round(nx * 10) / 10; s.by = Math.round(ny * 10) / 10;
+    dv.querySelectorAll('.design.styled').forEach(el => { el.style.backgroundPosition = s.bx + '% ' + s.by + '%'; });
+  });
+  const endDrag = e => {
+    if(!drag) return; const d = drag; drag = null; dv.classList.remove('dragging');
+    try{ dv.releasePointerCapture(d.id); }catch(x){}
+    if(d.moved){ push(); return; }
+    const m = d.target.closest && d.target.closest('.d-pre,.d-title,.d-sub,.d-body,.d-foot'); if(!m) return;
+    const name = m.className.match(/d-(pre|title|sub|body|foot)/)[1], inp = f.elements[name]; if(!inp) return;
+    inp.focus(); if(inp.select) inp.select(); inp.closest('label').scrollIntoView({block:'center', behavior:'smooth'});
+    inp.closest('label').classList.add('flash'); setTimeout(() => inp.closest('label').classList.remove('flash'), 1400);
   };
-  syncFont();
-  document.getElementById('tpFont').onclick = () => { if(!F) return; read(); F.open({font:s.font, text:s.title, weight:s.fw, bold:(s.fw || 0) >= 600, he:true,
-    onPick: n => { s.font = n; syncFont(); draw(); F.ensure(n).then(draw); }, onBold: on => { s.fw = on ? 700 : 400; syncFont(); draw(); }}); };
-  document.getElementById('tpBold').onclick = () => { s.fw = (s.fw || 0) >= 600 ? 400 : 700; syncFont(); draw(); };
-  f.oninput = draw;
+  dv.addEventListener('pointerup', endDrag); dv.addEventListener('pointercancel', endDrag);
+
+  /* ---------- אירועי הטופס ---------- */
+  f.oninput = e => {
+    const el = e.target;
+    if(el.dataset.sk){ s[el.dataset.sk] = +el.value; el.style.setProperty('--p', pctv(+el.value, +el.min, +el.max)); const o = el.nextElementSibling; if(o && o.tagName === 'OUTPUT') o.textContent = el.value + '%'; draw(); push(); return; }
+    if(el.id === 'tpColor'){ s[ctarget] = el.value; syncColor(); draw(); push(); return; }
+    if(el.id === 'zm' || el.id === 'logoIn') return;
+    draw(); push();
+  };
   f.onclick = e => {
-    const sb = e.target.closest('[data-style]');
-    if(sb){ s.style = sb.dataset.style; f.querySelectorAll('.stp').forEach(x => x.classList.toggle('on', x === sb)); draw(); return; }
-    const b = e.target.closest('[data-theme]'); if(!b) return; s.theme = b.dataset.theme; f.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on', x===b)); draw();
+    const b = e.target.closest('button'); if(!b) return;
+    if(b.dataset.style !== undefined){ s.style = b.dataset.style; s.bx = ''; s.by = ''; s.bz = 100; if(s.style && !D.fonts.find(x => x.id === s.font) && !(F && F.BY[s.font])) s.font = 'suez'; syncUI(); draw(); push(); return; }
+    if(b.dataset.theme){ s.theme = b.dataset.theme; syncUI(); draw(); push(); return; }
+    if(b.dataset.ct){ ctarget = b.dataset.ct; syncColor(); return; }
+    if(b.dataset.sw){ s[ctarget] = b.dataset.sw; syncColor(); draw(); push(); return; }
+    if(b.id === 'tpColDef'){ s[ctarget] = ''; syncColor(); draw(); push(); return; }
+    if(b.dataset.pos !== undefined){ s.pos = b.dataset.pos; syncUI(); draw(); push(); return; }
+    if(b.id === 'tpBgReset'){ s.bx = ''; s.by = ''; s.bz = 100; syncUI(); draw(); push(); return; }
+    if(b.id === 'tpUndo'){ if(hi > 0){ hi--; restore(hist[hi]); } return; }
+    if(b.id === 'tpRedo'){ if(hi < hist.length - 1){ hi++; restore(hist[hi]); } return; }
+    if(b.id === 'tpReset'){ if(confirm('לחזור להתחלה? כל השינויים יימחקו.')){ restore(init); push(); } return; }
   };
-  document.getElementById('zm').oninput = e => { zoomK = e.target.value / 100; draw(); };
-  document.getElementById('logoIn').onchange = e => { const file = e.target.files[0]; if(!file) return; if(file.size > 5e6) return toast('הקובץ גדול מדי (עד 5MB)'); const r = new FileReader(); r.onload = () => { logo = r.result; draw(); }; r.readAsDataURL(file); };
+  $('tpFont').onclick = () => { if(!F) return; read(); F.open({font:s.font, text:s.title, weight:s.fw, bold:(+s.fw || 0) >= 600, he:true,
+    onPick: n => { s.font = n; syncFont(); draw(); F.ensure(n).then(draw); push(); }, onBold: on => { s.fw = on ? 700 : 400; syncFont(); draw(); push(); }}); };
+  $('tpBold').onclick = () => { s.fw = (+s.fw || 0) >= 600 ? 400 : 700; syncFont(); draw(); push(); };
+  $('zm').oninput = e => { zoomK = e.target.value / 100; e.target.style.setProperty('--p', pctv(+e.target.value, 40, 260)); $('zmO').textContent = e.target.value + '%'; draw(); };
+  $('logoIn').onchange = e => { const file = e.target.files[0]; if(!file) return; if(file.size > 5e6) return toast('הקובץ גדול מדי (עד 5MB)'); const r = new FileReader(); r.onload = () => { logo = r.result; draw(); }; r.readAsDataURL(file); };
+  const onKey = e => {
+    if(!document.body.contains(f)){ document.removeEventListener('keydown', onKey); return; }
+    const tg = e.target, typing = tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT'), mod = e.ctrlKey || e.metaKey;
+    if(typing || !mod) return;
+    if(e.key.toLowerCase() === 'z' && !e.shiftKey){ e.preventDefault(); $('tpUndo').click(); }
+    else if(e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey)){ e.preventDefault(); $('tpRedo').click(); }
+  };
+  document.addEventListener('keydown', onKey);
   const onResize = () => document.body.contains(f) ? draw() : window.removeEventListener('resize', onResize);
   window.addEventListener('resize', onResize);
-  draw();
-  document.getElementById('dPrint').onclick = () => { read(); const go = () => { const sh = sheetHTML(t, s, logo); printHTML(sh.html, {credit:false, page:sh.page, margin:0}); }; (F && F.BY[s.font] ? F.ensure(s.font) : Promise.resolve()).then(go); };
-  document.getElementById('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
-  document.getElementById('dSave').onclick = () => { read(); store.push('saved', {kind:'עיצוב', title:t.title+' – '+s.title, link:`#/studio/${t.id}?d=${enc(s)}`}); toast('נשמר באזור האישי ♡'); };
-  document.getElementById('dPng').onclick = () => {
+  f.querySelectorAll('input[type=range]').forEach(r => r.style.setProperty('--p', pctv(+r.value, +r.min, +r.max)));
+  syncUI(); draw(); histBtns();
+
+  $('dPrint').onclick = () => { read(); const go = () => { const sh = sheetHTML(t, s, logo); printHTML(sh.html, {credit:false, page:sh.page, margin:0}); }; (F && F.BY[s.font] ? F.ensure(s.font) : Promise.resolve()).then(go); };
+  $('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
+  $('dSave').onclick = () => { read(); store.push('saved', {kind:'עיצוב', title:t.title+' – '+s.title, link:`#/studio/${t.id}?d=${enc(s)}`}); toast('נשמר באזור האישי ♡'); };
+  $('dPng').onclick = () => {
     const go = () => { const d = dv.firstElementChild; const z = d.style.zoom; d.style.zoom = 1;
       window.html2canvas(d, {scale:2, backgroundColor:'#ffffff'}).then(cv=>{ d.style.zoom = z; const a = document.createElement('a'); a.download = 'madlik-'+t.id+'.png'; a.href = cv.toDataURL('image/png'); a.click(); }); };
     if(window.html2canvas) return go();
@@ -601,20 +706,36 @@ function sheetHTML(t, s, logo){
   return {page: land ? 'A4 landscape' : 'A4', html: `<div class="pv-page ${t.repeat ? 'rep' : ''}" style="width:${pw}mm;height:${ph - .5}mm;padding:${m}mm">${inner}</div>`};
 }
 
+/* גודל ומיקום הרקע בתוך המוצר (מידות במ״מ), משמש גם לציור וגם לגרירה */
+function bgInfo(t, s, st){
+  const k = st.tpl, small = Math.min(t.w, t.h) < 80, ar = st.landscape === false ? 0.747 : 1.414;
+  const bz = (+s.bz || 100) / 100, wide = !small && t.w / t.h > 1.1 && st.landscape === false;
+  const has = s.bx !== '' && s.bx != null && s.by !== '' && s.by != null;
+  const px = has ? +s.bx : (small ? k.focus[0] : 50), py = has ? +s.by : (small ? k.focus[1] : 50);
+  let mode, ih, iw;
+  if(small){ ih = t.h * Math.max(2, (t.w / t.h) / ar * 1.3) * bz; iw = ih * ar; mode = 'h'; }
+  else if(wide){ ih = t.h * bz; iw = ih * ar; mode = 'h'; }
+  else if(t.w / t.h > ar){ iw = t.w * bz; ih = iw / ar; mode = 'w'; }
+  else { ih = t.h * bz; iw = ih * ar; mode = 'h'; }
+  const size = mode === 'h' ? `auto ${(ih / t.h * 100).toFixed(1)}%` : `${(iw / t.w * 100).toFixed(1)}% auto`;
+  return {px, py, iw, ih, size, wide, small};
+}
+
 function designHTML(t, s, logo){
-  const st = s.style ? (D.styles || []).find(x => x.id === s.style && x.tpl) : null;
+  const st = tpStyle(s);
   const lf = D.fonts.find(x=>x.id===s.font), fnt = lf ? lf.css : (window.MadlikFonts && window.MadlikFonts.BY[s.font] ? `'${s.font}','Assistant',sans-serif` : D.fonts[0].css);
   if(!lf && window.MadlikFonts && window.MadlikFonts.BY[s.font]) window.MadlikFonts.ensure(s.font);
-  const fs = Math.min(t.w, t.h)/32, small = Math.min(t.w,t.h) < 80, em = t.fs || fs*(small?1.6:1);
+  const fs = Math.min(t.w, t.h)/32, small = Math.min(t.w,t.h) < 80, em = (t.fs || fs*(small?1.6:1)) * ((+s.fsz || 100) / 100);
+  const fw = s.fw ? ';font-weight:' + s.fw : '';
   const logoImg = logo ? `<img class="d-logo" src="${logo}" alt="">` : '';
   let one;
   if(st){
-    const k = st.tpl, zoom = Math.max(2, (t.w/t.h)/1.414*1.3), pl = small ? k.pl : k.plb;
-    const wide = !small && t.w / t.h > 1.1 && st.landscape === false;
-    const bg = small ? `background:#222 url(${st.img}) ${k.focus[0]}% ${k.focus[1]}%/auto ${Math.round(zoom*100)}% no-repeat` : (wide ? `background:#efe3cf url(${st.img}) center/contain no-repeat` : `background:#222 url(${st.img}) center/cover no-repeat`);
-    const just = small ? 'center' : (k.pos === 'bottom' ? 'flex-end' : k.pos === 'top' ? 'flex-start' : 'center');
-    const pad = small ? '' : ';padding:7% 6%';
-    one = `<div class="design styled ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${k.ink};--d-title:${k.title};--d-acc:${k.acc};--d-font:${fnt}${s.fw?';font-weight:'+s.fw:''};${bg};justify-content:${just}${pad}${t.css?';'+t.css:''}">
+    const k = st.tpl, pl = small ? k.pl : k.plb, g = bgInfo(t, s, st);
+    const bgc = g.wide ? '#efe3cf' : '#222';
+    const bg = `background:${bgc} url(${st.img}) ${g.px}% ${g.py}%/${g.size} no-repeat`;
+    const pos = s.pos || k.pos, just = small ? 'center' : (pos === 'bottom' ? 'flex-end' : pos === 'top' ? 'flex-start' : 'center');
+    const pad = small ? '' : ';padding:7% 6%', tc = s.tcol || k.title, ic = s.icol || k.ink;
+    one = `<div class="design styled ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || k.acc};--d-font:${fnt}${fw};${bg};justify-content:${just}${pad}${t.css?';'+t.css:''}">
       <div class="d-plate" style="background:${pl||'transparent'};border-radius:${small?'1.1em':'4mm'};padding:${pl?(small?'.45em .8em':'1.2em 2.2em'):'0'}">
         ${logoImg}${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
         <div class="d-title">${esc(s.title)}</div>
@@ -623,10 +744,10 @@ function designHTML(t, s, logo){
         ${s.foot&&!small?`<div class="d-foot">${esc(s.foot)}</div>`:''}
       </div></div>`;
   } else {
-    const th = D.themes.find(x=>x.id===s.theme)||D.themes[0];
-    one = `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${th.ink};--d-title:${th.title};--d-acc:${th.acc};--d-font:${fnt}${s.fw?';font-weight:'+s.fw:''};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
+    const th = D.themes.find(x=>x.id===s.theme)||D.themes[0], tc = s.tcol || th.title, ic = s.icol || th.ink;
+    one = `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || th.acc};--d-font:${fnt}${fw};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
     ${t.nofr?'':'<div class="d-frame"></div>'}
-    ${logo?logoImg:(s.deco&&!small?`<div class="d-deco">${esc(s.deco)}</div>`:'')}
+    ${logoImg}
     ${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
     <div class="d-title">${esc(s.title)}</div>
     ${s.sub?`<div class="d-sub">${esc(s.sub)}</div>`:''}
