@@ -181,105 +181,55 @@ function wshow(w, kicker, title, text, href, btn, cards){
     </div>
   </section>`;
 }
-/* ---------- דף הבית: נקי, עם Showcase אינטראקטיבי ---------- */
-function hmSec(w, kicker, title, text, href, btn, cards){
-  return `<section class="hm-sec" data-w="${w}"><div class="hm-in">
-    <header class="hm-head"><div><span class="hm-kick" data-w="${w}">${kicker}</span><h2>${title}</h2><p>${text}</p></div><a class="hm-link" href="${href}">${btn} <i>←</i></a></header>
-    <div class="cards hm-cards">${cards}</div></div></section>`;
-}
 pages.home = () => {
-  const ads = content('suppliers').filter(b => b.homeAd).map(b => ({href:'#/supplier/' + b.id, name:b.name, text:b.text, meta:b.cat + ' · ' + b.region}));
-  ads.push({href:'#/advertise', name:'פרסמו אצלנו', text:'מגיעים לאלפי אנשים שמתכננים ערב לביבות.', meta:'לכל התכניות וטופס יצירת קשר'});
-  const notice = Date.now() < BIZ_NOTICE_UNTIL ? '<span class="hm-pill">פתיחת פרסום ביום שלישי 10.11.26</span>' : '';
-  const tabs = [['games','משחקים'], ['print','להדפסה'], ['studio','מיתוג'], ['recipe','מתכונים']];
-  return `<div class="hm">
-  <section class="hm-hero"><div class="hm-in hm-hero-in">
-    <div class="hm-copy">
-      <span class="hm-eyebrow">חנוכה תשפ״ז · הכול בחינם</span>
-      <h1>כל מה שצריך לערב לביבות <em>שמדליק שמחה בלבבות</em></h1>
-      <p class="hm-lead">משחקים על המסך, דפים מעוצבים להדפסה, מיתוג לערב, מתכונים ובעלי עסקים. הכול במקום אחד, ומוכן לשימוש.</p>
-      <div class="hm-cta"><a class="btn btn-gold" href="#/games">מתחילים לשחק</a><a class="btn" href="#/studio">לסטודיו המיתוג</a><a class="hm-link" href="#/create">פעילויות להדפסה <i>←</i></a></div>
-      <ul class="hm-facts"><li><b>${content('games').length}</b><span>משחקים</span></li><li><b>${(D.styles || []).filter(s => !s.legacy).length}</b><span>שפות עיצוב</span></li><li><b>300</b><span>גופנים</span></li></ul>
+  const fx = window.MadlikFX;
+  const games = content('games').slice(0,8), recipes = content('recipes').slice(0,8);
+  const words = ['סביבון','לביבות','סופגניות','שמונה נרות','פך שמן','נס גדול','משחקים','מיתוג','מתכונים'];
+  const band = (cls,dir) => `<div class="band ${cls}" data-dir="${dir}" aria-hidden="true"><div class="band-track">${[0,1].map(()=>[...words,...words].map(w=>`<span>${w}</span>`).join('')).join('')}</div></div>`;
+  const hl = ['בצחוק,','במשחק','בשולחן','ובתמונה','מוכן.'];
+  const stm = 'ערב לביבות טוב לא נגמר בלביבות. הוא נגמר בצחוק, במשחק שכולם נכנסו אליו, בשולחן שמישהו טרח עליו ובתמונה שכולם רוצים. אספנו את כל זה במקום אחד, כדי שתבואו עם כוס תה ותצאו עם ערב מוכן.'.split(' ').map(w=>`<span class="w${hl.includes(w)?' hl':''}">${w}</span>`).join(' ');
+  const ring = txt => { const ch = [...txt], n = ch.length; return ch.map((c,i)=>`<text transform="rotate(${(-(i/n)*360).toFixed(2)} 80 80) translate(80 24)" text-anchor="middle">${c}</text>`).join(''); };
+  const pile = (id,theme,font,over) => { const t = D.templates.find(x=>x.id===id); return designHTML(t, Object.assign({theme, font:font||'frank', deco:''}, t.fields, over||{}), ''); };
+  const p2 = n => String(n).padStart(2,'0');
+  const ads = content('suppliers').filter(b=>b.homeAd).map(b=>`<a class="ad-card" href="#/supplier/${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.text)}</span><em>${esc(b.cat)} · ${esc(b.region)} ←</em></a>`)
+    .concat(['<a class="ad-card ad-cta" href="#/advertise"><b>ראית את זה?</b><span>ראו את זה עוד אלפי אנשים, מוזמן לפרסם באחת התכניות השוות!</span><em>לכל התכניות וטופס יצירת קשר ←</em></a>']);
+  return `
+  <section class="hero" id="hero">
+    <div class="hero-top"><span>חנוכה תשפ״ז</span><span>הכול בחינם</span><span>גללו ותראו מה קורה ↓</span></div>
+    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
+    <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות • שמדליק שמחה בלבבות • ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
+        <aside class="ad-rail" aria-label="מודעות">
+      <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button><img class="ad-logo" src="img/logo-mark.png" alt="">
+      ${Date.now() < BIZ_NOTICE_UNTIL ? '<div class="ad-open" role="note" aria-label="פתיחת פרסום ביום שלישי 10.11.26"><b>פתיחת פרסום</b><span>ביום שלישי</span><i>10.11.26</i></div>' : ''}
+      <div class="ad-stack">${ads.join('')}</div>
+      ${ads.length>1?`<div class="ad-dots">${ads.map(()=>'<i></i>').join('')}</div>`:''}
+    </aside>
+    <div class="hero-copy">
+      <p class="tagline">כל מה שצריך לערב לביבות<br><em>שמדליק שמחה בלבבות</em></p>
     </div>
-    <div class="hm-show" id="hmShow" aria-label="הצצה למה שיש באתר">
-      <div class="hm-tabs" role="tablist">${tabs.map(([id, n], i) => `<button type="button" role="tab" class="${i ? '' : 'on'}" data-p="${id}" aria-selected="${!i}"><i></i>${n}</button>`).join('')}</div>
-      <div class="hm-panels">
-        <div class="hm-panel on" data-p="games"><p class="hm-ph">נסו שאלה מהחידון</p><h3 id="hmQ"></h3><div class="hm-opts" id="hmOpts"></div><div class="hm-pf"><span id="hmQs"></span><button type="button" class="hm-next" id="hmNext">שאלה הבאה</button><a class="hm-link" href="#/games">לכל המשחקים <i>←</i></a></div></div>
-        <div class="hm-panel" data-p="print"><p class="hm-ph">לוח בינגו להדפסה. לוחצים כדי לסמן</p><div class="hm-bingo" id="hmBingo"></div><div class="hm-pf"><span id="hmBS">סמנו שורה מלאה</span><button type="button" class="hm-next" id="hmShuf">ערבוב</button><a class="hm-link" href="#/create">לכל הפעילויות <i>←</i></a></div></div>
-        <div class="hm-panel" data-p="studio"><p class="hm-ph">מדבקות בשפה העיצובית שתבחרו, בזמן אמת</p><div class="hm-stk" id="hmStk"></div>
-          <div class="hm-chips" id="hmChips"></div><div class="hm-pf"><input id="hmTxt" maxlength="14" value="חנוכה שמח" aria-label="הטקסט על המדבקות"><a class="hm-link" id="hmStudioGo" href="#/studio">לעריכה בסטודיו <i>←</i></a></div></div>
-        <div class="hm-panel" data-p="recipe"><p class="hm-ph">הכמויות מתחשבות לבד</p><h3 id="hmRT"></h3><div class="hm-serv"><button type="button" id="hmSm" aria-label="פחות סועדים">−</button><b id="hmSn"></b><button type="button" id="hmSp" aria-label="יותר סועדים">+</button><span>סועדים</span></div><ul class="hm-ing" id="hmIng"></ul><div class="hm-pf"><span></span><a class="hm-link" href="#/recipes">לכל המתכונים <i>←</i></a></div></div>
-      </div>
-    </div>
-  </div></section>
-  <div class="hm-ads" id="hmAds"><div class="hm-in hm-ads-in">${notice}<a class="hm-ad" id="hmAd" href="${esc(ads[0].href)}"></a><span class="hm-dots">${ads.map(() => '<i></i>').join('')}</span></div></div>
-  ${hmSec('games','משחקים על המסך','משחקים שמקרינים ומשחקים','קרב המילים, אליאס, זיכרון, חידון חנוכה ועוד. עם קבוצות, טיימר וניקוד.','#/games','לכל המשחקים',D.creators.filter(c=>canPlay(c.id)||c.id==='battle').slice(0,3).map(creatorCard).join(''))}
-  ${hmSec('create','להדפסה','פעילויות שמדפיסים והולכים','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים ומקבלים דף מעוצב.','#/create','לכל הפעילויות',D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').slice(0,3).map(creatorCard).join(''))}
-  ${hmSec('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את הטקסט, ומזיזים הכול ישירות על התצוגה.','#/studio','לסטודיו',(D.styles||[]).filter(s=>!s.legacy).slice(0,3).map(styleCard).join(''))}
-  ${hmSec('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח, עם חישוב כמויות.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
-  ${hmSec('biz','בעלי עסקים','אולמות, קייטרינג ומפעילים','מוצאים לפי אזור ומחיר, ויוצרים קשר ישירות.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
-  <section class="hm-final"><div class="hm-in"><h2>מוכנים להדליק את הערב?</h2><p>בחרו משחק, הדפיסו, עצבו, ותהנו.</p><div class="hm-cta"><a class="btn btn-gold" href="#/games">מתחילים לשחק</a><a class="btn" href="#/submit">יש לך רעיון?</a><a class="hm-link" href="#/advertise">יש לך עסק? <i>←</i></a></div></div></section>
-  <script type="application/json" id="hmAdData">${esc(JSON.stringify(ads))}</script>
-  </div>`;
+  </section>
+  ${band('', 1)}
+  <div class="statement"><p>${stm}</p></div>
+  ${wshow('games','משחקים על המסך שניתנים גם להדפסה','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון חנוכה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)||c.id==='battle').slice(0,3).map(creatorCard).join(''))}
+  ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').slice(0,3).map(creatorCard).join(''))}
+  ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
+  ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
+  ${wshow('biz','בעלי עסקים','בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילים ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
+  <section class="final">
+    <a class="big-link" href="#/games">מתחילים לשחק <i>←</i></a>
+    <a class="big-link" href="#/submit">יש לך רעיון? <i>←</i></a>
+    <a class="big-link" href="#/advertise">יש לך עסק? <i>←</i></a>
+  </section>`;
 };
-
 pages.home.after = () => {
-  const $ = id => document.getElementById(id), root = $('hmShow'); if(!root) return;
-  const shuffle2 = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
-
-  /* --- מודעות: שורה אחת שמתחלפת --- */
-  try{
-    const ads = JSON.parse($('hmAdData').textContent.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'")), dots = [...document.querySelectorAll('.hm-dots i')]; let k = 0;
-    const showAd = n => { k = n; const a = ads[n], el = $('hmAd'); el.href = a.href; el.innerHTML = `<b>${esc(a.name)}</b><span>${esc(a.text)}</span><em>${esc(a.meta)} ←</em>`; dots.forEach((d, i) => d.classList.toggle('on', i === n)); };
-    showAd(0); clearInterval(window.__adTimer); if(ads.length > 1) window.__adTimer = setInterval(() => showAd((k + 1) % ads.length), 5000);
-    dots.forEach((d, i) => { d.onclick = () => showAd(i); });
-  }catch(e){}
-
-  /* --- Showcase: טאבים --- */
-  let auto = true, cur = 0; const ids = ['games', 'print', 'studio', 'recipe'];
-  const go = n => { cur = n; root.querySelectorAll('.hm-tabs button').forEach((b, i) => { b.classList.toggle('on', i === n); b.setAttribute('aria-selected', i === n); }); root.querySelectorAll('.hm-panel').forEach(p => p.classList.toggle('on', p.dataset.p === ids[n])); };
-  root.querySelectorAll('.hm-tabs button').forEach((b, i) => { b.onclick = () => { auto = false; go(i); }; });
-  root.addEventListener('pointerdown', () => { auto = false; });
-  clearInterval(window.__hmTimer); window.__hmTimer = setInterval(() => { if(!document.body.contains(root)){ clearInterval(window.__hmTimer); return; } if(auto) go((cur + 1) % 4); }, 7000);
-
-  /* --- משחק: חידון קטן --- */
-  const GP2 = window.GamesPro; let qz = [], qi = 0;
-  try{ qz = shuffle2(GP2.util.buildQuiz(GP2.DEFAULTS.quiz.words)).slice(0, 6); }catch(e){}
-  const showQ = () => {
-    if(!qz.length) return; const q = qz[qi % qz.length]; $('hmQ').textContent = q.q; $('hmQs').textContent = (qi % qz.length + 1) + ' מתוך ' + qz.length;
-    $('hmOpts').innerHTML = q.opts.map((o, i) => `<button type="button" data-i="${i}"><b>${['א', 'ב', 'ג'][i]}</b><span>${esc(o)}</span></button>`).join('');
-  };
-  $('hmOpts').onclick = e => { const b = e.target.closest('button'); if(!b || $('hmOpts').dataset.done === '1') return; const q = qz[qi % qz.length], i = +b.dataset.i; $('hmOpts').dataset.done = '1';
-    [...$('hmOpts').children].forEach((c, k) => c.classList.add(k === q.ans ? 'ok' : (k === i ? 'bad' : 'dim'))); };
-  $('hmNext').onclick = () => { qi++; $('hmOpts').dataset.done = ''; showQ(); };
-  showQ();
-
-  /* --- הדפסה: בינגו --- */
-  const bw = ((D.games || []).find(g => g.id === 'bingo-kids') || {words: []}).words;
-  const bingo = () => {
-    const cells = shuffle2(bw).slice(0, 16), box = $('hmBingo'); box.innerHTML = cells.map(c => `<button type="button">${c}</button>`).join(''); $('hmBS').textContent = 'סמנו שורה מלאה';
-    box.onclick = e => { const b = e.target.closest('button'); if(!b) return; b.classList.toggle('on'); const on = [...box.children].map(x => x.classList.contains('on'));
-      const lines = []; for(let r = 0; r < 4; r++){ lines.push([0, 1, 2, 3].map(c => r * 4 + c)); lines.push([0, 1, 2, 3].map(c => c * 4 + r)); } lines.push([0, 5, 10, 15], [3, 6, 9, 12]);
-      $('hmBS').textContent = lines.some(l => l.every(i => on[i])) ? 'בינגו! שורה מלאה' : 'סמנו שורה מלאה'; };
-  };
-  $('hmShuf').onclick = bingo; bingo();
-
-  /* --- מיתוג: מדבקות חיות --- */
-  const styles = (D.styles || []).filter(s => !s.legacy).slice(0, 6), tpl = D.templates.find(x => x.id === 'sticker'); let sid = styles[0] && styles[0].id;
-  const stk = () => {
-    if(!tpl || !sid) return; const s = Object.assign(tpDefault({style: sid}), tpl.fields, {title: $('hmTxt').value || 'חנוכה שמח', sub: ''});
-    $('hmStk').innerHTML = Array(6).fill(designHTML(tpl, s, '')).join(''); $('hmStudioGo').href = '#/studio/sticker?style=' + encodeURIComponent(sid);
-    $('hmChips').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.s === sid));
-  };
-  $('hmChips').innerHTML = styles.map(s => `<button type="button" data-s="${esc(s.id)}" title="${esc(s.name)}" style="background-image:url(${esc(s.thumb || s.img)})"></button>`).join('');
-  $('hmChips').onclick = e => { const b = e.target.closest('button'); if(b){ sid = b.dataset.s; stk(); } };
-  $('hmTxt').oninput = stk; stk();
-
-  /* --- מתכון: כמויות לפי סועדים --- */
-  const rc = content('recipes').find(r => r.id === 'potato-latkes') || content('recipes')[0]; let n = rc ? rc.serves : 4;
-  const rec = () => { if(!rc) return; $('hmRT').textContent = rc.title; $('hmSn').textContent = n;
-    $('hmIng').innerHTML = rc.ing.slice(0, 5).map(([q, u, name]) => `<li><b>${fmtQty(q * n / rc.serves) || ''} ${esc(u || '')}</b> ${esc(name)}</li>`).join(''); };
-  $('hmSm').onclick = () => { n = Math.max(1, n - 1); rec(); }; $('hmSp').onclick = () => { n = Math.min(40, n + 1); rec(); }; rec();
+  const cards = [...document.querySelectorAll('.ad-card')], dots = [...document.querySelectorAll('.ad-dots i')]; let k = 0;
+  const show = n => { k = n; cards.forEach((c,i)=>c.classList.toggle('on', i===n)); dots.forEach((d,i)=>d.classList.toggle('on', i===n)); };
+  show(0); clearInterval(window.__adTimer);
+  const rail = document.querySelector('.ad-rail');
+  try{ if(rail && sessionStorage.getItem('madlik_ad_closed') === '1') rail.remove(); }catch(e){}
+  const xb = document.querySelector('.ad-x'); if(xb) xb.onclick = () => { clearInterval(window.__adTimer); try{ sessionStorage.setItem('madlik_ad_closed', '1'); }catch(e){} const r = document.querySelector('.ad-rail'); if(r){ r.classList.add('gone'); setTimeout(() => r.remove(), 450); } };
+  if(rail && 'IntersectionObserver' in window){ const io = new IntersectionObserver(es => es.forEach(e => rail.classList.toggle('in', e.isIntersecting)), {threshold:.35}); io.observe(rail); } else if(rail) rail.classList.add('in');
+  if(cards.length > 1) window.__adTimer = setInterval(()=>show((k+1)%cards.length), 5000);
 };
 
 pages.search = (p,q) => {
