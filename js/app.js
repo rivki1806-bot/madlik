@@ -515,48 +515,77 @@ pages.edit.after = (p, q) => {
 };
 
 const TP_SWATCHES = ['#ffffff','#111111','#f7f2e8','#4e0f26','#d4a64a','#e4572e','#ff6a00','#1a56b0','#2f80ed','#14a38a','#7b57c9','#ec008c'];
-const tpDefault = q => ({theme:'gold-blue', font: q.style ? 'suez' : 'frank', style: q.style || '', fsz:100, bz:100, tcol:'', icol:'', pos:'', bx:'', by:''});
+const tpDefault = q => ({theme:'gold-blue', font: q.style ? 'suez' : 'frank', style: q.style || '', fsz:100, bz:100, tcol:'', icol:'', pos:'', bx:'', by:'', ls:0, lh:100, po:100, bb:0, tsh:0});
 const tpStyle = s => s.style ? (D.styles || []).find(x => x.id === s.style && x.tpl) : null;
 const tpDefColors = s => { const st = tpStyle(s), th = D.themes.find(x => x.id === s.theme) || D.themes[0]; return st ? {t: st.tpl.title, i: st.tpl.ink} : {t: th.title, i: th.ink}; };
+const TPI = {
+  text: '<path d="M5 6V5h14v1M12 5v14M9 19h6"/>',
+  font: '<path d="M3 19 8 6l5 13M5 14.5h6"/><path d="M16 19v-8m0 2.2a2.7 2.7 0 1 1 0 .1"/>',
+  color: '<path d="M12 3a9 9 0 1 0 0 18c1.6 0 2-1 1.5-2s0-2.5 1.5-2.5h2a4 4 0 0 0 4-4C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/>',
+  bg: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
+  view: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'
+};
+const tpIc = n => `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TPI[n]}</svg>`;
+const TP_TABS = [
+  {id:'text',  name:'טקסט',  col:'#ff7a2e', title:'עריכת הטקסט', sub:'כותבים את המילים שיופיעו על המוצר. אפשר גם ללחוץ ישר על טקסט בתצוגה.', mode:'לחיצה על טקסט בתצוגה פותחת אותו לעריכה'},
+  {id:'font',  name:'גופן',  col:'#ff3d81', title:'גופן וסגנון כתב', sub:'בוחרים גופן מתוך 300, קובעים עובי, גודל וריווח.', mode:'משנים את המראה של האותיות'},
+  {id:'color', name:'צבע',   col:'#10b981', title:'צבעי הטקסט', sub:'צובעים את הכותרת ואת שאר הטקסט, ומתאימים את הרקע שמאחורי הכתוב.', mode:'בוחרים צבע לטקסט ולרקע שמאחוריו'},
+  {id:'bg',    name:'רקע',   col:'#3b82f6', title:'עריכת הרקע', sub:'מחליפים שפה עיצובית, גוררים את התמונה ומתקרבים אליה.', mode:'גוררים את התמונה להזזה · גלגל העכבר לזום'},
+  {id:'view',  name:'תצוגה', col:'#8b5cf6', title:'לוגו ותצוגה', sub:'מוסיפים לוגו ומשנים את גודל התצוגה. ההדפסה לא מושפעת מגודל התצוגה.', mode:'התצוגה זהה להדפסה'}
+];
 
 pages.design = ([id], q) => {
   const t = D.templates.find(x=>x.id===id); if(!t) return notFound();
   const styles = (D.styles || []).filter(x => !x.legacy);
   const s = Object.assign(tpDefault(q), t.fields, q.d ? dec(q.d) : {});
-  const fl = {pre:'שורה עליונה', title:'כותרת', sub:'תת־כותרת', body:'פרטים', foot:'שורה תחתונה'};
+  const small = Math.min(t.w, t.h) < 80;
   const pal = (() => { const st = tpStyle(s); return (st ? st.palette.slice(0, 5) : []).concat(TP_SWATCHES).filter((c, i, a) => a.indexOf(c) === i); })();
+  const fld = (k, label, hint, kind, off) => `<label data-fld="${k}" class="${off ? 'tp-off' : ''}"><span class="fl">${label}<em>${hint}</em></span>${kind === 'area' ? `<textarea name="${k}" rows="3" ${off ? 'disabled' : ''}>${esc(s[k])}</textarea>` : `<input name="${k}" value="${esc(s[k])}" ${off ? 'disabled' : ''}>`}</label>`;
+  const rng = (key, label, min, max, val, unit, tip) => `<label class="pc"><span>${label}${tip ? `<em class="tp-tipi" title="${tip}">?</em>` : ''}</span><input type="range" data-sk="${key}" min="${min}" max="${max}" step="1" value="${val}" aria-label="${label}"><output>${val}${unit || '%'}</output></label>`;
+  const head = tb => `<div class="tp-ph"><span class="tp-pi">${tpIc(tb.id)}</span><div><h3>${tb.title}</h3><p>${tb.sub}</p></div></div>`;
+  const T = Object.fromEntries(TP_TABS.map(x => [x.id, x]));
   return pageHead(esc(t.title), 'בוחרים שפה, משלימים את הטקסט, גוררים את הרקע למקום הנכון, והדף מוכן בדיוק כמו שיודפס.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
   <div class="wrap builder">
     <form class="box form builder-panel ed-lite" id="df">
       <div class="tp-top"><button type="button" class="tp-ib" id="tpUndo" disabled title="ביטול (Ctrl+Z)">↶ ביטול</button><button type="button" class="tp-ib" id="tpRedo" disabled title="שחזור (Ctrl+Y)">↷ שחזור</button><button type="button" class="tp-ib" id="tpReset" title="חזרה להתחלה">איפוס הכול</button></div>
-      <section class="tp-c"><h3 class="tp-h"><i>1</i>הטקסט <small>אפשר גם ללחוץ על הטקסט בתצוגה</small></h3>
-        ${Object.keys(fl).map(k => (k === 'body' ? `<label data-fld="body">${fl[k]}<textarea name="body" rows="3">${esc(s.body)}</textarea></label>` : `<label data-fld="${k}">${fl[k]}<input name="${k}" value="${esc(s[k])}"></label>`)).join('')}</section>
-      <section class="tp-c"><h3 class="tp-h"><i>2</i>גופן וצבע</h3>
+      <nav class="tp-tabs" role="tablist" aria-label="סוגי עריכה">${TP_TABS.map((tb, i) => `<button type="button" role="tab" class="tp-tab${i ? '' : ' on'}" data-tab="${tb.id}" aria-selected="${!i}" style="--tc:${tb.col}"><span class="tp-ti">${tpIc(tb.id)}</span><b>${tb.name}</b></button>`).join('')}</nav>
+
+      <div class="tp-pane" data-pane="text" style="--tc:${T.text.col}">${head(T.text)}
+        ${fld('pre', 'שורה עליונה', 'קטנה, מעל הכותרת')}${fld('title', 'כותרת', 'השורה הגדולה והבולטת')}${fld('sub', 'תת־כותרת', 'מתחת לכותרת')}
+        ${fld('body', 'פרטים', 'כמה שורות של טקסט', 'area', small)}${fld('foot', 'שורה תחתונה', 'בתחתית המוצר', '', small)}
+        ${small ? '<p class="tp-note">זה מוצר קטן, ולכן מוצגות בו רק שלוש שורות: עליונה, כותרת ותת־כותרת.</p>' : ''}</div>
+
+      <div class="tp-pane" data-pane="font" style="--tc:${T.font.col}" hidden>${head(T.font)}
         <div class="tp-font"><button type="button" class="fcard" id="tpFont"><span class="fcard-pv" id="tpPv">חנוכה שמח</span><span class="fcard-m"><b id="tpName"></b><small id="tpCat"></small></span><span class="fcard-go">ספריית גופנים · ${window.MadlikFonts ? window.MadlikFonts.LIST.length : 300} ‹</span></button><div class="brow"><button type="button" class="bold-c" id="tpBold" aria-pressed="false" aria-label="מודגש" title="מודגש"><b>ב</b></button><span class="brow-t"><b>מודגש</b><small id="tpBoldT">כבוי</small></span></div></div>
-        <label class="pc"><span>גודל הטקסט</span><input type="range" data-sk="fsz" min="50" max="200" step="1" value="${+s.fsz || 100}" aria-label="גודל הטקסט"><output>${+s.fsz || 100}%</output></label>
-        <div class="seg tp-seg" role="group" aria-label="מה לצבוע"><button type="button" data-ct="tcol" aria-pressed="true">צבע הכותרת</button><button type="button" data-ct="icol" aria-pressed="false">צבע שאר הטקסט</button></div>
-        <label class="pc pc-c"><span>צבע</span><span class="cpick" style="--c:#ffffff"><input type="color" id="tpColor" value="#ffffff" aria-label="צבע הטקסט"><code>#ffffff</code></span></label>
-        <div class="sw-row" id="tpSw" role="group" aria-label="צבעים מהירים">${pal.map(c => `<button type="button" class="sw" data-sw="${c}" style="--c:${c}" aria-label="צבע ${c}" title="${c}"></button>`).join('')}<button type="button" class="tp-def" id="tpColDef" title="חזרה לצבע של השפה העיצובית">ברירת מחדל</button></div>
-        <div class="seg tp-seg" id="tpPosBox" role="group" aria-label="מיקום הטקסט"><button type="button" data-pos="top">למעלה</button><button type="button" data-pos="center">במרכז</button><button type="button" data-pos="bottom">למטה</button><button type="button" data-pos="">אוטומטי</button></div>
-      </section>
-      <section class="tp-c"><h3 class="tp-h"><i>3</i>שפה עיצובית ורקע</h3>
-        <div class="st-pick" id="stPick">${styles.map(x=>`<button type="button" class="stp ${s.style===x.id?'on':''}" data-style="${esc(x.id)}" title="${esc(x.name)}"><img src="${esc(x.thumb||x.img)}" alt="${esc(x.name)}" loading="lazy"></button>`).join('')}<button type="button" class="stp stp-plain ${s.style?'':'on'}" data-style="" title="בלי תמונה">בלי</button></div>
-        <div id="bgBox"><label class="pc"><span>זום הרקע</span><input type="range" data-sk="bz" min="100" max="320" step="1" value="${+s.bz || 100}" aria-label="זום הרקע"><output>${+s.bz || 100}%</output></label>
+        <div class="tp-grp"><h4>גודל וריווח</h4>${rng('fsz', 'גודל הטקסט', 50, 200, +s.fsz || 100, '%')}${rng('ls', 'מרווח בין אותיות', 0, 30, +s.ls || 0, '', 'ריווח רחב נותן מראה יוקרתי ואוורירי')}${rng('lh', 'מרווח בין שורות', 70, 200, +s.lh || 100, '%')}</div>
+        <div class="tp-grp"><h4>קריאות</h4><div class="tg"><button type="button" class="pill" id="tpShadow" aria-pressed="false">צל לטקסט</button><span class="tp-tip">מוסיף צל עדין שעוזר לקרוא על תמונה עמוסה</span></div></div></div>
+
+      <div class="tp-pane" data-pane="color" style="--tc:${T.color.col}" hidden>${head(T.color)}
+        <div class="tp-grp"><h4>מה צובעים?</h4><div class="seg tp-seg" role="group" aria-label="מה לצבוע"><button type="button" data-ct="tcol" aria-pressed="true">הכותרת</button><button type="button" data-ct="icol" aria-pressed="false">שאר הטקסט</button></div>
+          <label class="pc pc-c"><span>צבע</span><span class="cpick" style="--c:#ffffff"><input type="color" id="tpColor" value="#ffffff" aria-label="צבע הטקסט"><code>#ffffff</code></span></label>
+          <div class="sw-row" id="tpSw" role="group" aria-label="צבעים מהירים">${pal.map(c => `<button type="button" class="sw" data-sw="${c}" style="--c:${c}" aria-label="צבע ${c}" title="${c}"></button>`).join('')}<button type="button" class="tp-def" id="tpColDef" title="חזרה לצבע של השפה העיצובית">ברירת מחדל</button></div></div>
+        <div class="tp-grp" id="tpPlateBox"><h4>הרקע שמאחורי הטקסט</h4>${rng('po', 'עוצמת הלוחית', 0, 150, +s.po, '%', 'הלוחית היא הלוח הצבעוני שמאחורי הכתוב. 0% מסתיר אותה לגמרי')}
+          <div class="seg tp-seg" id="tpPosBox" role="group" aria-label="מיקום הטקסט"><button type="button" data-pos="top">למעלה</button><button type="button" data-pos="center">במרכז</button><button type="button" data-pos="bottom">למטה</button><button type="button" data-pos="">אוטומטי</button></div></div></div>
+
+      <div class="tp-pane" data-pane="bg" style="--tc:${T.bg.col}" hidden>${head(T.bg)}
+        <div class="tp-grp"><h4>שפה עיצובית</h4><div class="st-pick" id="stPick">${styles.map(x=>`<button type="button" class="stp ${s.style===x.id?'on':''}" data-style="${esc(x.id)}" title="${esc(x.name)}"><img src="${esc(x.thumb||x.img)}" alt="${esc(x.name)}" loading="lazy"></button>`).join('')}<button type="button" class="stp stp-plain ${s.style?'':'on'}" data-style="" title="בלי תמונה">בלי</button></div></div>
+        <div id="bgBox" class="tp-grp"><h4>מיקום ותמונה</h4>${rng('bz', 'זום הרקע', 100, 320, +s.bz || 100, '%', 'אפשר גם לגלול עם גלגל העכבר מעל התמונה')}${rng('bb', 'בהירות הרקע', -60, 60, +s.bb || 0, '', 'שלילי מכהה את התמונה, חיובי מבהיר אותה')}
           <div class="tp-bgrow"><span class="tp-tip">גוררים את התמונה בתצוגה כדי להזיז אותה בתוך המוצר</span><button type="button" class="tp-ib" id="tpBgReset">איפוס רקע</button></div></div>
-        <div id="themeBox"><b>ערכת צבעים</b><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div>
-      </section>
-      <section class="tp-c"><h3 class="tp-h"><i>4</i>לוגו ותצוגה</h3>
-        <label>לוגו או תמונה <span class="hint">לא חובה</span><input type="file" accept="image/*" id="logoIn"></label>
-        <label class="pc"><span>גודל התצוגה</span><input type="range" id="zm" min="40" max="260" value="100" aria-label="גודל התצוגה"><output id="zmO">100%</output></label></section>
-      <div class="btn-row">
+        <div id="themeBox" class="tp-grp"><h4>ערכת צבעים</h4><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div></div>
+
+      <div class="tp-pane" data-pane="view" style="--tc:${T.view.col}" hidden>${head(T.view)}
+        <div class="tp-grp"><label><span class="fl">לוגו או תמונה<em>לא חובה, מופיע בראש הטקסט</em></span><input type="file" accept="image/*" id="logoIn"></label></div>
+        <div class="tp-grp"><label class="pc"><span>גודל התצוגה</span><input type="range" id="zm" min="40" max="260" value="100" aria-label="גודל התצוגה"><output id="zmO">100%</output></label></div>
+        <ul class="tp-keys"><li><kbd>Ctrl</kbd>+<kbd>Z</kbd> ביטול</li><li><kbd>Ctrl</kbd>+<kbd>Y</kbd> שחזור</li><li>גלגל העכבר על התמונה (בלשונית רקע): זום</li></ul></div>
+
+      <div class="tp-dock">
         <button type="button" class="btn btn-gold" id="dPrint"> הדפסה / PDF</button>
         <button type="button" class="btn" id="dPng"> הורדה כתמונה</button>
         <button type="button" class="btn btn-light" id="dShare"> שיתוף</button>
         <button type="button" class="btn btn-light" id="dSave">♡ שמירה</button>
       </div>
-      <p class="hint">${t.repeat?'מה שרואים בתצוגה הוא הדף המלא כפי שיודפס, עם כל המדבקות.':'להורדה כ-PDF: בחלון ההדפסה בחר "שמירה כ-PDF".'} הלוגו לא נשמר בקישור השיתוף.</p>
     </form>
-    <div class="tp-stage"><div class="preview-area" id="dv"></div><p class="tp-hint"><span>גוררים את הרקע כדי להזיז אותו</span><span>לחיצה על טקסט מעבירה לעריכה שלו</span></p></div>
+    <div class="tp-stage"><div class="tp-mode" id="tpMode"></div><div class="preview-area" id="dv" data-mode="text"></div><p class="tp-hint"><span>${t.repeat ? 'הדף המלא כפי שיודפס, עם כל המדבקות' : 'הדף כפי שיודפס'}</span><span id="tpModeH"></span></p></div>
   </div>`;
 };
 
@@ -565,54 +594,68 @@ pages.design.after = ([id], q) => {
   const f = document.getElementById('df'), dv = document.getElementById('dv'), F = window.MadlikFonts;
   const s = Object.assign(tpDefault(q), t.fields, q.d ? dec(q.d) : {});
   const init = JSON.stringify(s);
-  let logo = '', zoomK = 1, ctarget = 'tcol';
+  let logo = '', zoomK = 1, ctarget = 'tcol', tab = 'text';
   const $ = x => document.getElementById(x);
   const pctv = (v, a, b) => Math.max(0, Math.min(100, (v - a) / (b - a) * 100)).toFixed(1) + '%';
   const read = () => Object.assign(s, Object.fromEntries(new FormData(f)));
+  const TB = Object.fromEntries(TP_TABS.map(x => [x.id, x]));
 
-  /* ---------- היסטוריה (ביטול ושחזור) ---------- */
+  /* ---------- לשוניות ---------- */
+  function setTab(n){
+    tab = n; const tb = TB[n];
+    f.querySelectorAll('.tp-tab').forEach(b => { const on = b.dataset.tab === n; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    f.querySelectorAll('.tp-pane').forEach(p => { p.hidden = p.dataset.pane !== n; });
+    dv.dataset.mode = n; const m = $('tpMode'); m.style.setProperty('--tc', tb.col); m.innerHTML = `<span class="tp-mi">${tpIc(n)}</span><b>${tb.name}</b><span>${tb.mode}</span>`;
+    $('tpModeH').textContent = n === 'bg' ? 'גוררים את התמונה · גלגל העכבר לזום' : n === 'text' ? 'לחיצה על טקסט פותחת אותו לעריכה' : 'התצוגה מתעדכנת מיד';
+    showBoxes();
+  }
+
+  /* ---------- היסטוריה ---------- */
   let hist = [JSON.stringify(s)], hi = 0, pushT = 0;
   const histBtns = () => { $('tpUndo').disabled = hi < 1; $('tpRedo').disabled = hi >= hist.length - 1; };
   const push = () => { clearTimeout(pushT); pushT = setTimeout(() => { read(); const j = JSON.stringify(s); if(j === hist[hi]) return; hist = hist.slice(0, hi + 1); hist.push(j); hi = hist.length - 1; histBtns(); }, 350); };
   const restore = j => { Object.keys(s).forEach(k => delete s[k]); Object.assign(s, JSON.parse(j)); syncUI(); draw(); histBtns(); };
 
-  /* ---------- סנכרון הממשק למצב ---------- */
-  const setRange = (el, v, unit) => { el.value = v; el.style.setProperty('--p', pctv(+v, +el.min, +el.max)); const o = el.nextElementSibling; if(o && o.tagName === 'OUTPUT') o.textContent = Math.round(v) + (unit || '%'); };
+  /* ---------- סנכרון ---------- */
+  const setRange = (el, v) => { if(!el) return; el.value = v; el.style.setProperty('--p', pctv(+v, +el.min, +el.max)); const o = el.nextElementSibling; if(o && o.tagName === 'OUTPUT') o.textContent = Math.round(v) + (el.dataset.sk === 'ls' || el.dataset.sk === 'bb' ? '' : '%'); };
   function syncFont(){
     const lf = D.fonts.find(x => x.id === s.font), meta = F && F.BY[s.font], bold = (+s.fw || 0) >= 600;
     const css = lf ? lf.css : "'" + s.font + "',sans-serif";
     const pv = $('tpPv'); pv.style.fontFamily = css; pv.style.fontWeight = s.fw || 400; pv.textContent = meta && !meta.he ? 'Happy Hanukkah' : 'חנוכה שמח';
     $('tpName').textContent = lf ? lf.name : s.font; $('tpCat').textContent = meta ? (meta.he ? 'עברית · ' : '') + F.CAT[meta.c] : 'גופן מובנה';
     const bb = $('tpBold'); bb.classList.toggle('on', bold); bb.setAttribute('aria-pressed', bold); $('tpBoldT').textContent = bold ? 'פעיל' : 'כבוי';
+    const sh = $('tpShadow'); sh.setAttribute('aria-pressed', !!+s.tsh);
   }
   function syncColor(){
     const d = tpDefColors(s), cur = s[ctarget] || (ctarget === 'tcol' ? d.t : d.i), inp = $('tpColor');
     inp.value = /^#[0-9a-f]{6}$/i.test(cur) ? cur : '#000000'; const cp = inp.parentElement; cp.style.setProperty('--c', inp.value); cp.querySelector('code').textContent = s[ctarget] ? inp.value : inp.value + ' (ברירת מחדל)';
     f.querySelectorAll('[data-ct]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ct === ctarget));
-    $('tpSw').querySelectorAll('.sw').forEach(b => b.classList.toggle('on', s[ctarget] && b.dataset.sw.toLowerCase() === s[ctarget].toLowerCase()));
-  }
-  function syncUI(){
-    ['pre','title','sub','body','foot'].forEach(k => { const el = f.elements[k]; if(el) el.value = s[k] == null ? '' : s[k]; });
-    setRange(f.querySelector('[data-sk=fsz]'), +s.fsz || 100); setRange(f.querySelector('[data-sk=bz]'), +s.bz || 100);
-    f.querySelectorAll('.stp').forEach(b => b.classList.toggle('on', b.dataset.style === (s.style || '')));
-    f.querySelectorAll('.swatch').forEach(b => b.classList.toggle('on', b.dataset.theme === s.theme));
-    f.querySelectorAll('[data-pos]').forEach(b => b.setAttribute('aria-pressed', (s.pos || '') === b.dataset.pos));
-    syncFont(); syncColor(); showBoxes();
+    $('tpSw').querySelectorAll('.sw').forEach(b => b.classList.toggle('on', !!s[ctarget] && b.dataset.sw.toLowerCase() === s[ctarget].toLowerCase()));
   }
   function showBoxes(){
     const st = tpStyle(s), small = Math.min(t.w, t.h) < 80;
     $('themeBox').style.display = s.style ? 'none' : ''; $('bgBox').style.display = st ? '' : 'none';
-    $('tpPosBox').style.display = st && !small ? '' : 'none';
+    $('tpPlateBox').style.display = st ? '' : 'none'; $('tpPosBox').style.display = st && !small ? '' : 'none';
+  }
+  function syncUI(){
+    ['pre','title','sub','body','foot'].forEach(k => { const el = f.elements[k]; if(el && !el.disabled) el.value = s[k] == null ? '' : s[k]; });
+    const DEF = {fsz:100, ls:0, lh:100, po:100, bz:100, bb:0};
+    f.querySelectorAll('[data-sk]').forEach(r => { const v = s[r.dataset.sk]; setRange(r, v == null || v === '' ? DEF[r.dataset.sk] : +v); });
+    f.querySelectorAll('.stp').forEach(b => b.classList.toggle('on', b.dataset.style === (s.style || '')));
+    f.querySelectorAll('.swatch').forEach(b => b.classList.toggle('on', b.dataset.theme === s.theme));
+    f.querySelectorAll('[data-pos]').forEach(b => b.setAttribute('aria-pressed', (s.pos || '') === b.dataset.pos));
+    syncFont(); syncColor(); showBoxes();
   }
 
   /* ---------- ציור הדף ---------- */
   const draw = () => {
     read(); const sh = sheetHTML(t, s, logo); dv.innerHTML = sh.html;
     const el = dv.firstElementChild, fit = Math.min(1, (dv.clientWidth - 24) / el.offsetWidth);
-    el.style.zoom = fit * zoomK; showBoxes();
+    el.style.zoom = fit * zoomK;
   };
+  let raf = 0; const drawSoon = () => { if(raf) return; raf = requestAnimationFrame(() => { raf = 0; draw(); }); };
 
-  /* ---------- גרירת הרקע ולחיצה על טקסט ---------- */
+  /* ---------- גרירת הרקע, זום בגלגל ולחיצה על טקסט ---------- */
   let drag = null;
   dv.addEventListener('pointerdown', e => {
     const d = e.target.closest('.design.styled'); if(!d || e.button) return;
@@ -632,34 +675,44 @@ pages.design.after = ([id], q) => {
     s.bx = Math.round(nx * 10) / 10; s.by = Math.round(ny * 10) / 10;
     dv.querySelectorAll('.design.styled').forEach(el => { el.style.backgroundPosition = s.bx + '% ' + s.by + '%'; });
   });
-  const endDrag = e => {
+  const endDrag = () => {
     if(!drag) return; const d = drag; drag = null; dv.classList.remove('dragging');
     try{ dv.releasePointerCapture(d.id); }catch(x){}
     if(d.moved){ push(); return; }
+    if(tab === 'bg') return;
     const m = d.target.closest && d.target.closest('.d-pre,.d-title,.d-sub,.d-body,.d-foot'); if(!m) return;
-    const name = m.className.match(/d-(pre|title|sub|body|foot)/)[1], inp = f.elements[name]; if(!inp) return;
+    const name = m.className.match(/d-(pre|title|sub|body|foot)/)[1];
+    if(tab !== 'text') setTab('text');
+    const inp = f.elements[name]; if(!inp || inp.disabled) return;
     inp.focus(); if(inp.select) inp.select(); inp.closest('label').scrollIntoView({block:'center', behavior:'smooth'});
     inp.closest('label').classList.add('flash'); setTimeout(() => inp.closest('label').classList.remove('flash'), 1400);
   };
   dv.addEventListener('pointerup', endDrag); dv.addEventListener('pointercancel', endDrag);
+  dv.addEventListener('wheel', e => {
+    if(tab !== 'bg' || !tpStyle(s) || !e.target.closest('.design.styled')) return;
+    e.preventDefault(); s.bz = Math.max(100, Math.min(320, (+s.bz || 100) - e.deltaY * .2));
+    setRange(f.querySelector('[data-sk=bz]'), s.bz); drawSoon(); push();
+  }, {passive: false});
 
   /* ---------- אירועי הטופס ---------- */
   f.oninput = e => {
     const el = e.target;
-    if(el.dataset.sk){ s[el.dataset.sk] = +el.value; el.style.setProperty('--p', pctv(+el.value, +el.min, +el.max)); const o = el.nextElementSibling; if(o && o.tagName === 'OUTPUT') o.textContent = el.value + '%'; draw(); push(); return; }
+    if(el.dataset.sk){ s[el.dataset.sk] = +el.value; setRange(el, +el.value); draw(); push(); return; }
     if(el.id === 'tpColor'){ s[ctarget] = el.value; syncColor(); draw(); push(); return; }
     if(el.id === 'zm' || el.id === 'logoIn') return;
     draw(); push();
   };
   f.onclick = e => {
     const b = e.target.closest('button'); if(!b) return;
+    if(b.dataset.tab){ setTab(b.dataset.tab); return; }
     if(b.dataset.style !== undefined){ s.style = b.dataset.style; s.bx = ''; s.by = ''; s.bz = 100; if(s.style && !D.fonts.find(x => x.id === s.font) && !(F && F.BY[s.font])) s.font = 'suez'; syncUI(); draw(); push(); return; }
     if(b.dataset.theme){ s.theme = b.dataset.theme; syncUI(); draw(); push(); return; }
     if(b.dataset.ct){ ctarget = b.dataset.ct; syncColor(); return; }
     if(b.dataset.sw){ s[ctarget] = b.dataset.sw; syncColor(); draw(); push(); return; }
     if(b.id === 'tpColDef'){ s[ctarget] = ''; syncColor(); draw(); push(); return; }
+    if(b.id === 'tpShadow'){ s.tsh = +s.tsh ? 0 : 1; syncFont(); draw(); push(); return; }
     if(b.dataset.pos !== undefined){ s.pos = b.dataset.pos; syncUI(); draw(); push(); return; }
-    if(b.id === 'tpBgReset'){ s.bx = ''; s.by = ''; s.bz = 100; syncUI(); draw(); push(); return; }
+    if(b.id === 'tpBgReset'){ s.bx = ''; s.by = ''; s.bz = 100; s.bb = 0; syncUI(); draw(); push(); return; }
     if(b.id === 'tpUndo'){ if(hi > 0){ hi--; restore(hist[hi]); } return; }
     if(b.id === 'tpRedo'){ if(hi < hist.length - 1){ hi++; restore(hist[hi]); } return; }
     if(b.id === 'tpReset'){ if(confirm('לחזור להתחלה? כל השינויים יימחקו.')){ restore(init); push(); } return; }
@@ -680,7 +733,7 @@ pages.design.after = ([id], q) => {
   const onResize = () => document.body.contains(f) ? draw() : window.removeEventListener('resize', onResize);
   window.addEventListener('resize', onResize);
   f.querySelectorAll('input[type=range]').forEach(r => r.style.setProperty('--p', pctv(+r.value, +r.min, +r.max)));
-  syncUI(); draw(); histBtns();
+  syncUI(); setTab('text'); draw(); histBtns();
 
   $('dPrint').onclick = () => { read(); const go = () => { const sh = sheetHTML(t, s, logo); printHTML(sh.html, {credit:false, page:sh.page, margin:0}); }; (F && F.BY[s.font] ? F.ensure(s.font) : Promise.resolve()).then(go); };
   $('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
@@ -721,22 +774,35 @@ function bgInfo(t, s, st){
   return {px, py, iw, ih, size, wide, small};
 }
 
+/* שינוי שקיפות של לוחית: מכפילים את ערך האלפא שבצבע */
+function plateAlpha(c, f){
+  const m = String(c || '').match(/rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)(?:[ ,/]+([\d.]+))?\s*\)/);
+  if(!m) return c; const a = Math.max(0, Math.min(1, (m[4] == null ? 1 : +m[4]) * f));
+  return a <= .01 ? 'transparent' : `rgba(${m[1]},${m[2]},${m[3]},${a.toFixed(3)})`;
+}
+
 function designHTML(t, s, logo){
   const st = tpStyle(s);
   const lf = D.fonts.find(x=>x.id===s.font), fnt = lf ? lf.css : (window.MadlikFonts && window.MadlikFonts.BY[s.font] ? `'${s.font}','Assistant',sans-serif` : D.fonts[0].css);
   if(!lf && window.MadlikFonts && window.MadlikFonts.BY[s.font]) window.MadlikFonts.ensure(s.font);
   const fs = Math.min(t.w, t.h)/32, small = Math.min(t.w,t.h) < 80, em = (t.fs || fs*(small?1.6:1)) * ((+s.fsz || 100) / 100);
-  const fw = s.fw ? ';font-weight:' + s.fw : '';
+  const lsv = +s.ls || 0, lhv = +s.lh || 100;
+  let typo = s.fw ? ';font-weight:' + s.fw : '';
+  if(lsv) typo += `;--d-ls:${(lsv / 100).toFixed(3)}em`;
+  if(lhv !== 100) typo += `;--d-lh:${(1.4 * lhv / 100).toFixed(2)};--d-lt:${(1.1 * lhv / 100).toFixed(2)}`;
+  const tshadow = +s.tsh ? ' tsh' : '';
   const logoImg = logo ? `<img class="d-logo" src="${logo}" alt="">` : '';
   let one;
   if(st){
-    const k = st.tpl, pl = small ? k.pl : k.plb, g = bgInfo(t, s, st);
-    const bgc = g.wide ? '#efe3cf' : '#222';
+    const k = st.tpl, base = small ? k.pl : k.plb, g = bgInfo(t, s, st);
+    const pl = base ? plateAlpha(base, (s.po == null || s.po === '' ? 100 : +s.po) / 100) : '';
+    const bgc = g.wide ? '#efe3cf' : '#222', bb = +s.bb || 0;
+    const bright = bb ? `;box-shadow:inset 0 0 0 300mm ${bb < 0 ? 'rgba(0,0,0,' + (-bb / 100).toFixed(2) + ')' : 'rgba(255,255,255,' + (bb / 100).toFixed(2) + ')'}` : '';
     const bg = `background:${bgc} url(${st.img}) ${g.px}% ${g.py}%/${g.size} no-repeat`;
     const pos = s.pos || k.pos, just = small ? 'center' : (pos === 'bottom' ? 'flex-end' : pos === 'top' ? 'flex-start' : 'center');
     const pad = small ? '' : ';padding:7% 6%', tc = s.tcol || k.title, ic = s.icol || k.ink;
-    one = `<div class="design styled ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || k.acc};--d-font:${fnt}${fw};${bg};justify-content:${just}${pad}${t.css?';'+t.css:''}">
-      <div class="d-plate" style="background:${pl||'transparent'};border-radius:${small?'1.1em':'4mm'};padding:${pl?(small?'.45em .8em':'1.2em 2.2em'):'0'}">
+    one = `<div class="design styled${tshadow} ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || k.acc};--d-font:${fnt}${typo};${bg}${bright};justify-content:${just}${pad}${t.css?';'+t.css:''}">
+      <div class="d-plate" style="background:${pl||'transparent'};border-radius:${small?'1.1em':'4mm'};padding:${pl&&pl!=='transparent'?(small?'.45em .8em':'1.2em 2.2em'):'0'}">
         ${logoImg}${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
         <div class="d-title">${esc(s.title)}</div>
         ${s.sub?`<div class="d-sub">${esc(s.sub)}</div>`:''}
@@ -745,7 +811,7 @@ function designHTML(t, s, logo){
       </div></div>`;
   } else {
     const th = D.themes.find(x=>x.id===s.theme)||D.themes[0], tc = s.tcol || th.title, ic = s.icol || th.ink;
-    one = `<div class="design ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || th.acc};--d-font:${fnt}${fw};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
+    one = `<div class="design${tshadow} ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || th.acc};--d-font:${fnt}${typo};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
     ${t.nofr?'':'<div class="d-frame"></div>'}
     ${logoImg}
     ${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
