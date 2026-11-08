@@ -426,3 +426,15 @@ html[data-pal=logo] .sup-card .sup-tel{min-height:48px}
 .bz-wrap .form{grid-template-columns:minmax(0,1fr)}
 .bz-wrap .form label{grid-template-columns:minmax(0,1fr)}
 .bz-wrap .form input{width:100%}
+
+/* חלון "בעלי עסקים": רקע ורוד בהיר שקוף חלקית, חלק ורך לגמרי */
+.bn-card{background:rgba(255,226,240,.72)!important;-webkit-backdrop-filter:blur(18px) saturate(1.1);backdrop-filter:blur(18px) saturate(1.1);border:1.5px solid rgba(255,255,255,.7)!important;border-radius:32px!important;box-shadow:0 30px 70px -24px rgba(214,64,128,.45),inset 0 1px 0 rgba(255,255,255,.8)!important}
+.bn-ico{border:0!important;box-shadow:0 14px 26px -12px rgba(214,64,128,.55)!important;background:linear-gradient(180deg,#fff0f6,#ffc2dc)!important}
+.bn-kick{background:rgba(61,42,31,.82)!important}
+.bn-date{border:0!important;box-shadow:0 14px 24px -14px rgba(255,90,79,.7)!important;background:linear-gradient(100deg,#ff8a5c,#ff6fa8)!important}
+.bn-date span{-webkit-text-stroke:0!important;color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.18)}
+.bn-date b{color:#fff!important}
+.bn-bar{background:rgba(214,64,128,.16)!important}
+.bn-bar i{background:linear-gradient(90deg,#ff8a5c,#ff6fa8)!important}
+.biz-notice{background:rgba(58,24,52,.38)!important;background-image:none!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.bn-ok{border:0!important;box-shadow:0 16px 26px -14px rgba(255,90,79,.85)!important}
