@@ -195,9 +195,7 @@ pages.home = () => {
     .concat(['<a class="ad-card ad-cta" href="#/advertise"><b>ראית את זה?</b><span>ראו את זה עוד אלפי אנשים, מוזמן לפרסם באחת התכניות השוות!</span><em>לכל התכניות וטופס יצירת קשר ←</em></a>']);
   return `
   <section class="hero" id="hero">
-    <div class="hero-top"><span>חנוכה תשפ״ז</span><span>הכול בחינם</span><span>גללו ותראו מה קורה ↓</span></div>
-    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
-    <svg class="badge" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="78" fill="#fbf1dc" stroke="#071a38" stroke-width="3"/>${ring('כל מה שצריך לערב לביבות • שמדליק שמחה בלבבות • ')}<circle cx="80" cy="80" r="27" fill="#ff6a00" stroke="#071a38" stroke-width="3"/><path d="M80 62c3 6 9 10 9 18a9 9 0 0 1-18 0c0-4 2-6 4-9 1 3 2 4 4 4-1-5 0-9 1-13z" fill="#071a38"/></svg>
+    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
         <aside class="ad-rail" aria-label="מודעות">
       <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button><img class="ad-logo" src="img/logo-mark.png" alt="">
       ${Date.now() < BIZ_NOTICE_UNTIL ? '<div class="ad-open" role="note" aria-label="פתיחת פרסום ביום שלישי 10.11.26"><b>פתיחת פרסום</b><span>ביום שלישי</span><i>10.11.26</i></div>' : ''}
@@ -208,7 +206,6 @@ pages.home = () => {
       <p class="tagline">כל מה שצריך לערב לביבות<br><em>שמדליק שמחה בלבבות</em></p>
     </div>
   </section>
-  ${band('', 1)}
   <div class="statement"><p>${stm}</p></div>
   ${wshow('games','משחקים על המסך שניתנים גם להדפסה','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון חנוכה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)||c.id==='battle').slice(0,3).map(creatorCard).join(''))}
   ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').slice(0,3).map(creatorCard).join(''))}
@@ -222,6 +219,12 @@ pages.home = () => {
   </section>`;
 };
 pages.home.after = () => {
+  /* החלון הקופץ של בעלי עסקים: גם כשמגיעים למדור בעלי העסקים בעמוד הבית */
+  const bizSec = document.querySelector('.wshow[data-w="biz"]');
+  if('IntersectionObserver' in window && bizSec){
+    const io = new IntersectionObserver(es => { if(es.some(e => e.isIntersecting)){ io.disconnect(); showBizNotice(); } }, {threshold:.45});
+    io.observe(bizSec);
+  }
   const cards = [...document.querySelectorAll('.ad-card')], dots = [...document.querySelectorAll('.ad-dots i')]; let k = 0;
   const show = n => { k = n; cards.forEach((c,i)=>c.classList.toggle('on', i===n)); dots.forEach((d,i)=>d.classList.toggle('on', i===n)); };
   show(0); clearInterval(window.__adTimer);
@@ -240,34 +243,74 @@ pages.search = (p,q) => {
 };
 
 /* משחקים */
+/* ---------- עמוד המשחקים: במה ראשית, סינון חכם, כרטיסיות מוקפדות ---------- */
+const GP_FEAT = ['battle', 'elias', 'quiz', 'crossword', 'wheel', 'candles'];
+const gpFeat = () => GP_FEAT.map(id => D.creators.find(c => c.id === id)).filter(Boolean);
+const gpSpot = c => `<a class="gp-screen" href="#/create/${esc(c.id)}" aria-label="${esc(c.title)}">${gameArt(c)}<span class="gp-play" aria-hidden="true"></span></a>
+  <div class="gp-info"><span class="gp-tag">${c.isNew ? 'חדש' : 'חינם'}</span><h2>${esc(c.title)}</h2><p>${esc(c.text)}</p><div class="gp-act"><a class="btn btn-gold" href="#/create/${esc(c.id)}">לשחק עכשיו</a><a class="gp-more" href="#/create/${esc(c.id)}">להתאמה אישית ←</a></div></div>`;
+
 pages.games = () => {
   const all = content('games').filter(isScreenGame);
   const types = [...new Set(all.map(g=>g.type))], formats = [...new Set(all.flatMap(g=>g.format||[]))], ages = [...new Set(all.map(g=>g.age))];
-  return pageHead('משחקים על המסך שניתנים גם להדפסה', 'מקרינים על המסך ומשחקים: קבוצות, טיימר, צלילים וניקוד. ואפשר גם להדפיס. ובכל משחק אפשר לשים את המילים שלכם.', 'משחקים על המסך שניתנים גם להדפסה') + `
-  <div class="wrap">
-    <h2 class="sec-h">בונים משחק משלכם ומשחקים על המסך</h2>
-    <div class="cards">${D.creators.filter(c=>canPlay(c.id)||c.id==='battle').map(creatorCard).join('')}</div>
-    <h2 class="sec-h">משחקים מוכנים על המסך</h2>
-    <form class="filters" id="gf" onsubmit="return false">
-      <input type="search" name="q" placeholder="חיפוש משחק...">
-      <select name="type"><option value="">כל הסוגים</option>${types.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
-      <select name="format"><option value="">כל הצורות</option>${formats.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
-      <select name="age"><option value="">כל הגילאים</option>${ages.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
-      <input type="number" name="n" min="1" placeholder="מספר משתתפים" style="width:150px">
-      <label class="check" style="display:flex;align-items:center;gap:6px"><input type="checkbox" name="noequip"> בלי ציוד</label>
+  const feat = gpFeat(), tools = D.creators.filter(c=>canPlay(c.id)||c.id==='battle');
+  return `<div class="gp">
+  <section class="gp-hero"><div class="gp-hero-in">
+    <div class="gp-copy">
+      <div class="breadcrumb"><a href="#/">ראשי</a> › משחקים על המסך שניתנים גם להדפסה</div>
+      <h1>משחקים על המסך שניתנים גם להדפסה</h1>
+      <p>מקרינים על המסך ומשחקים: קבוצות, טיימר, צלילים וניקוד. ואפשר גם להדפיס. ובכל משחק אפשר לשים את המילים שלכם.</p>
+      <ul class="gp-stats"><li><b>${all.length}</b><span>משחקים מוכנים</span></li><li><b>${tools.length}</b><span>כלים ליצירה</span></li><li><b>${formats.length}</b><span>צורות משחק</span></li></ul>
+      <a class="gp-jump" href="#gpReady" onclick="document.getElementById('gpReady').scrollIntoView({behavior:'smooth'});return false">למשחקים המוכנים <i>↓</i></a>
+    </div>
+    <div class="gp-stage" id="gpStage" aria-label="משחקים מומלצים">
+      <div class="gp-spot" id="gpSpot">${feat.length ? gpSpot(feat[0]) : ''}</div>
+      <div class="gp-thumbs" role="group" aria-label="בחירת משחק מומלץ">${feat.map((c, i) => `<button type="button" class="gp-th${i ? '' : ' on'}" data-i="${i}" aria-label="${esc(c.title)}">${gameArt(c)}<span>${esc(c.title)}</span></button>`).join('')}</div>
+    </div>
+  </div></section>
+  <div class="wrap gp-wrap">
+    <header class="gp-h"><span class="gp-k">יוצרים ומשחקים</span><h2>בונים משחק משלכם ומשחקים על המסך</h2><p>בוחרים כלי, מכניסים את המילים שלכם, ומקרינים.</p></header>
+    <div class="cards gp-tools">${tools.map(creatorCard).join('')}</div>
+    <header class="gp-h" id="gpReady"><span class="gp-k">ספריית משחקים</span><h2>משחקים מוכנים על המסך</h2><p id="glCount" aria-live="polite"></p></header>
+    <form class="filters gp-bar" id="gf" onsubmit="return false">
+      <div class="gp-bar-top">
+        <input type="search" name="q" placeholder="חיפוש משחק..." aria-label="חיפוש משחק">
+        <div class="gp-chips" id="gpChips" role="group" aria-label="סינון לפי צורה"><button type="button" class="on" data-f="">הכול<small>${all.length}</small></button>${formats.map(f => `<button type="button" data-f="${esc(f)}">${esc(f)}<small>${all.filter(g => (g.format||[]).includes(f)).length}</small></button>`).join('')}</div>
+      </div>
+      <details class="gp-adv"><summary>סינון מתקדם</summary><div class="gp-adv-in">
+        <select name="type"><option value="">כל הסוגים</option>${types.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
+        <select name="format"><option value="">כל הצורות</option>${formats.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
+        <select name="age"><option value="">כל הגילאים</option>${ages.map(t=>`<option>${esc(t)}</option>`).join('')}</select>
+        <input type="number" name="n" min="1" placeholder="מספר משתתפים" aria-label="מספר משתתפים">
+        <label class="check" style="display:flex;align-items:center;gap:6px"><input type="checkbox" name="noequip"> בלי ציוד</label>
+      </div></details>
     </form>
-    <div class="cards" id="gl"></div>
-    <div class="box center" style="margin-top:30px"><h3>מחפשים משהו להדפיס?</h3><a class="btn btn-gold" href="#/create">לפעילויות להדפסה בהתאמה אישית</a></div>
-  </div>`;
+    <div class="cards gp-list" id="gl"></div>
+    <div class="gp-cta"><div><h3>מחפשים משהו להדפיס?</h3><p>דפים מעוצבים בהתאמה אישית: בינגו, רביעיות, תפזורת ועוד.</p></div><a class="btn btn-gold" href="#/create">לפעילויות להדפסה בהתאמה אישית</a></div>
+  </div></div>`;
 };
 pages.games.after = () => {
-  const f = document.getElementById('gf'), l = document.getElementById('gl');
+  const f = document.getElementById('gf'), l = document.getElementById('gl'), chips = [...document.querySelectorAll('#gpChips button')], cnt = document.getElementById('glCount');
+  const syncChips = () => chips.forEach(b => b.classList.toggle('on', b.dataset.f === (f.elements.format.value || '')));
   const run = () => {
     const v = Object.fromEntries(new FormData(f)); const n = +v.n;
     const res = content('games').filter(isScreenGame).filter(g => (!v.q || JSON.stringify(g).includes(v.q)) && (!v.type || g.type===v.type) && (!v.format || (g.format||[]).includes(v.format)) && (!v.age || g.age===v.age) && (!n || (n>=g.min && n<=g.max)) && (!v.noequip || !g.equip));
     l.innerHTML = res.length ? res.map(gameCard).join('') : '<div class="empty">אין משחק שמתאים לכל המסננים. נסה להוריד אחד.</div>';
+    if(cnt) cnt.textContent = res.length ? 'מציגים ' + res.length + ' משחקים' : 'לא נמצאו משחקים';
+    syncChips();
   };
   f.oninput = run; run();
+  document.getElementById('gpChips').onclick = e => { const b = e.target.closest('button'); if(!b) return; f.elements.format.value = b.dataset.f; run(); };
+
+  /* במה ראשית: מתחלפת לבד, נעצרת במעבר עכבר או מקלדת */
+  const spot = document.getElementById('gpSpot'), stage = document.getElementById('gpStage'), ths = [...document.querySelectorAll('.gp-th')], list = gpFeat();
+  if(!spot || !list.length) return;
+  let k = 0, timer = 0, paused = false;
+  const show = n => { k = n; spot.classList.add('swap'); setTimeout(() => { spot.innerHTML = gpSpot(list[n]); spot.classList.remove('swap'); }, 170); ths.forEach((t, i) => { t.classList.toggle('on', i === n); t.setAttribute('aria-pressed', i === n); }); };
+  const start = () => { clearInterval(timer); timer = setInterval(() => { if(!document.body.contains(spot)){ clearInterval(timer); return; } if(!paused) show((k + 1) % list.length); }, 5600); };
+  ths.forEach((t, i) => { t.onclick = () => { show(i); start(); }; });
+  stage.onmouseenter = () => { paused = true; }; stage.onmouseleave = () => { paused = false; };
+  stage.addEventListener('focusin', () => { paused = true; }); stage.addEventListener('focusout', () => { paused = false; });
+  start();
 };
 
 pages.game = ([id]) => {
@@ -330,7 +373,7 @@ const PRINT_FILES = [
   {href:'kids/booklet.html', ico:'📖', title:'חוברת פעילות: מסע האור', text:'חוברת פעילות לילדים לחנוכה, מוכנה להדפסה.', bg:'#e3ecff'}
 ];
 const printFileCard = x => `<a class="card" href="${x.href}" target="_blank" rel="noopener"><div class="card-top" style="--bg:${x.bg}"><span style="font-size:4.5rem;line-height:1">${x.ico}</span></div><div class="card-body"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><div class="tags"><span class="tag tag-new">חדש!</span><span class="tag tag-gold">חינם</span></div></div></a>`;
-pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרים פעילות, מכניסים את המילים שלכם, ומקבלים דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + `<div class="wrap">
+pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרים פעילות, מכניסים את המילים שלכם, ומקבלים דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + `<div class="wrap pc-list">
   <h2 class="sec-h">מעצבים פעילות משלכם</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').map(creatorCard).join('')}</div>
   <h2 class="sec-h">דפי צביעה וחוברת פעילות</h2><div class="cards">${PRINT_FILES.map(printFileCard).join('')}</div>
   <h2 class="sec-h">פעילויות מוכנות</h2><div class="cards">${content('games').filter(g=>!isScreenGame(g)&&!['quartets-hanukkah','bingo-hanukkah','who-am-i'].includes(g.id)).map(gameCard).join('')}</div>
@@ -1404,11 +1447,7 @@ function render(){
 let lastPath = location.hash.split('?')[0], navTok = 0;
 window.addEventListener('hashchange', () => {
   const p = location.hash.split('?')[0], same = p === lastPath; lastPath = p;
-  const wipe = document.getElementById('wipe');
-  const top = () => window.scrollTo({top:0, left:0, behavior:'instant'});
-  if(!wipe || same || matchMedia('(prefers-reduced-motion: reduce)').matches){ render(); if(!same) top(); return; }
-  const tok = ++navTok; wipe.className = 'wipe in';
-  setTimeout(() => { if(tok !== navTok) return; render(); top(); wipe.className = 'wipe out'; setTimeout(()=>{ if(tok === navTok) wipe.className = 'wipe'; }, 520); }, 430);
+  render(); if(!same) window.scrollTo({top:0, left:0, behavior:'instant'});
 });
 
 /* ---------- הודעה בולטת בכניסה למדור בעלי עסקים ---------- */
