@@ -980,7 +980,7 @@ pages.recipe.after = ([id]) => {
 const ADS_EMAIL = 'rivki1806@gmail.com';
 const PLANS = [
   {id:'Basic', name:'Basic', price:'300 ₪', text:'רואים אותך בעמוד העסקים.', cls:'p1'},
-  {id:'Premium', name:'Premium', price:'400 ₪', text:'הפרסומת שלך גם בעמוד העסקים וגם עולה בעמוד הראשי בהרצה.', cls:'p2'},
+  {id:'Premium', name:'Premium', price:'800 ₪', text:'הפרסומת שלך גם בעמוד העסקים וגם עולה בעמוד הראשי בהרצה.', cls:'p2'},
   {id:'Pro', name:'Pro', price:'הצעה משתלמת', text:'ביצירת קשר.', cls:'p3'}
 ];
 function adBlock(){
