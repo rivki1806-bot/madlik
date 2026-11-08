@@ -1,0 +1,168 @@
+/* ============================================================
+   מדליק – מערכת עיצוב אחידה (Design System)
+   עקרונות: אוויר, היררכיה ברורה, פלטה מצומצמת, כרטיסיות זהות, כפתורים מדורגים.
+   נטען אחרון, ולכן דורס את הסגנונות הישנים.
+   ============================================================ */
+:root{
+  --ds-bg:#fffaf5; --ds-surface:#ffffff; --ds-tint:#fbf6ff;
+  --ds-ink:#1c1a3a; --ds-mut:#6b678a; --ds-line:#ece6f5;
+  --ds-acc:#ff5a4f; --ds-grad:linear-gradient(135deg,#ff7a2e,#ff3d81 58%,#8b5cf6);
+  --ds-r:22px; --ds-r-sm:14px;
+  --ds-sh:0 20px 44px -30px rgba(28,26,58,.5); --ds-sh-hover:0 28px 52px -28px rgba(28,26,58,.55);
+  --ds-font:'Heebo','Assistant',system-ui,sans-serif; --ds-display:'Suez One','Heebo',serif;
+  --ds-max:1180px;
+}
+
+/* ---------- בסיס: רקע שקט, בלי דוגמאות ---------- */
+html body{background:var(--ds-bg)!important;background-image:none!important;color:var(--ds-ink);font-family:var(--ds-font)}
+html body::before,html body::after{display:none!important}
+html body .amb{display:none!important}
+html body :is(h1,h2,h3){-webkit-text-stroke:0!important;text-shadow:none!important}
+
+/* ---------- כפתורים: שלוש רמות ברורות ---------- */
+/* ראשי: פעולה אחת בולטת */
+html body .btn-gold{background:var(--ds-grad)!important;color:#fff!important;border:0!important;border-radius:var(--ds-r-sm)!important;min-height:50px;padding:0 26px!important;font:800 1.02rem var(--ds-font)!important;box-shadow:0 18px 30px -16px rgba(255,61,129,.9)!important;text-shadow:none!important;transform:none;transition:transform .18s,box-shadow .18s,filter .18s}
+html body .btn-gold:hover{transform:translateY(-3px);filter:brightness(1.05);box-shadow:0 22px 34px -16px rgba(255,61,129,.95)!important}
+/* משני: קווי מתאר */
+html body .btn:not(.btn-gold):not(.btn-light):not(.btn-ink):not(.btn-ghost){background:#fff!important;color:var(--ds-ink)!important;border:1.5px solid #d9d2ea!important;border-radius:var(--ds-r-sm)!important;min-height:50px;padding:0 24px!important;font:800 1rem var(--ds-font)!important;box-shadow:none!important;transition:border-color .18s,transform .18s}
+html body .btn:not(.btn-gold):not(.btn-light):not(.btn-ink):not(.btn-ghost):hover{border-color:var(--ds-ink)!important;transform:translateY(-2px)}
+/* שלישוני: רך, בלי מסגרת */
+html body .btn-light,html body .btn-ghost{background:#f3effa!important;color:var(--ds-ink)!important;border:0!important;border-radius:var(--ds-r-sm)!important;min-height:46px;padding:0 20px!important;font:700 .95rem var(--ds-font)!important;box-shadow:none!important}
+html body .btn-light:hover,html body .btn-ghost:hover{background:#e9e2f7!important}
+html body .hm-link,html body .tp-link{color:var(--ds-ink);font:800 1rem var(--ds-font);text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 2px;border-bottom:2px solid transparent;transition:border-color .18s,gap .18s}
+html body .hm-link:hover{border-color:var(--ds-acc);gap:10px}
+html body .hm-link i{font-style:normal}
+
+/* ---------- כותרת האתר והתראות ---------- */
+html body .site-header{background:rgba(255,255,255,.9)!important;backdrop-filter:blur(14px);border-bottom:1px solid var(--ds-line)!important;box-shadow:none!important}
+html body .main-nav a{font:700 .95rem var(--ds-font)!important;color:var(--ds-ink)!important;text-shadow:none!important;border-radius:12px}
+html body .main-nav a:hover{background:#f3effa}
+html body .main-nav a.on,html body .main-nav a[aria-current=page]{background:#f3effa;box-shadow:inset 0 -3px 0 var(--ds-acc)}
+html body .newsletter-bar{background:var(--ds-ink)!important;color:#fff!important;border-bottom:0!important}
+html body .newsletter-bar .news-text{color:#fff}
+html body .newsletter-bar .news-text b{background:none!important;color:#ffd23f!important;padding:0!important}
+html body .progress{height:3px!important;background:var(--ds-grad)!important}
+
+/* ---------- כרטיסייה אחידה ---------- */
+html body .cards>.card,html body .card{background:var(--ds-surface)!important;border:1px solid var(--ds-line)!important;border-radius:var(--ds-r)!important;box-shadow:var(--ds-sh)!important;overflow:hidden;color:var(--ds-ink)!important;transition:transform .22s cubic-bezier(.2,1.2,.4,1),box-shadow .22s,border-color .22s}
+html body .card:hover{transform:translateY(-6px)!important;box-shadow:var(--ds-sh-hover)!important;border-color:#d9c9f5!important}
+html body .card .card-top{aspect-ratio:16/10;border-radius:0!important;border:0!important;box-shadow:none!important;background-color:var(--bg,#f6f1ea)}
+html body .card .card-body{padding:18px 20px 20px!important;display:grid;gap:6px}
+html body .card .card-body h3{font:800 1.15rem/1.3 var(--ds-font)!important;color:var(--ds-ink)!important;margin:0}
+html body .card .card-body p{color:var(--ds-mut)!important;font:500 .93rem/1.5 var(--ds-font)!important;margin:0}
+html body .card .tag{border-radius:999px;font-weight:700}
+
+/* ---------- עמודי משנה: כותרת רגועה ---------- */
+html body .page-head h1{font:400 clamp(2rem,4.2vw,3.2rem)/1.15 var(--ds-display)!important;color:var(--ds-ink)!important}
+html body .page-head h1::after,html body .page-head::after{display:none!important}
+html body .page-head p{color:var(--ds-mut)}
+
+/* ============================================================
+   דף הבית
+   ============================================================ */
+.hm{color:var(--ds-ink);font-family:var(--ds-font)}
+.hm *{box-sizing:border-box}
+.hm-in{width:min(var(--ds-max),100% - 48px);margin-inline:auto}
+
+/* Hero */
+.hm-hero{padding:72px 0 56px;background:radial-gradient(900px 480px at 85% 0,#ffe9d6 0,transparent 60%),radial-gradient(700px 420px at 0 100%,#efe6ff 0,transparent 60%),var(--ds-bg)}
+.hm-hero-in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:56px;align-items:center}
+.hm-eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--ds-line);border-radius:999px;padding:7px 16px;font-weight:800;font-size:.88rem;color:var(--ds-mut);box-shadow:0 8px 18px -14px rgba(28,26,58,.5)}
+.hm-eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ds-grad)}
+.hm h1{margin:22px 0 18px;font:400 clamp(2.3rem,4.3vw,3.7rem)/1.1 var(--ds-display);letter-spacing:-.01em;color:var(--ds-ink)}
+.hm h1 em{display:block;font-style:normal;background:var(--ds-grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-bottom:.08em}
+.hm-lead{margin:0 0 30px;max-width:46ch;font-size:1.18rem;line-height:1.65;color:var(--ds-mut);font-weight:500}
+.hm-cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.hm-facts{list-style:none;margin:40px 0 0;padding:0;display:flex;gap:36px}
+.hm-facts li{display:grid;gap:2px}
+.hm-facts b{font:400 2.1rem var(--ds-display);color:var(--ds-ink)}
+.hm-facts span{color:var(--ds-mut);font-weight:700;font-size:.9rem}
+
+/* Showcase */
+.hm-show{background:#fff;border:1px solid var(--ds-line);border-radius:30px;box-shadow:0 40px 70px -40px rgba(28,26,58,.55);padding:14px;display:grid;gap:12px}
+.hm-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#f5f2fb;border-radius:18px;padding:5px}
+.hm-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:0;border-radius:14px;background:transparent;color:var(--ds-mut);font:800 .92rem var(--ds-font);cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+.hm-tabs button i{width:9px;height:9px;border-radius:50%;background:#cbbfe6;transition:background .2s}
+.hm-tabs button:nth-child(1).on i{background:#2f6bff}.hm-tabs button:nth-child(2).on i{background:#ff7a2e}.hm-tabs button:nth-child(3).on i{background:#ff3d81}.hm-tabs button:nth-child(4).on i{background:#14a38a}
+.hm-tabs button.on{background:#fff;color:var(--ds-ink);box-shadow:0 8px 18px -12px rgba(28,26,58,.6)}
+.hm-panels{position:relative;min-height:430px}
+.hm-panel{display:none;gap:14px;align-content:start;padding:14px 12px 6px;animation:hmIn .35s ease}
+.hm-panel.on{display:grid}
+@keyframes hmIn{from{opacity:0;transform:translateY(8px)}}
+.hm-ph{margin:0;color:var(--ds-mut);font-weight:700;font-size:.9rem}
+.hm-panel h3{margin:0;font:800 1.45rem/1.35 var(--ds-font);color:var(--ds-ink);min-height:2.7em}
+.hm-pf{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px;color:var(--ds-mut);font-weight:700}
+.hm-next{border:0;background:#f3effa;color:var(--ds-ink);border-radius:12px;min-height:40px;padding:0 16px;font:800 .9rem var(--ds-font);cursor:pointer}
+.hm-next:hover{background:#e9e2f7}
+
+.hm-opts{display:grid;gap:10px}
+.hm-opts button{display:flex;align-items:center;gap:14px;min-height:56px;padding:0 16px;border:2px solid var(--ds-line);border-radius:16px;background:#fff;color:var(--ds-ink);font:700 1.05rem var(--ds-font);cursor:pointer;text-align:start;transition:border-color .18s,background .18s,transform .18s}
+.hm-opts button:hover{border-color:#2f6bff;transform:translateX(-4px)}
+.hm-opts b{width:34px;height:34px;border-radius:50%;background:#eef3ff;color:#2f6bff;display:grid;place-items:center;font-weight:800;flex:none}
+.hm-opts .ok{border-color:#14a38a;background:#e9fbf4}.hm-opts .ok b{background:#14a38a;color:#fff}
+.hm-opts .bad{border-color:#e5484d;background:#fff0f0}.hm-opts .bad b{background:#e5484d;color:#fff}
+.hm-opts .dim{opacity:.45}
+
+.hm-bingo{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:400px;width:100%;margin-inline:auto}
+.hm-bingo button{aspect-ratio:1;border:3px solid #ffd9c2;border-radius:18px;background:#fff7f0;font-size:clamp(1.8rem,4vw,2.6rem);line-height:1;cursor:pointer;transition:transform .15s,background .15s,border-color .15s;position:relative}
+.hm-bingo button:hover{transform:scale(1.06)}
+.hm-bingo button.on{background:#ff7a2e;border-color:#ff7a2e;transform:scale(.94)}
+.hm-bingo button.on::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:1.9rem;font-weight:900;background:rgba(255,122,46,.78);border-radius:14px}
+
+.hm-stk{display:grid;grid-template-columns:repeat(3,auto);gap:8px;justify-content:center;zoom:.62}
+.hm-stk .design{box-shadow:0 10px 18px -10px rgba(0,0,0,.4)!important}
+.hm-chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.hm-chips button{width:62px;height:44px;border-radius:13px;border:3px solid transparent;background-size:cover;background-position:center;cursor:pointer;box-shadow:0 6px 12px -8px rgba(0,0,0,.5);transition:transform .15s}
+.hm-chips button:hover{transform:translateY(-3px)}
+.hm-chips button.on{border-color:#ff3d81;box-shadow:0 0 0 3px rgba(255,61,129,.25)}
+.hm-pf input{flex:1;min-width:120px;max-width:200px;min-height:42px;border:2px solid var(--ds-line);border-radius:12px;padding:0 14px;font:700 1rem var(--ds-font);color:var(--ds-ink)}
+.hm-pf input:focus{outline:0;border-color:#8b5cf6}
+
+.hm-serv{display:flex;align-items:center;gap:12px}
+.hm-serv button{width:42px;height:42px;border-radius:50%;border:2px solid var(--ds-line);background:#fff;font:800 1.3rem var(--ds-font);cursor:pointer;color:var(--ds-ink)}
+.hm-serv button:hover{border-color:#14a38a;color:#14a38a}
+.hm-serv b{font:400 1.9rem var(--ds-display);min-width:2ch;text-align:center}
+.hm-serv span{color:var(--ds-mut);font-weight:700}
+.hm-ing{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.hm-ing li{display:flex;gap:8px;padding:11px 14px;border-radius:14px;background:#f2fbf8;font-weight:600}
+.hm-ing b{color:#0d7a62;min-width:6ch}
+
+/* פס מודעות דק */
+.hm-ads{border-block:1px solid var(--ds-line);background:#fff}
+.hm-ads-in{display:flex;align-items:center;gap:16px;min-height:60px;flex-wrap:wrap;padding-block:8px}
+.hm-pill{background:#fff4e0;color:#8a5200;border-radius:999px;padding:6px 14px;font-weight:800;font-size:.85rem}
+.hm-ad{flex:1;min-width:260px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;text-decoration:none;color:var(--ds-ink)}
+.hm-ad b{font-weight:800}.hm-ad span{color:var(--ds-mut);font-weight:500}.hm-ad em{font-style:normal;color:var(--ds-acc);font-weight:800;font-size:.9rem;margin-inline-start:auto}
+.hm-dots{display:flex;gap:6px}.hm-dots i{width:8px;height:8px;border-radius:50%;background:#ddd5ee;cursor:pointer}.hm-dots i.on{background:var(--ds-acc);width:22px;border-radius:99px}
+
+/* מדורים */
+.hm-sec{padding:96px 0 88px;background:var(--ds-bg)}
+.hm-sec:nth-of-type(even){background:var(--ds-surface)}
+.hm-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:40px;flex-wrap:wrap}
+.hm-head h2{margin:12px 0 10px;font:400 clamp(1.9rem,3.4vw,2.8rem)/1.15 var(--ds-display);color:var(--ds-ink)}
+.hm-head p{margin:0;max-width:52ch;color:var(--ds-mut);font-size:1.08rem;line-height:1.6;font-weight:500}
+.hm-kick{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:.86rem;letter-spacing:.04em;color:var(--ds-mut)}
+.hm-kick::before{content:"";width:22px;height:4px;border-radius:99px;background:var(--k,#8b5cf6)}
+.hm-kick[data-w=games]{--k:#2f6bff}.hm-kick[data-w=create]{--k:#ff7a2e}.hm-kick[data-w=studio]{--k:#ff3d81}.hm-kick[data-w=recipes]{--k:#14a38a}.hm-kick[data-w=biz]{--k:#8b5cf6}
+.hm-cards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:28px!important}
+
+/* סיום */
+.hm-final{padding:96px 0;background:linear-gradient(135deg,#1c1a3a,#2e2670 60%,#4a2f86);color:#fff;text-align:center}
+.hm-final h2{margin:0 0 10px;font:400 clamp(2rem,4vw,3.2rem)/1.15 var(--ds-display);color:#fff}
+.hm-final p{margin:0 0 30px;color:rgba(255,255,255,.75);font-size:1.15rem}
+.hm-final .hm-cta{justify-content:center}
+.hm-final .btn:not(.btn-gold){background:rgba(255,255,255,.1)!important;color:#fff!important;border-color:rgba(255,255,255,.35)!important}
+.hm-final .hm-link{color:#fff}
+
+@media (max-width:980px){
+  .hm-hero{padding:40px 0}
+  .hm-hero-in{grid-template-columns:1fr;gap:36px}
+  .hm-cards{grid-template-columns:1fr!important}
+  .hm-sec{padding:64px 0}
+  .hm-facts{gap:24px}
+}
+@media (max-width:560px){
+  .hm-tabs button{font-size:.8rem;padding:0 4px}.hm-tabs button i{display:none}
+  .hm-stk{zoom:.45}
+}
+@media (prefers-reduced-motion:reduce){.hm-panel{animation:none}}
