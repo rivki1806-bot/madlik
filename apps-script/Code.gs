@@ -5,6 +5,8 @@ const SECRET = 'CHANGE-ME-123';
 
 const KINDS = { subs: 'רעיונות שנשלחו', leads: 'פניות לבעלי עסקים', ads: 'בקשות פרסום', users: 'משתמשות', contact: 'פניות יצירת קשר' };
 const CONTENT_KINDS = ['games', 'recipes', 'suppliers'];
+// עותק של כל פנייה לבעל עסק נשלח גם לכתובת הזו (המיילים יוצאים מהחשבון שבו הסקריפט מותקן)
+const NOTIFY_COPY = 'officeautoclick@gmail.com';
 
 function tab_(name, head) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -83,6 +85,7 @@ function doPost(e) {
       const data = clean_(d.data);
       const summary = ['name', 'biz', 'title', 'supplier', 'phone', 'email'].map(k => data[k]).filter(Boolean).join(' · ');
       recSheet_(d.kind).appendRow([newId_(), new Date(), d.kind === 'subs' ? 'ממתין' : 'חדש', summary, JSON.stringify(data)]);
+      if (d.kind === 'leads') { try { notifySupplier_(data); } catch (err) {} }
       return json_({ ok: true });
     }
 
@@ -192,4 +195,20 @@ function send_(d) {
     sent++;
   }
   return json_({ ok: true, sent: sent, skipped: skipped });
+}
+
+// פנייה מהטופס של בעל עסק: נשלחת למייל שהוגדר לעסק בניהול (נקבע לפי מזהה העסק בגיליון, ולא לפי כתובת שמגיעה מהאתר)
+function notifySupplier_(data) {
+  const sid = String(data.sid || ''); if (!sid) return;
+  const rows = conSheet_().getDataRange().getValues(); let item = null;
+  for (let i = 1; i < rows.length; i++) if (String(rows[i][0]) === sid && rows[i][2] === 'suppliers') { try { item = JSON.parse(rows[i][4]); } catch (err) {} break; }
+  if (!item) return;
+  const to = valid_(String(item.email || '')) ? String(item.email).trim() : NOTIFY_COPY;
+  const body = 'פנייה חדשה דרך מדליק עבור ' + (item.name || '') + '\n\n' +
+    'שם: ' + (data.name || '') + '\nטלפון: ' + (data.phone || '') + '\nמייל: ' + (data.email || '') +
+    '\nתאריך האירוע: ' + (data.date || '') + '\nמספר משתתפים: ' + (data.count || '') + '\n\nפרטים:\n' + (data.msg || '');
+  const opt = { to: to, subject: 'פנייה חדשה ממדליק: ' + (data.name || ''), body: body, name: 'מדליק' };
+  if (to !== NOTIFY_COPY) opt.bcc = NOTIFY_COPY;
+  if (valid_(String(data.email || ''))) opt.replyTo = String(data.email).trim();
+  MailApp.sendEmail(opt);
 }

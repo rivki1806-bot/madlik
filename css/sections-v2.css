@@ -84,3 +84,20 @@ html[data-pal] body .wshow[data-w=games] .wshow-text .btn:hover{background:#0a22
 .wshow[data-w=games] .card .card-body p{display:none!important}
 .wshow[data-w=games] .card .tag{background:transparent!important;border:1px solid rgba(10,34,68,.12)!important;color:#6c7893!important;border-radius:999px!important;padding:1px 10px;font:500 .72rem 'Rubik',sans-serif!important}
 .gp-list{margin-top:clamp(36px,5vw,60px)}
+
+/* ---------- שער הכניסה של סמינר מעלות ---------- */
+.maalot-gate{position:fixed;inset:0;z-index:4000;overflow:auto;display:grid;place-items:center;padding:20px;background:radial-gradient(700px 440px at 85% 5%,rgba(255,140,40,.28),transparent 62%),#0a2244}
+.mg-card{width:min(480px,100%);background:#fcf7ec;border-radius:28px;padding:clamp(24px,4vw,40px);display:grid;gap:14px;text-align:right;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);color:#0a2244;font-family:'Heebo',sans-serif}
+.mg-logo{height:62px;width:auto;justify-self:center}
+.mg-card h1{font:500 1.7rem 'Rubik',sans-serif;margin:6px 0 0;text-align:center;color:#0a2244}
+.mg-sub{margin:0;text-align:center;color:#3b4a66}
+.mg-card label{display:grid;gap:6px;font:500 .9rem 'Rubik',sans-serif}
+.mg-card input[type=email],.mg-card input:not([type]){min-height:48px;border:1px solid rgba(10,34,68,.2);border-radius:14px;padding:0 16px;font:400 1rem 'Heebo',sans-serif;background:#fff}
+.mg-card .mg-ok{display:flex;gap:10px;align-items:flex-start;font:400 .86rem/1.5 'Heebo',sans-serif;color:#3b4a66}
+.mg-ok input{margin-top:4px;width:18px;height:18px;flex:none}
+.mg-card .btn{justify-self:stretch;min-height:52px;font:600 1.05rem 'Rubik',sans-serif;border-radius:999px}
+.mg-note{text-align:center;color:#6c7893}
+.bz-tools{margin:0 0 12px}
+body:has(.maalot-gate) :is(.site-header,.site-footer,.newsletter-bar,.to-top,#scene,.progress,.toast){display:none!important}
+body:has(.maalot-gate) .maalot-gate{position:relative;inset:auto;min-height:100vh;z-index:1}
+body:has(.maalot-gate){background:#0a2244!important}
