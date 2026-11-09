@@ -73,9 +73,16 @@ function countHit(name, params, path){
   store.set('stats', st);
 }
 let remote = store.get('remote_content', null);
+/* תמונות מהניהול נשמרות בחתיכות בגיליון (בלי קוד נוסף של גוגל): כאן מחברים אותן חזרה לתמונה אחת */
+function assembleImgs(items){
+  const sup = (items && items.suppliers) || [], ch = {}, keep = [];
+  sup.forEach(s => { if(s && s._chunk){ (ch[s._chunk] = ch[s._chunk] || [])[s.i] = s.d; } else keep.push(s); });
+  keep.forEach(s => { if(typeof s.img === 'string' && s.img.indexOf('chunk:') === 0){ const id = s.img.slice(6), parts = ch[id] || []; s._imgId = id; s._imgN = parts.length; s.img = parts.length && Array.from(parts, x => x || '').every(Boolean) ? parts.join('') : ''; } });
+  items.suppliers = keep; return items;
+}
 function refreshRemote(){
   if(!API()) return Promise.resolve();
-  return fetch(API()+'?action=content').then(r=>r.json()).then(r=>{ if(r.ok){ remote = r.items; store.set('remote_content', remote); } });
+  return fetch(API()+'?action=content').then(r=>r.json()).then(r=>{ if(r.ok){ remote = assembleImgs(r.items); store.set('remote_content', remote); } });
 }
 function loadRemote(){
   const before = JSON.stringify(remote);
@@ -144,7 +151,7 @@ const isScreenGame = g => !!g.battle || (g.format||[]).includes('על המסך')
 const customRib = '<span class="cust-rib" aria-label="אפשר להתאים אישית"><i>🎨</i> התאמה אישית</span>';
 const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn('games',g.id)}${(g.battle||g.words||g.quartets)?customRib:''}<div class="card-top" style="--bg:${bgs[i%5]}">${gameArt(g)}</div><div class="card-body"><h3>${esc(g.title)}</h3><p>${esc(g.short)}</p><div class="tags"><span class="tag">${esc(g.type)}</span><span class="tag">${esc(g.min)}–${esc(g.max)} משתתפים</span>${(g.format||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div></a>`;
 const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
-const safeImg = p => /^(img\/[\w\-\/.%]+|https:\/\/[^\s"'<>]+)$/i.test(String(p || '')) ? String(p) : '';
+const safeImg = p => /^(img\/[\w\-\/.%]+|https:\/\/[^\s"'<>]+|data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+\/=]+)$/i.test(String(p || '')) ? String(p) : '';
 const safeUrl = u => { u = String(u || '').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); return /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : ''; };
 const supPic = s => safeImg(s.img) ? `<img class="biz-img" src="${esc(safeImg(s.img))}" alt="${esc(s.name)}" loading="lazy">` : '';
 const supCard = (s,i=0) => { const id = esc(s.id), site = safeUrl(s.site);
@@ -1159,7 +1166,9 @@ function bizTabHTML(){
 function initBiz(call, live, fail){
   const call2 = body => API2() ? apiPost2(Object.assign({key:adminKey()}, body)).then(r => { if(!r.ok) throw new Error(r.error||'שגיאה'); return r; }) : Promise.reject(new Error('צריך להתקין את הקוד הנוסף של גוגל (עוד לא חוברה כתובת שנייה)'));
   const $ = id => document.getElementById(id), f = $('bzForm');
-  let imgData = '', S = {sup:{}, tel:{}, web:{}}, L = [];
+  let imgData = '', S = {sup:{}, tel:{}, web:{}}, L = [], cur = null;
+  const uploadImg = async data => { const id = 'i' + Date.now().toString(36), parts = data.match(/[\s\S]{1,40000}/g) || []; for(let i = 0; i < parts.length; i++) await call({action:'addContent', kind:'suppliers', item:{id:id + '-' + i, _chunk:id, i, d:parts[i], name:''}}); return {id, n:parts.length}; };
+  const dropImg = (id, n) => Promise.all(Array.from({length:n || 0}, (_, i) => call({action:'removeContent', id:id + '-' + i}).catch(() => {})));
   const list = () => addedContent('suppliers');
   const readItem = () => { const v = Object.fromEntries(new FormData(f)); return {id:String(v.id || ''), name:String(v.name || '').trim(), cat:String(v.cat || '').trim(), region:v.region, price:v.price, plan:v.plan, text:String(v.text || '').trim(), phone:String(v.phone || '').trim(), email:String(v.email || '').trim(), site:safeUrl(v.site), img:String(v.img || '').trim(), featured:!!v.featured, active:!!v.active}; };
   const prev = () => {
@@ -1172,21 +1181,23 @@ function initBiz(call, live, fail){
     const file = e.target.files[0]; if(!file) return;
     const rd = new FileReader();
     rd.onload = () => { const im = new Image(); im.onload = () => {
-      const W = 1200, H = 750, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+      const W = 1000, H = 625, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
       const k = Math.max(W / im.width, H / im.height), w = im.width * k, h = im.height * k; g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
-      imgData = c.toDataURL('image/jpeg', .86); $('bzFileInfo').textContent = file.name + ' (' + Math.round(imgData.length * .75 / 1024) + 'KB)'; prev();
+      let q = .82; imgData = c.toDataURL('image/jpeg', q); while(imgData.length > 150000 && q > .4){ q -= .06; imgData = c.toDataURL('image/jpeg', q); } $('bzFileInfo').textContent = file.name + ' (' + Math.round(imgData.length * .75 / 1024) + 'KB)'; prev();
     }; im.onerror = () => toast('לא הצלחתי לקרוא את התמונה'); im.src = rd.result; };
     rd.readAsDataURL(file);
   };
-  const reset = () => { f.reset(); f.elements.id.value = ''; imgData = ''; $('bzFile').value = ''; $('bzFileInfo').textContent = 'לא נבחרה תמונה'; $('bzHead').textContent = 'הוספת עסק מפרסם'; $('bzSave').textContent = 'שמירה ופרסום'; prev(); };
+  const reset = () => { f.reset(); f.elements.id.value = ''; imgData = ''; cur = null; $('bzFile').value = ''; $('bzFileInfo').textContent = 'לא נבחרה תמונה'; $('bzHead').textContent = 'הוספת עסק מפרסם'; $('bzSave').textContent = 'שמירה ופרסום'; prev(); };
   $('bzReset').onclick = reset;
   const fill = it => {
     f.elements.id.value = it.id;
-    ['name', 'cat', 'region', 'price', 'plan', 'text', 'phone', 'email', 'site', 'img'].forEach(k => { if(f.elements[k]) f.elements[k].value = it[k] || (k === 'plan' ? 'Premium' : ''); });
+    cur = it._imgId ? {id:it._imgId, n:it._imgN} : null;
+    ['name', 'cat', 'region', 'price', 'plan', 'text', 'phone', 'email', 'site', 'img'].forEach(k => { if(f.elements[k]) f.elements[k].value = (k === 'img' && cur) ? '' : (it[k] || (k === 'plan' ? 'Premium' : '')); });
     f.elements.featured.checked = !!it.featured; f.elements.active.checked = it.active !== false; imgData = ''; $('bzFile').value = '';
-    $('bzFileInfo').textContent = it.img ? 'יש תמונה (אפשר להחליף)' : 'לא נבחרה תמונה'; $('bzHead').textContent = 'עריכת עסק: ' + it.name; $('bzSave').textContent = 'שמירת השינויים'; prev(); f.scrollIntoView({behavior:'smooth', block:'start'});
+    $('bzFileInfo').textContent = (it.img || cur) ? 'יש תמונה (אפשר להחליף)' : 'לא נבחרה תמונה'; $('bzHead').textContent = 'עריכת עסק: ' + it.name; $('bzSave').textContent = 'שמירת השינויים'; prev(); f.scrollIntoView({behavior:'smooth', block:'start'});
   };
   const persist = (item, isNew) => {
+    if(item._imgId && String(item.img || '').indexOf('data:') === 0) item.img = 'chunk:' + item._imgId;
     if(live){
       if(isNew) return call({action:'addContent', kind:'suppliers', item}).then(refreshRemote);
       const old = () => call({action:'removeContent', id:item.id}).then(() => call({action:'addContent', kind:'suppliers', item})).then(refreshRemote); // בלי הקוד הנוסף: עריכה = מחיקה והוספה מחדש עם אותו מזהה
@@ -1212,7 +1223,8 @@ function initBiz(call, live, fail){
     if(f.elements.site.value.trim() && !it.site) return toast('הקישור לאתר לא תקין');
     btn.disabled = true;
     try{
-      if(imgData){ if(!live) throw new Error('העלאת תמונה דורשת חיבור לשרת של גוגל. אפשר להדביק קישור לתמונה'); const r = await call2({action:'uploadImage', data:imgData}); it.img = r.url; }
+      if(imgData){ if(!live) throw new Error('העלאת תמונה דורשת חיבור לשרת של גוגל. אפשר להדביק קישור לתמונה'); const u = await uploadImg(imgData); if(cur) await dropImg(cur.id, cur.n); it.img = 'chunk:' + u.id; it._imgId = u.id; it._imgN = u.n; }
+      else if(cur && !it.img){ it.img = 'chunk:' + cur.id; it._imgId = cur.id; it._imgN = cur.n; }
       else if(it.img && !safeImg(it.img)) throw new Error('קישור התמונה לא תקין. נתיב כמו img/ads/שם.jpg או כתובת שמתחילה ב־https');
       const isNew = !it.id; it.id = it.id || 'b' + Date.now().toString(36); it.homeAd = it.plan !== 'Basic'; it.ico = '';
       if(!it.img) delete it.img; if(!it.site) delete it.site;
@@ -1226,7 +1238,7 @@ function initBiz(call, live, fail){
     if(act === 'edit') return fill(s);
     if(act === 'toggle'){ const it = Object.assign({}, s, {active:s.active === false}); return persist(it, false).then(() => { toast(it.active ? 'העסק מוצג שוב' : 'העסק הוסתר'); draw(); }).catch(fail); }
     if(act === 'del' && confirm('למחוק את "' + s.name + '" מהאתר?')){
-      const done = live ? call({action:'removeContent', id}).then(refreshRemote) : (store.set('extra_suppliers', store.get('extra_suppliers', []).filter(x => x.id !== id)), Promise.resolve());
+      const done = live ? call({action:'removeContent', id}).then(() => s._imgId ? dropImg(s._imgId, s._imgN) : 0).then(refreshRemote) : (store.set('extra_suppliers', store.get('extra_suppliers', []).filter(x => x.id !== id)), Promise.resolve());
       done.then(() => { toast('נמחק'); draw(); }).catch(fail);
     }
   };
