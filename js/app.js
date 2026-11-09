@@ -150,7 +150,7 @@ const bgs = ['#d6e4ee','#e4f0e2','#fff3d6','#f3e9da','#e8eef7'];
 const isScreenGame = g => !!g.battle || (g.format||[]).includes('על המסך');
 const customRib = '<span class="cust-rib" aria-label="אפשר להתאים אישית"><i>🎨</i> התאמה אישית</span>';
 const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn('games',g.id)}${(g.battle||g.words||g.quartets)?customRib:''}<div class="card-top" style="--bg:${bgs[i%5]}">${gameArt(g)}</div><div class="card-body"><h3>${esc(g.title)}</h3><p>${esc(g.short)}</p><div class="tags"><span class="tag">${esc(g.type)}</span><span class="tag">${esc(g.min)}–${esc(g.max)} משתתפים</span>${(g.format||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div></a>`;
-const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
+const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${safeImg(r.img) ? `<img class="rec-img" src="${esc(safeImg(r.img))}" alt="${esc(r.title)}" loading="lazy">` : art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
 const safeImg = p => /^(img\/[\w\-\/.%]+|https:\/\/[^\s"'<>]+|data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+\/=]+)$/i.test(String(p || '')) ? String(p) : '';
 const safeUrl = u => { u = String(u || '').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); return /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : ''; };
 const supPic = s => safeImg(s.img) ? `<img class="biz-img" src="${esc(safeImg(s.img))}" alt="${esc(s.name)}" loading="lazy">` : '';
@@ -929,8 +929,10 @@ function designHTML(t, s, logo){
 /* מתכונים */
 pages.recipes = () => {
   const cats = [...new Set(content('recipes').map(r=>r.cat))];
-  return pageHead('מתכונים לערב לביבות', 'לביבות, סופגניות, מגשי אירוח ושתייה – עם חישוב כמויות לפי מספר הסועדים.', 'מתכונים') + `
-  <div class="wrap"><form class="filters" id="rf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש מתכון או מצרך..."><select name="cat"><option value="">כל הקטגוריות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="diet"><option value="">חלבי / פרווה</option><option>חלבי</option><option>פרווה</option><option>בשרי</option></select><select name="level"><option value="">כל הרמות</option><option>קל</option><option>בינוני</option><option>מאתגר</option></select></form><div class="cards" id="rl"></div></div>`;
+  return `<div class="gp rp"><div class="wrap gp-wrap">
+    <header class="gp-top"><h1>מתכונים</h1><span class="gp-line"></span></header>
+    <form class="filters gp-bar" id="rf" onsubmit="return false"><div class="gp-bar-top"><input type="search" name="q" placeholder="חיפוש מתכון או מצרך" aria-label="חיפוש מתכון"><select name="cat" aria-label="קטגוריה"><option value="">כל הקטגוריות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="diet" aria-label="חלבי או פרווה"><option value="">חלבי / פרווה</option><option>חלבי</option><option>פרווה</option><option>בשרי</option></select><select name="level" aria-label="רמת קושי"><option value="">כל הרמות</option><option>קל</option><option>בינוני</option><option>מאתגר</option></select></div></form>
+    <div class="cards gp-list" id="rl"></div></div></div>`;
 };
 pages.recipes.after = () => { const f = document.getElementById('rf'), l = document.getElementById('rl'); const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('recipes').filter(r=>(!v.q||JSON.stringify(r).includes(v.q))&&(!v.cat||r.cat===v.cat)&&(!v.diet||r.diet===v.diet)&&(!v.level||r.level===v.level)); l.innerHTML = res.length?res.map(recipeCard).join(''):'<div class="empty">לא נמצא מתכון.</div>'; }; f.oninput = run; run(); };
 
@@ -944,19 +946,27 @@ function fmtQty(n){
 }
 pages.recipe = ([id]) => {
   const r = findIn('recipes', id); if(!r) return notFound();
-  return pageHead(esc(r.title), '', `<a href="#/recipes">מתכונים</a> › ${esc(r.title)}`) + `
-  <div class="wrap detail">
-    <div>
-      <div class="box"><h2>מצרכים</h2>
-        <div class="servings">מספר סועדים: <button id="sMinus" aria-label="פחות">−</button><strong id="sNum">${r.serves}</strong><button id="sPlus" aria-label="יותר">+</button></div>
-        <ul class="ing-list" id="ing"></ul>
-        <div class="btn-row"><button class="btn btn-gold" id="toShop"> הוספה לרשימת הקניות</button></div>
-      </div>
-      <div class="box"><h2>אופן ההכנה</h2><ol class="steps">${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>
+  const img = safeImg(r.img), plug = r.plug && safeUrl(r.plug.url) ? r.plug : null;
+  return `<div class="rd"><section class="rd-hero"><div class="wrap rd-hero-in${img ? ' has-img' : ''}">
+    <div class="rd-head">
+      <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/recipes">מתכונים</a> › ${esc(r.title)}</div>
+      <span class="rd-kick">${esc(r.cat)}</span>
+      <h1>${esc(r.title)}</h1>
+      <ul class="rd-meta"><li><b>${esc(r.time)}</b> דק׳</li><li>${esc(r.level)}</li><li>${esc(r.diet)}</li></ul>
+      <div class="rd-acts"><button class="btn btn-light" data-fav="recipes|${esc(r.id)}">${isFav('recipes',r.id)?'♥':'♡'} מועדפים</button><button class="btn btn-light" id="rPrint">הדפסה</button><button class="btn btn-light" id="rShare">שיתוף</button></div>
     </div>
-    <aside><div class="box"><ul class="meta-list"><li><span>זמן הכנה</span><b>${esc(r.time)} דק׳</b></li><li><span>רמת קושי</span><b>${esc(r.level)}</b></li><li><span>כשרות</span><b>${esc(r.diet)}</b></li><li><span>קטגוריה</span><b>${esc(r.cat)}</b></li></ul>
-      <div class="btn-row"><button class="btn btn-light" data-fav="recipes|${esc(r.id)}">${isFav('recipes',r.id)?'♥':'♡'} מועדפים</button><button class="btn btn-light" id="rPrint"> הדפסה</button><button class="btn btn-light" id="rShare"> שיתוף</button></div></div>
-      ${r.credit?`<div class="box"> המתכון נשלח על ידי ${esc(r.credit)}</div>`:''}</aside>
+    ${img ? `<figure class="rd-photo"><img src="${esc(img)}" alt="${esc(r.title)}"></figure>` : ''}
+  </div></section>
+  <div class="wrap rd-body">
+    <section class="rd-ing"><h2>מצרכים</h2>
+      <div class="servings">מספר סועדים <button id="sMinus" aria-label="פחות">−</button><strong id="sNum">${r.serves}</strong><button id="sPlus" aria-label="יותר">+</button></div>
+      <ul class="ing-list" id="ing"></ul>
+      <button class="btn btn-gold" id="toShop">הוספה לרשימת הקניות</button>
+    </section>
+    <section class="rd-steps"><h2>אופן ההכנה</h2><ol class="steps">${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>${r.tip ? `<p class="rd-tip">${esc(r.tip)}</p>` : ''}</section>
+  </div>
+  ${plug ? `<div class="wrap"><aside class="rd-plug"><span class="rd-plug-ico" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 36h36M10 36a14 14 0 0 1 28 0M24 14v-3M21 11h6"/></svg></span><div class="rd-plug-t"><span>${esc(plug.kicker||'')}</span><h3>${esc(plug.title)}</h3><p>${esc(plug.text||'')}</p></div><a class="rd-plug-go" href="${esc(safeUrl(plug.url))}" target="_blank" rel="noopener noreferrer sponsored" data-web="rec-${esc(r.id)}">${esc(plug.btn||'לאתר')} <i>←</i></a></aside></div>` : ''}
+  ${r.credit ? `<p class="rd-credit">המתכון באדיבות ${esc(r.credit)}</p>` : ''}
   </div>`;
 };
 pages.recipe.after = ([id]) => {
