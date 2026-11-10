@@ -175,7 +175,9 @@ const bgs = ['#d6e4ee','#e4f0e2','#fff3d6','#f3e9da','#e8eef7'];
 const isScreenGame = g => !!g.battle || (g.format||[]).includes('על המסך');
 const customRib = '<span class="cust-rib" aria-label="אפשר להתאים אישית"><i>🎨</i> התאמה אישית</span>';
 const gameCard = (g,i=0) => `<a class="card" href="#/game/${esc(g.id)}">${favBtn('games',g.id)}${(g.battle||g.words||g.quartets)?customRib:''}<div class="card-top" style="--bg:${bgs[i%5]}">${gameArt(g)}</div><div class="card-body"><h3>${esc(g.title)}</h3><p>${esc(g.short)}</p><div class="tags"><span class="tag">${esc(g.type)}</span><span class="tag">${esc(g.min)}–${esc(g.max)} משתתפים</span>${(g.format||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div></a>`;
-const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${safeImg(r.img) ? `<img class="rec-img" src="${esc(safeImg(r.img))}" alt="${esc(r.title)}" loading="lazy">` : art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
+const REC_LOGOS = {goldie:{img:'img/goldie-logo.webp', name:'גולדי כהן', brand:'גולד CAKE'}};
+const recLogo = (r, cls) => REC_LOGOS[r.logo] ? '<img class="' + (cls || 'rec-logo') + '" src="' + REC_LOGOS[r.logo].img + '" alt="לוגו ' + esc(REC_LOGOS[r.logo].brand) + '" loading="lazy">' : '';
+const recipeCard = (r,i=0) => `<a class="card" href="#/recipe/${esc(r.id)}">${favBtn('recipes',r.id)}<div class="card-top" style="--bg:${bgs[(i+2)%5]}">${safeImg(r.img) ? `<img class="rec-img" src="${esc(safeImg(r.img))}" alt="${esc(r.title)}" loading="lazy">${recLogo(r)}` : art(r)}</div><div class="card-body"><h3>${esc(r.title)}</h3><div class="tags"><span class="tag">${esc(r.cat)}</span><span class="tag"> ${esc(r.time)} דק׳</span><span class="tag">${esc(r.level)}</span><span class="tag">${esc(r.diet)}</span></div></div></a>`;
 const safeImg = p => /^(img\/[\w\-\/.%]+|https:\/\/[^\s"'<>]+|data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+\/=]+)$/i.test(String(p || '')) ? String(p) : '';
 const safeUrl = u => { u = String(u || '').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); return /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : ''; };
 const supPic = s => safeImg(s.img) ? `<img class="biz-img" src="${esc(safeImg(s.img))}" alt="${esc(s.name)}" loading="lazy">` : '';
@@ -1082,10 +1084,11 @@ pages.recipe = ([id]) => {
       <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/recipes">מתכונים</a> › ${esc(r.title)}</div>
       <span class="rd-kick">${esc(r.cat)}</span>
       <h1>${esc(r.title)}</h1>
+      ${REC_LOGOS[r.logo] ? `<div class="rd-by"><img src="${REC_LOGOS[r.logo].img}" alt="לוגו ${esc(REC_LOGOS[r.logo].brand)}"><span>מתכון מאת <b>${esc(REC_LOGOS[r.logo].name)}</b><small>${esc(REC_LOGOS[r.logo].brand)}</small></span></div>` : ''}
       <ul class="rd-meta"><li><b>${esc(r.time)}</b> דק׳</li><li>${esc(r.level)}</li><li>${esc(r.diet)}</li></ul>
       <div class="rd-acts"><button class="btn btn-light" data-fav="recipes|${esc(r.id)}">${isFav('recipes',r.id)?'♥':'♡'} מועדפים</button><button class="btn btn-light" id="rPrint">הדפסה</button><button class="btn btn-light" id="rShare">שיתוף</button></div>
     </div>
-    ${img ? `<figure class="rd-photo"><img src="${esc(img)}" alt="${esc(r.title)}"></figure>` : ''}
+    ${img ? `<figure class="rd-photo"><img src="${esc(img)}" alt="${esc(r.title)}">${recLogo(r, 'rd-logo')}</figure>` : ''}
   </div></section>
   <div class="wrap rd-body">
     <section class="rd-ing"><h2>מצרכים</h2>
@@ -1108,7 +1111,7 @@ pages.recipe.after = ([id]) => {
   document.getElementById('sPlus').onclick = () => { n++; draw(); };
   document.getElementById('toShop').onclick = () => { const s = store.get('shop', []); list().forEach(x=>s.push({t:x, from:r.title, done:false})); store.set('shop', s); toast('נוסף לרשימת הקניות באזור האישי '); };
   document.getElementById('rShare').onclick = () => copyLink('#/recipe/'+r.id);
-  document.getElementById('rPrint').onclick = () => printHTML(`<div class="sheet" style="aspect-ratio:auto"><h1>${esc(r.title)}</h1><p>${n} סועדים · ${esc(r.time)} דק׳ · ${esc(r.level)}</p><h2>מצרכים</h2><ul>${list().map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h2>אופן ההכנה</h2><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><p style="color:#c49a45;text-align:center">מדליק · כל מה שצריך לערב לביבות</p></div>`);
+  document.getElementById('rPrint').onclick = () => printHTML(`<div class="sheet" style="aspect-ratio:auto"><h1>${esc(r.title)}</h1><p>${n} סועדים · ${esc(r.time)} דק׳ · ${esc(r.level)}</p><h2>מצרכים</h2><ul>${list().map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h2>אופן ההכנה</h2><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>${REC_LOGOS[r.logo] ? `<p style="text-align:center"><img src="${REC_LOGOS[r.logo].img}" alt="" style="height:26mm;border-radius:3mm"><br>מתכון מאת ${esc(REC_LOGOS[r.logo].name)} · ${esc(REC_LOGOS[r.logo].brand)}</p>` : ''}<p style="color:#c49a45;text-align:center">מדליק · כל מה שצריך לערב לביבות</p></div>`);
   draw();
 };
 
