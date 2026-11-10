@@ -1082,6 +1082,7 @@ pages.recipe = ([id]) => {
   const r = findIn('recipes', id); if(!r) return notFound();
   const img = safeImg(r.img), plug = r.plug && safeUrl(r.plug.url) ? r.plug : null, lg = REC_LOGOS[r.logo], max = Math.max(30, r.serves * 4);
   return `<div class="kg"><div class="wrap kg-wrap"><article class="kg-card">
+    <a class="kg-x" href="#/recipes" aria-label="סגירה וחזרה לכל המתכונים" title="סגירה">×</a>
     <nav class="kg-bc" aria-label="מיקום"><a href="#/">ראשי</a> › <a href="#/recipes">מתכונים</a> › ${esc(r.title)}</nav>
     <header class="kg-head"><span class="kg-cat">${esc(r.cat)}</span><h1>${esc(r.title)}</h1>
       <p class="kg-meta">זמן הכנה: ${esc(r.time)} דק׳ · קושי: ${esc(r.level)} · ${esc(r.diet)}</p>
@@ -1104,6 +1105,8 @@ pages.recipe.after = ([id]) => {
   const r = findIn('recipes', id); if(!r) return;
   let n = r.serves; const ing = document.getElementById('ing'), num = document.getElementById('sNum');
   const list = () => r.ing.map(([q,u,name])=>`${fmtQty(q*n/r.serves)} ${u} ${name}`.replace(/\s+/g, ' ').trim());
+  const escKey = e => { if(e.key === 'Escape' && location.hash.indexOf('#/recipe/') === 0 && !document.querySelector('.fb-ov,.mn-lb,.tour-ov')) location.hash = '#/recipes'; };
+  document.removeEventListener('keydown', window.__kgEsc || (() => {})); window.__kgEsc = escKey; document.addEventListener('keydown', escKey);
   const rg = document.getElementById('sRange');
   const draw = () => { num.textContent = n; ing.innerHTML = list().map(x=>`<li>${esc(x)}</li>`).join(''); if(rg){ rg.value = n; rg.style.setProperty('--p', ((n - rg.min) / (rg.max - rg.min) * 100) + '%'); } };
   document.getElementById('sMinus').onclick = () => { if(n>1){ n--; draw(); } };
