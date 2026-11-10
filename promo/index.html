@@ -7,12 +7,13 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;800;900&family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;800;900&family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   :root{color-scheme:dark}
   body{margin:0;background:#050b18;color:#fbf1dc;font-family:'Rubik','Heebo',sans-serif;min-height:100vh;display:grid;place-items:center;padding:16px;box-sizing:border-box}
-  .stage{width:min(100%,1280px)}
-  canvas{width:100%;height:auto;display:block;background:#000;border-radius:18px;box-shadow:0 30px 80px -30px #000}
+  .stage{width:min(100%,420px)}
+  @media (min-width:900px){.stage{width:min(100%,460px)}}
+  canvas{width:100%;height:auto;display:block;background:#000;border-radius:22px;box-shadow:0 30px 80px -30px #000}
   .bar{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:18px 0 4px}
   button{min-height:52px;padding:0 26px;border:0;border-radius:999px;font:700 1rem 'Rubik',sans-serif;cursor:pointer;color:#0a2244;background:linear-gradient(120deg,#ff6a00,#ff9a2e 55%,#ffc42d);box-shadow:0 12px 24px -10px rgba(255,106,0,.7)}
   button.ghost{background:transparent;color:#fbf1dc;border:1px solid rgba(251,241,220,.35);box-shadow:none}
@@ -22,408 +23,328 @@
 </head>
 <body>
 <div class="stage">
-  <canvas id="c" width="1280" height="720" aria-label="סרטון: למה לפרסם במדליק"></canvas>
+  <canvas id="c" width="720" height="1280" aria-label="סרטון: למה לפרסם במדליק"></canvas>
   <div class="bar">
     <button id="play">▶ הפעלה עם סאונד</button>
     <button id="rec" class="ghost">⬇ הקלטה והורדה כקובץ וידאו</button>
   </div>
-  <p class="hint" id="hint">אורך הסרטון: 32 שניות · לחצו על הפעלה כדי לשמוע (דרוש סאונד)</p>
+  <p class="hint" id="hint">24 שניות · עם קריינות וסאונד</p>
 </div>
 <script>
 /* ============================================================
-   מדליק – סרטון משכנע לנותני שירות. הכול מצויר בזמן אמת על קנבס:
-   טיפוגרפיה קינטית, שרטוט טכני, תלת־ממד על משטח מוטה, מצלמה רציפה,
-   גימור קולנועי, מאץ' קאט דרך צורה משתנה, וסנכרון מלא לביט (120 BPM).
+   מדליק – סרטון קצר לנותני שירות, בסגנון קאפקט (אנכי 9:16):
+   כתוביות קופצות עם מילה מודגשת, חיתוכים מהירים עם גליץ' וזום,
+   מדבקות, ספירה חיה, תצוגת אתר, דוח, וקריינות גבר.
+   הכול מצויר בזמן אמת וקצוב לביט (120 BPM).
    ============================================================ */
-const W = 1280, H = 720, BPM = 120, B = 60 / BPM, DUR = 32;
+const W = 720, H = 1280, BPM = 120, B = 60 / BPM, DUR = 24;
 const cv = document.getElementById('c'), out = cv.getContext('2d');
-const sc = Object.assign(document.createElement('canvas'), {width:W, height:H}), g = sc.getContext('2d');      // שכבת הסצנה
-const acc = Object.assign(document.createElement('canvas'), {width:W, height:H}), ag = acc.getContext('2d');   // טשטוש תנועה
-const bl = Object.assign(document.createElement('canvas'), {width:320, height:180}), bg2 = bl.getContext('2d'); // זוהר
-const NAVY = '#0a2244', NAVY2 = '#12315f', OR = '#ff6a00', YEL = '#ffc42d', CREAM = '#fbf1dc', PAPER = '#fff8ee', INK = '#0e2a57';
+const sc = Object.assign(document.createElement('canvas'), {width: W, height: H}), g = sc.getContext('2d');
+const tmp = Object.assign(document.createElement('canvas'), {width: W, height: H}), tg = tmp.getContext('2d');
+const bl = Object.assign(document.createElement('canvas'), {width: 180, height: 320}), bg2 = bl.getContext('2d');
+const NAVY = '#0a2244', OR = '#ff6a00', YEL = '#ffc42d', CREAM = '#fbf1dc', CY = '#4fd1ff', GR = '#33d17a', PK = '#ff4f9a';
 const FONT = "Rubik,Heebo,Arial,sans-serif";
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t;
 const eo = t => 1 - Math.pow(1 - t, 3), eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const eob = t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
-const ph = (t, a, d) => clamp((t - a) / d);
-const frac = x => x - Math.floor(x);
-const pulse = (t, k = 9) => Math.exp(-k * frac(t / B));
+const ph = (t, a, d) => clamp((t - a) / d), frac = x => x - Math.floor(x), pulse = (t, k = 9) => Math.exp(-k * frac(t / B));
+const rnd = s => { const x = Math.sin(s * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 const logo = new Image(); logo.src = '../img/logo-mark.png';
-const noise = (() => { const n = document.createElement('canvas'); n.width = n.height = 256; const x = n.getContext('2d'), d = x.createImageData(256, 256); let s = 12345; for (let i = 0; i < d.data.length; i += 4) { s = (s * 1664525 + 1013904223) >>> 0; const v = (s >>> 24); d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } x.putImageData(d, 0, 0); return n; })();
+const noise = (() => { const n = document.createElement('canvas'); n.width = n.height = 256; const x = n.getContext('2d'), d = x.createImageData(256, 256); let s = 777; for (let i = 0; i < d.data.length; i += 4) { s = (s * 1664525 + 1013904223) >>> 0; const v = s >>> 24; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } x.putImageData(d, 0, 0); return n; })();
+const CUTS = [3, 8, 13, 18, 19.5];
+/* אימוג'י כספרייט שמור: ציור טקסט צבעוני יקר, ולכן מציירים כל אימוג'י פעם אחת בלבד */
+const EMO = new Map(), _ft = g.fillText.bind(g);
+g.fillText = function (s, x, y) {
+  if (typeof s === 'string' && s.length <= 8 && /\p{Extended_Pictographic}/u.test(s) && !/[א-ת]/.test(s)) {
+    const m = /(\d+)px/.exec(this.font), px = m ? +m[1] : 64, key = s + px; let c = EMO.get(key);
+    if (!c) { const n = Math.ceil(px * 1.6); c = document.createElement('canvas'); c.width = c.height = n; const x2 = c.getContext('2d'); x2.font = `400 ${px}px ${FONT}`; x2.textAlign = 'center'; x2.textBaseline = 'middle'; x2.fillText(s, n / 2, n / 2 + px * .04); EMO.set(key, c); }
+    this.drawImage(c, x - c.width / 2, y - c.height / 2); return;
+  }
+  return _ft(s, x, y);
+};
 
-/* ---------------- מצלמה רציפה ---------------- */
-function cam(t) {
-  let x = 0, y = 0, z = 1, r = 0, shake = 0;
-  if (t < 8) { const p = t / 8; z = lerp(1.28, 1.0, eio(p)); x = lerp(30, -30, p); y = lerp(18, 0, p); r = lerp(-.035, 0, p); }
-  else if (t < 14) { const p = (t - 8) / 6; z = 1.0 + .06 * p; x = lerp(-30, -60, p) + Math.sin(p * 3.1) * 60; y = Math.sin(p * 5) * 12; r = Math.sin(p * 3.7) * .03; }
-  else if (t < 16) { const p = (t - 14) / 2; z = lerp(1.06, 1.75, p * p); r = lerp(0, .07, p); shake = p * p * 9; x = -60 * (1 - p); }
-  else if (t < 24) { const p = t - 16; z = 1 + Math.max(0, .2 * Math.exp(-p * 3.2)); r = Math.sin(p * .9) * .012; }
-  else { z = 1 + .05 * (t - 24) / 8; }
-  return {x, y, z, r, shake};
+/* ---------------- עזרים ---------------- */
+function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function txt(s, x, y, size, color, o = {}) {
+  g.save(); g.font = `${o.w || 900} ${size}px ${FONT}`; g.textAlign = o.align || 'center'; g.textBaseline = 'middle'; g.direction = 'rtl';
+  if (o.shadow) { g.shadowColor = o.shadow; g.shadowBlur = o.sb || 20; }
+  if (o.stroke) { g.lineWidth = o.sw || size * .14; g.strokeStyle = o.stroke; g.lineJoin = 'round'; g.strokeText(s, x, y); }
+  g.fillStyle = color; g.fillText(s, x, y); g.restore();
 }
-function withCam(t, fn) {
-  const c = cam(t);
-  g.save();
-  g.translate(W / 2 + (c.shake ? Math.sin(t * 90) * c.shake : 0), H / 2 + (c.shake ? Math.cos(t * 77) * c.shake : 0));
-  g.rotate(c.r); g.scale(c.z, c.z); g.translate(-W / 2 + c.x, -H / 2 + c.y);
-  fn(c); g.restore();
+/* כתובית קאפקט: קפיצה עם פיק, קו מתאר עבה, ומילה מודגשת בתיבה צבעונית */
+function cap(s, t, t0, x, y, size, o = {}) {
+  if (t < t0 || (o.until && t > o.until + .3)) return;
+  const a = t - t0; let k = a < .16 ? lerp(.25, 1.2, eo(a / .16)) : lerp(1.2, 1, eo(clamp((a - .16) / .14)));
+  let al = 1; if (o.until && t > o.until) { const q = ph(t, o.until, .3); k *= 1 - q * .4; al = 1 - q; }
+  g.save(); g.globalAlpha = al; g.translate(x, y); g.rotate(o.rot || 0); g.scale(k, k);
+  g.font = `900 ${size}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl';
+  const w = g.measureText(s).width;
+  if (o.hl) { g.fillStyle = 'rgba(0,0,0,.35)'; rr(-w / 2 - 28, -size * .66 + 12, w + 56, size * 1.32, 30); g.fill(); g.fillStyle = o.hl; rr(-w / 2 - 28, -size * .66, w + 56, size * 1.32, 30); g.fill(); }
+  else { g.fillStyle = 'rgba(0,0,0,.4)'; g.fillText(s, 0, size * .07); g.lineWidth = size * .17; g.strokeStyle = '#000'; g.lineJoin = 'round'; g.strokeText(s, 0, 0); }
+  g.fillStyle = o.hl ? (o.c || NAVY) : (o.c || '#fff'); g.fillText(s, 0, 0); g.restore();
 }
-
-/* ---------------- עזרי ציור ---------------- */
-function text(str, x, y, size, color, o = {}) {
-  g.save(); g.font = `${o.w || 900} ${size}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl';
-  if (o.glow) { g.shadowColor = o.glow; g.shadowBlur = o.gb || 30; }
-  if (o.stroke) { g.lineWidth = o.sw || 4; g.strokeStyle = o.stroke; g.lineJoin = 'round'; g.strokeText(str, x, y); }
-  if (o.fill !== false) { g.fillStyle = color; g.fillText(str, x, y); }
-  g.restore();
+/* מדבקת אימוג'י עם מסגרת לבנה */
+function sticker(em, t, t0, x, y, size, rot = 0, o = {}) {
+  if (t < t0) return; const a = t - t0, k = a < .22 ? lerp(.1, 1.25, eo(a / .22)) : lerp(1.25, 1, eo(clamp((a - .22) / .16)));
+  const bob = Math.sin(t * 4 + x) * 5 * (o.bob == null ? 1 : o.bob);
+  g.save(); g.translate(x, y + bob); g.rotate(rot + Math.sin(t * 3 + y) * .05); g.scale(k, k);
+  g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.arc(0, 8, size * .78, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(0, 0, size * .78, 0, Math.PI * 2); g.fill();
+  g.font = `400 ${size}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(em, 0, size * .04); g.restore();
 }
-/* טיפוגרפיה קינטית: המילה עפה, נמתחת ונוחתת על הביט */
-function kin(str, t, t0, x, y, size, color, o = {}) {
-  const d = o.d || .42, hold = o.hold == null ? 99 : o.hold;
-  if (t < t0 - d) return;
-  const p = ph(t, t0 - d, d), dir = o.dir || 1;
-  let ox = (1 - eo(p)) * (o.dist || 640) * dir, alpha = clamp(p * 3), sx = 1 + (1 - p) * (o.stretch == null ? 1 : o.stretch), sy = 1 - (1 - p) * .2, rot = (1 - p) * (o.rot || .22) * dir;
-  const land = t >= t0 ? Math.exp(-13 * (t - t0)) : 0;
-  if (t > t0 + hold) { const q = ph(t, t0 + hold, .28); ox -= eo(q) * 700 * dir; alpha *= 1 - q; sx = 1 + q * 1.2; }
-  if (alpha <= .01) return;
-  g.save(); g.globalAlpha = alpha; g.translate(x + ox, y); g.rotate(rot); g.scale(sx * (1 + land * .07), sy * (1 - land * .09));
-  text(str, 0, 0, size, color, o); g.restore();
-}
-
-/* ---------------- רקעים ---------------- */
-function paperBG(t) {
-  const c = cam(t), z = 1 + (c.z - 1) * .45, ox = -c.x * .35, oy = -c.y * .35;
-  g.save(); g.fillStyle = PAPER; g.fillRect(0, 0, W, H);
-  g.translate(W / 2, H / 2); g.rotate(c.r * .6); g.scale(z, z); g.translate(-W / 2 + ox, -H / 2 + oy);
-  const x0 = -400, x1 = W + 400, y0 = -300, y1 = H + 300;
-  g.lineWidth = 1; g.strokeStyle = 'rgba(70,120,200,.16)'; g.beginPath();
-  for (let x = Math.floor(x0 / 32) * 32; x < x1; x += 32) { g.moveTo(x, y0); g.lineTo(x, y1); }
-  for (let y = Math.floor(y0 / 32) * 32; y < y1; y += 32) { g.moveTo(x0, y); g.lineTo(x1, y); }
-  g.stroke(); g.lineWidth = 1.6; g.strokeStyle = 'rgba(70,120,200,.3)'; g.beginPath();
-  for (let x = Math.floor(x0 / 160) * 160; x < x1; x += 160) { g.moveTo(x, y0); g.lineTo(x, y1); }
-  for (let y = Math.floor(y0 / 160) * 160; y < y1; y += 160) { g.moveTo(x0, y); g.lineTo(x1, y); }
-  g.stroke(); g.restore();
-}
-function navyBG(t) {
-  const gr = g.createRadialGradient(W / 2, H * .55, 60, W / 2, H / 2, W * .75); gr.addColorStop(0, '#173d78'); gr.addColorStop(1, '#050d20');
-  g.fillStyle = gr; g.fillRect(0, 0, W, H);
-}
-
-/* ---------------- שרטוט טכני: חנוכייה על נייר משבצות ---------------- */
-const MEN = (() => {
-  const S = [];
-  S.push({c: INK, p: [[-120, 150], [120, 150], [96, 118], [-96, 118], [-120, 150]]});
-  S.push({c: INK, p: [[0, 118], [0, -112]]});
-  [[55, 46], [105, 74], [155, 102]].forEach(([R, ys]) => [-1, 1].forEach(sg => {
-    const pts = []; for (let u = 0; u <= 1.001; u += 1 / 18) { const a = u * Math.PI / 2; pts.push([sg * R * Math.sin(a), ys + (-30 - ys) * (1 - Math.cos(a))]); }
-    pts.push([sg * R, -74]); S.push({c: INK, p: pts});
-  }));
-  [-155, -105, -55, 0, 55, 105, 155].forEach(x => {
-    const top = x === 0 ? -112 : -74;
-    S.push({c: INK, p: [[x - 11, top], [x - 11, top - 38], [x + 11, top - 38], [x + 11, top]]});
-    const fy = top - 38; const fl = []; for (let a = 0; a <= Math.PI * 2 + .01; a += Math.PI / 10) fl.push([x + Math.sin(a) * 8 * (a < Math.PI ? 1 : 1), fy - 6 - 12 - Math.cos(a) * 14 * (Math.cos(a) > 0 ? 1.5 : 1)]);
-    S.push({c: OR, p: fl});
+const mc = Object.assign(document.createElement('canvas'), {width: 120, height: 214}), mg = mc.getContext('2d');
+function mesh(t, c1, c2, c3) {
+  mg.fillStyle = '#060f24'; mg.fillRect(0, 0, 120, 214);
+  [[c1, .2, .22, 1], [c2, .85, .5, 2.3], [c3, .3, .85, 3.7]].forEach(([c, bx, by, ph0]) => {
+    const x = (bx + Math.sin(t * .6 + ph0) * .16) * 120, y = (by + Math.cos(t * .5 + ph0) * .12) * 214;
+    const gr = mg.createRadialGradient(x, y, 0, x, y, 120); gr.addColorStop(0, c); gr.addColorStop(1, 'rgba(0,0,0,0)'); mg.globalAlpha = .78; mg.fillStyle = gr; mg.fillRect(0, 0, 120, 214); mg.globalAlpha = 1;
   });
-  let total = 0; S.forEach(s => { s.len = []; let L = 0; for (let i = 1; i < s.p.length; i++) { L += Math.hypot(s.p[i][0] - s.p[i - 1][0], s.p[i][1] - s.p[i - 1][1]); s.len.push(L); } s.L = L; total += L; });
-  return {S, total};
-})();
-function drawMenorah(t) {
-  const prog = eio(ph(t, .5, 5.4)), cx = W * .5, cy = H * .63, k = 1.02;
-  let left = MEN.total * prog, tip = null;
-  g.save(); g.translate(cx, cy); g.scale(k, k); g.lineCap = 'round'; g.lineJoin = 'round';
-  for (const s of MEN.S) {
-    if (left <= 0) break;
-    const use = Math.min(left, s.L); left -= use;
-    g.strokeStyle = s.c; g.lineWidth = 3.2; g.beginPath(); g.moveTo(s.p[0][0], s.p[0][1]);
-    for (let i = 1; i < s.p.length; i++) {
-      const a = s.p[i - 1], b = s.p[i], prev = i > 1 ? s.len[i - 2] : 0, segL = s.len[i - 1] - prev;
-      if (use >= s.len[i - 1]) { g.lineTo(b[0], b[1]); tip = b; }
-      else { const f = clamp((use - prev) / segL); if (f > 0) { const px = lerp(a[0], b[0], f), py = lerp(a[1], b[1], f); g.lineTo(px, py); tip = [px, py]; } break; }
-    }
-    g.stroke();
-  }
-  // קווי מידה (נראים אחרי שהציור הסתיים)
-  const dm = ph(t, 5.6, .9);
-  if (dm > 0) {
-    g.globalAlpha = dm; g.strokeStyle = OR; g.fillStyle = OR; g.lineWidth = 1.8;
-    g.setLineDash([6, 5]); g.beginPath(); g.moveTo(-172, 176); g.lineTo(172, 176); g.stroke(); g.setLineDash([]);
-    g.beginPath(); g.moveTo(-172, 168); g.lineTo(-172, 184); g.moveTo(172, 168); g.lineTo(172, 184); g.stroke();
-    text('8 לילות של שמחה', 0, 204, 24, OR, {w: 700}); g.globalAlpha = 1;
-  }
-  g.restore();
-  if (tip && prog < 1) {  // העט
-    const px = cx + tip[0] * k, py = cy + tip[1] * k;
-    g.save(); g.translate(px, py); g.rotate(-.9); g.fillStyle = '#2a2a2a'; g.beginPath(); g.moveTo(0, 0); g.lineTo(-6, -22); g.lineTo(6, -22); g.closePath(); g.fill();
-    g.fillStyle = YEL; g.fillRect(-6, -78, 12, 56); g.fillStyle = '#f08a8a'; g.fillRect(-6, -90, 12, 12); g.restore();
-  }
+  g.imageSmoothingEnabled = true; g.drawImage(mc, 0, 0, W, H);
+  g.save(); g.strokeStyle = 'rgba(255,255,255,.035)'; g.lineWidth = 1; g.beginPath(); for (let x = 0; x < W; x += 48) { g.moveTo(x, 0); g.lineTo(x, H); } for (let y = 0; y < H; y += 48) { g.moveTo(0, y); g.lineTo(W, y); } g.stroke(); g.restore();
 }
-function sceneA(t) {
-  const fade = 1 - ph(t, 7.4, 1.2); if (fade <= 0) return;
-  g.save(); g.globalAlpha = fade; drawMenorah(t);
-  kin('כל חנוכה', t, .5, W * .5, 120, 96, INK, {hold: 1.5, dir: -1});
-  kin('משפחות מחפשות', t, 2, W * .5, 120, 96, INK, {hold: 1.5, dir: 1});
-  kin('מי יעשה להן', t, 3.5, W * .5, 92, 84, INK, {dir: -1});
-  kin('את הערב?', t, 4.5, W * .5, 176, 100, OR, {dir: 1});
-  g.restore();
+function confetti(t, t0, n = 60) {
+  const d = t - t0; if (d < 0 || d > 2.4) return;
+  for (let i = 0; i < n; i++) { const a = rnd(i) * Math.PI * 2, sp = 300 + rnd(i + 9) * 700, x = W / 2 + Math.cos(a) * sp * d, y = H * .45 + Math.sin(a) * sp * d * .9 + 520 * d * d; const c = [OR, YEL, CY, PK, GR, '#fff'][i % 6]; g.save(); g.globalAlpha = 1 - d / 2.4; g.translate(x, y); g.rotate(d * 6 + i); g.fillStyle = c; g.fillRect(-7, -3, 14, 6); g.restore(); }
+}
+function ring(t, t0, x, y, c = YEL, R = 800) { const p = ph(t, t0, .8); if (p > 0 && p < 1) { g.save(); g.strokeStyle = c; g.globalAlpha = 1 - p; g.lineWidth = 16 * (1 - p) + 2; g.beginPath(); g.arc(x, y, eo(p) * R, 0, Math.PI * 2); g.stroke(); g.restore(); } }
+
+/* ---------------- הוק: 0-3 ---------------- */
+function sceneHook(t) {
+  mesh(t, '#ff6a00', '#5b2bd6', '#0a56c9');
+  ring(t, 0, W / 2, 300); ring(t, .06, W / 2, 300, OR, 1000);
+  if (logo.complete) { const p = eob(ph(t, 0, .5)), lh = 250 * (1 + (1 - p) * 2.5), lw = lh * 820 / 425; g.save(); g.globalAlpha = clamp(p * 4); g.shadowColor = 'rgba(255,196,45,.9)'; g.shadowBlur = 14; g.drawImage(logo, W / 2 - lw / 2, 300 - lh / 2, lw, lh); g.restore(); }
+  cap('פרסום במדליק', t, 0.05, W / 2, 500, 92, {until: 2.95});
+  cap('הרבה כניסות', t, 1.0, W / 2, 690, 100, {hl: YEL, rot: -.04, until: 2.95}); sticker('👀', t, 1.05, 610, 600, 120, .2);
+  cap('נוכחות', t, 1.5, W / 2, 870, 124, {rot: .03, until: 2.95}); sticker('📍', t, 1.55, 120, 800, 120, -.2);
+  cap('ודוח', t, 2.0, W / 2, 1050, 150, {hl: OR, c: '#fff', rot: -.03, until: 2.95}); sticker('📊', t, 2.05, 600, 960, 120, .15);
 }
 
-/* ---------------- טיפוגרפיה קינטית: רשימת נותני שירות ---------------- */
-const WORDS = [['אולמות', 8, NAVY, 1], ['קייטרינג', 9, OR, -1], ['מפעילים', 10, NAVY, 1], ['עיצוב', 11, OR, -1], ['קינוחים', 12, NAVY, 1]];
-function sceneB(t) {
-  if (t < 7.6 || t > 15.5) return;
-  const echo = [[250, 170], [1010, 250], [300, 560], [980, 600], [640, 120]];
-  g.save(); g.globalAlpha = .13;
-  WORDS.forEach(([w, t0], i) => { if (t > t0 + .3) text(w, echo[i][0], echo[i][1], 96, NAVY, {fill: false, stroke: NAVY, sw: 2}); });
-  g.restore();
-  WORDS.forEach(([w, t0, c, dir]) => {
-    kin(w, t, t0, W / 2, H / 2 - 10, 210, c, {d: .36, hold: .62, dir, stretch: 1.3, dist: 760, rot: .3, glow: c === OR ? 'rgba(255,106,0,.35)' : null, gb: 24});
-  });
-  kin('אתם?', t, 13, W / 2, H / 2 - 40, 330, OR, {d: .4, dir: 1, stretch: 1.4, glow: 'rgba(255,106,0,.55)', gb: 50});
-  kin('הגיע הזמן שיראו אתכם', t, 14, W / 2, H * .8, 74, NAVY, {d: .4, dir: -1, w: 800});
-  // קווי מהירות לקראת הדרופ
-  const sp = ph(t, 14, 1.5);
-  if (sp > 0) {
-    g.save(); g.translate(W / 2, H / 2); g.strokeStyle = `rgba(14,42,87,${.35 * sp})`; g.lineWidth = 2;
-    for (let i = 0; i < 70; i++) { const a = i * 2.399 + t * .3, r0 = 220 + (frac(i * .618 + t * 1.6)) * 520, r1 = r0 + 40 + sp * 220; g.beginPath(); g.moveTo(Math.cos(a) * r0, Math.sin(a) * r0 * .62); g.lineTo(Math.cos(a) * r1, Math.sin(a) * r1 * .62); g.stroke(); }
-    g.restore();
+/* ---------------- 3-8: הרבה כניסות ביום ---------------- */
+function sceneVisits(t) {
+  mesh(t, '#0a56c9', '#00a3c4', '#5b2bd6');
+  cap('הרבה', t, 3.0, W / 2, 190, 112, {hl: YEL, rot: -.03, until: 7.95});
+  cap('כניסות', t, 3.5, W / 2, 335, 132, {until: 7.95});
+  cap('בכל יום', t, 4.0, W / 2, 470, 96, {c: YEL, until: 7.95});
+  // כרטיס מונה
+  const pcard = eob(ph(t, 3.2, .5)), cy = 760; g.save(); g.translate(W / 2, cy); g.scale(pcard, pcard);
+  g.fillStyle = 'rgba(0,0,0,.3)'; rr(-300, -150, 600, 340, 36); g.fill(); g.fillStyle = 'rgba(6,15,36,.86)'; rr(-300, -170, 600, 340, 36); g.fill();
+  g.strokeStyle = 'rgba(79,209,255,.6)'; g.lineWidth = 3; g.stroke();
+  txt('כניסות היום', 0, -110, 38, CY, {w: 700});
+  const cnt = Math.floor(lerp(0, 4382, eo(ph(t, 3.4, 4.0))) + (t > 3.4 ? Math.floor(rnd(Math.floor(t * 14)) * 9) * (t < 7.4 ? 1 : 0) : 0));
+  txt(cnt.toLocaleString('en-US'), 0, 0, 150, '#fff', {stroke: '#000', sw: 14});
+  const up = ph(t, 7.4, .3); txt('▲ בעלייה', 0, 118, 40, GR, {w: 800}); g.restore();
+  txt('הדמיה להמחשה', W / 2, 960, 24, 'rgba(255,255,255,.6)', {w: 500});
+  // מבקרים שעפים פנימה
+  const faces = ['👩', '👨', '🧑', '👵', '👴', '👩‍🦱'];
+  for (let i = 0; i < 40; i++) {
+    const t0 = 3.4 + i * .125; if (t < t0 || t > t0 + .9 || t0 > 7.6) continue; const p = ph(t, t0, .9), side = i % 2 ? 1 : -1;
+    const sx = W / 2 + side * 430, sy = 1000 + (i % 5) * 50, tx = W / 2 + side * 120, ty = cy - 215, x = lerp(sx, tx, eo(p)), y = lerp(sy, ty, eo(p)) - Math.sin(p * Math.PI) * 140;
+    g.save(); g.globalAlpha = 1 - ph(p, .75, .25); g.translate(x, y); g.scale(1 - p * .45, 1 - p * .45); g.fillStyle = '#fff'; g.beginPath(); g.arc(0, 0, 48, 0, Math.PI * 2); g.fill(); g.font = `400 62px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(faces[i % 6], 0, 4); g.restore();
+    if (p > .78 && p < 1) txt('+1', tx + side * -20, ty - 80 - (p - .78) * 300, 40, GR, {stroke: '#000', sw: 6});
   }
+  // גרף עולה
+  const gp = ph(t, 4, 3.5); g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath();
+  for (let i = 0; i <= 40; i++) { const u = i / 40; if (u > gp) break; const x = 60 + u * 600, y = 1210 - u * 150 - Math.sin(u * 14) * 22 - u * u * 60; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.strokeStyle = 'rgba(255,196,45,.3)'; g.lineWidth = 22; g.stroke(); g.strokeStyle = YEL; g.lineWidth = 9; g.stroke(); g.restore();
+  confetti(t, 7.5, 40);
 }
 
-/* ---------------- תלת־ממד על משטח מוטה ---------------- */
-function P3(x, y, z, yaw, pitch) {
-  const cy = Math.cos(yaw), sy = Math.sin(yaw), X = x * cy - y * sy, Y = x * sy + y * cy;
-  const cp = Math.cos(pitch), sp = Math.sin(pitch), Y2 = Y * cp - z * sp, Z2 = Y * sp + z * cp, s = 1260 / (1150 - Z2);
-  return {x: W / 2 + X * s, y: H * .58 + Y2 * s, s};
-}
-const CARDS = [['📣', 'מודעה אישית', 'בכרטיס מעוצב עם תמונה', 18], ['☎', 'כל דרכי הפנייה', 'טלפון · אתר · טופס', 19], ['✉', 'פניות ישר אליכם', 'למייל שלכם, בלחיצה', 20], ['🏠', 'בעמוד הבית', 'מול כל מי שנכנס לאתר', 21]];
-function rrect(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
-function affine(cx, cy, z, yaw, pitch) { const O = P3(cx, cy, z, yaw, pitch), X = P3(cx + 1, cy, z, yaw, pitch), Y = P3(cx, cy + 1, z, yaw, pitch); g.transform(X.x - O.x, X.y - O.y, Y.x - O.x, Y.y - O.y, O.x, O.y); }
-function sceneC(t) {
-  if (t < 16 || t > 25) return;
-  const yaw = lerp(-.55, .55, eio(ph(t, 17.2, 6.8))), pitch = 1.0 + Math.sin(t * .7) * .04;
-  // משטח
-  g.save(); g.lineWidth = 1.4;
-  for (let gx = -1200; gx <= 1200; gx += 120) { const a = P3(gx, -700, 0, yaw, pitch), b = P3(gx, 700, 0, yaw, pitch); g.strokeStyle = `rgba(110,170,255,${.22 * clamp(a.s * 1.2)})`; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); }
-  for (let gy = -700; gy <= 700; gy += 120) { const a = P3(-1200, gy, 0, yaw, pitch), b = P3(1200, gy, 0, yaw, pitch); g.strokeStyle = 'rgba(110,170,255,.2)'; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); }
+/* ---------------- 8-13: אתם נוכחים ---------------- */
+function scenePresence(t) {
+  mesh(t, '#5b2bd6', '#ff6a00', '#0a56c9');
+  cap('אתם', t, 8.0, W / 2, 190, 118, {until: 12.95});
+  cap('נוכחים', t, 8.5, W / 2, 345, 140, {hl: OR, c: '#fff', rot: -.03, until: 12.95});
+  // מסך האתר
+  const pp = eob(ph(t, 8.3, .6)), cy = 740; g.save(); g.translate(W / 2, cy); g.scale(pp, pp);
+  g.fillStyle = 'rgba(6,15,36,.82)'; g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 14; rr(-320, -300, 640, 600, 40); g.fill(); g.shadowBlur = 0;
+  g.fillStyle = 'rgba(255,255,255,.08)'; rr(-290, -270, 580, 24, 12); g.fill(); [OR, YEL, GR].forEach((c, i) => { g.fillStyle = c; g.beginPath(); g.arc(-262 + i * 26, -258, 7, 0, Math.PI * 2); g.fill(); });
+  // כרטיסים עמומים
+  g.globalAlpha = .35; [[-215, '#2a3f6a'], [175, '#2a3f6a']].forEach(([y, c]) => { g.fillStyle = c; rr(-280, y - 70, 560, 130, 26); g.fill(); g.fillStyle = 'rgba(255,255,255,.2)'; rr(-130, y - 40, 300, 22, 10); g.fill(); rr(-80, y, 200, 18, 9); g.fill(); }); g.globalAlpha = 1;
+  // הכרטיס שלכם
+  const hp = eob(ph(t, 8.9, .55)), glow = 12 + pulse(t, 7) * 12; g.save(); g.translate(0, -20); g.scale(hp, hp);
+  g.fillStyle = '#fffdf8'; g.shadowColor = OR; g.shadowBlur = glow; rr(-290, -100, 580, 200, 30); g.fill(); g.shadowBlur = 0; g.lineWidth = 5; g.strokeStyle = OR; g.stroke();
+  txt('העסק שלכם', 90, -42, 52, NAVY, {w: 900}); txt('נותן שירות לאירוע', 90, 22, 30, '#58698c', {w: 500});
+  [['📞', -210], ['🌐', -140], ['✉', -70]].forEach(([e, x], i) => { const bp = 1 + (t > 10.9 + i * .08 ? Math.max(0, .25 * Math.exp(-6 * ((t - 10.9 - i * .08) % 1.0))) : 0); g.save(); g.translate(x, 60); g.scale(bp, bp); g.fillStyle = i === 0 && t > 11.5 ? GR : '#ffe9c9'; g.beginPath(); g.arc(0, 0, 30, 0, Math.PI * 2); g.fill(); g.font = `400 34px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(e, 0, 3); g.restore(); });
+  g.save(); g.translate(-240, -102); g.rotate(-.35); g.fillStyle = YEL; rr(-70, -22, 140, 44, 22); g.fill(); txt('⭐ מומלץ', 0, 2, 27, NAVY, {w: 900}); g.restore();
   g.restore();
-  // כותרת בתלת־ממד (שכבות)
-  const tp = ph(t, 17.8, .7);
-  if (tp > 0) {
-    const zz = eob(tp) * 90;
-    for (let i = 14; i >= 0; i--) {
-      g.save(); affine(0, -330, zz + i * 3.2, yaw, pitch); g.globalAlpha = clamp(tp * 2); g.font = `900 96px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl';
-      g.fillStyle = i === 0 ? CREAM : `rgb(${20 + i * 3},${60 + i * 5},${130 + i * 4})`; g.fillText('ככה נראה פרסום במדליק', 0, 0);
-      if (i === 0) { g.shadowColor = 'rgba(255,196,45,.7)'; g.shadowBlur = 30; g.fillText('ככה נראה פרסום במדליק', 0, 0); }
-      g.restore();
-    }
-  }
-  // כרטיסים מבלטים
-  CARDS.forEach(([ic, h1, h2, t0], i) => {
-    const p = ph(t, t0 - .7, .7); if (p <= 0) return;
-    const lift = (1 - eob(p)) * -340, x = (i - 1.5) * 440, y = (i % 2 ? 70 : -70) + 40, w = 390, h = 230, th = 34, z0 = Math.max(0, -lift) * -1 + lift * 0;
-    const zb = Math.max(-340, lift) + 0, hit = t >= t0 ? Math.exp(-12 * (t - t0)) : 0;
-    const zt = zb + th + hit * 22, x0 = x - w / 2, x1 = x + w / 2, y0 = y - h / 2, y1 = y + h / 2;
-    g.save(); g.globalAlpha = clamp(p * 2.4);
-    // צל
-    const sh = [P3(x0, y0, 0, yaw, pitch), P3(x1, y0, 0, yaw, pitch), P3(x1, y1, 0, yaw, pitch), P3(x0, y1, 0, yaw, pitch)]; g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); sh.forEach((q, j) => j ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y)); g.closePath(); g.fill();
-    // דפנות
-    const quad = (A, Bq, col) => { g.fillStyle = col; g.beginPath(); A.forEach((q, j) => j ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y)); g.lineTo(Bq[1].x, Bq[1].y); g.lineTo(Bq[0].x, Bq[0].y); g.closePath(); g.fill(); };
-    const bt = [P3(x0, y1, zb, yaw, pitch), P3(x1, y1, zb, yaw, pitch)], tt = [P3(x0, y1, zt, yaw, pitch), P3(x1, y1, zt, yaw, pitch)];
-    quad([tt[0], tt[1]], [bt[0], bt[1]], '#c85200');
-    const lt = [P3(x0, y0, zt, yaw, pitch), P3(x0, y1, zt, yaw, pitch)], lb = [P3(x0, y0, zb, yaw, pitch), P3(x0, y1, zb, yaw, pitch)]; quad([lt[0], lt[1]], [lb[0], lb[1]], '#e25c00');
-    const rt = [P3(x1, y0, zt, yaw, pitch), P3(x1, y1, zt, yaw, pitch)], rb = [P3(x1, y0, zb, yaw, pitch), P3(x1, y1, zb, yaw, pitch)]; quad([rt[0], rt[1]], [rb[0], rb[1]], '#e25c00');
-    // פני הכרטיס
-    g.save(); affine(x, y, zt, yaw, pitch);
-    rrect(-w / 2, -h / 2, w, h, 22); const gr = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); gr.addColorStop(0, '#fffdf8'); gr.addColorStop(1, '#ffe9c9'); g.fillStyle = gr; g.fill();
-    g.lineWidth = 3; g.strokeStyle = OR; g.stroke();
-    g.font = `400 74px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = INK; g.fillText(ic, w / 2 - 70, -26);
-    g.direction = 'rtl'; g.textAlign = 'right'; g.fillStyle = INK; g.font = `900 36px ${FONT}`; g.fillText(h1, w / 2 - 130, -34);
-    g.fillStyle = '#4a5d80'; g.font = `500 24px ${FONT}`; g.fillText(h2, w / 2 - 28, 56);
-    g.restore(); g.restore();
+  // סמן אצבע שלוחץ על הטלפון
+  const fp = ph(t, 10.4, .9), fx = lerp(180, -210, eo(fp)), fy = lerp(220, 90, eo(fp)) + (t > 11.4 ? 12 * Math.exp(-14 * (t - 11.4)) * -1 : 0);
+  if (t > 10.4) { g.save(); g.globalAlpha = ph(t, 10.4, .2); g.font = `400 74px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('👆', fx, fy + 52); g.restore(); }
+  if (t > 11.4 && t < 12.2) { g.save(); g.strokeStyle = GR; g.globalAlpha = 1 - ph(t, 11.4, .8); g.lineWidth = 6; g.beginPath(); g.arc(-210, 60 - 20, 20 + ph(t, 11.4, .8) * 120, 0, Math.PI * 2); g.stroke(); g.restore(); }
+  g.restore();
+  // התראה: פנייה חדשה
+  const np = eob(ph(t, 11.9, .5)); if (np > .004) { g.save(); g.translate(W / 2, 250 + (1 - np) * -260 + 0); g.rotate(-.02); g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 14; rr(-290, 520, 580, 96, 28); g.fill(); g.shadowBlur = 0; g.font = `400 54px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('🔔', 238, 570); txt('פנייה חדשה אליכם!', -20, 572, 40, NAVY, {w: 900}); g.restore(); }
+  // רשימת יתרונות
+  [['✓ מודעה אישית בכרטיס מעוצב', 9.7, 1080], ['✓ טלפון · אתר · טופס פנייה', 10.2, 1150], ['✓ גם בעמוד הבית', 10.7, 1220]].forEach(([s, t0, y]) => {
+    if (t < t0) return; const a = t - t0, k = a < .2 ? lerp(.3, 1.1, eo(a / .2)) : lerp(1.1, 1, eo(clamp((a - .2) / .12)));
+    g.save(); g.translate(W / 2, y); g.scale(k, k); g.fillStyle = 'rgba(255,255,255,.95)'; g.shadowColor = 'rgba(0,0,0,.4)'; g.shadowBlur = 14; rr(-300, -30, 600, 60, 30); g.fill(); g.shadowBlur = 0; txt(s, 0, 2, 31, NAVY, {w: 800}); g.restore();
   });
 }
 
-/* ---------------- שוט הדוח: מאץ' קאט דרך צורה משתנה ---------------- */
-function superellipse(cx, cy, r, n, rot) {
-  g.beginPath();
-  for (let i = 0; i <= 72; i++) { const a = i / 72 * Math.PI * 2, c = Math.cos(a), s = Math.sin(a), x = Math.sign(c) * Math.pow(Math.abs(c), 2 / n) * r, y = Math.sign(s) * Math.pow(Math.abs(s), 2 / n) * r, X = x * Math.cos(rot) - y * Math.sin(rot), Y = x * Math.sin(rot) + y * Math.cos(rot); i ? g.lineTo(cx + X, cy + Y) : g.moveTo(cx + X, cy + Y); }
-  g.closePath();
-}
-function reportShot(t) {
-  const gr = g.createLinearGradient(0, 0, W, H); gr.addColorStop(0, '#0b1d3d'); gr.addColorStop(1, '#14346a'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  g.save(); g.strokeStyle = 'rgba(110,170,255,.12)'; g.lineWidth = 1; g.beginPath(); for (let x = 0; x < W; x += 40) { g.moveTo(x, 0); g.lineTo(x, H); } for (let y = 0; y < H; y += 40) { g.moveTo(0, y); g.lineTo(W, y); } g.stroke(); g.restore();
-  kin('דוח מסודר לכל עסק', t, 25.1, W / 2, 96, 86, CREAM, {d: .4, dir: -1, glow: 'rgba(255,196,45,.4)'});
-  kin('צפיות · טלפון · אתר · פניות', t, 25.6, W / 2, 168, 38, YEL, {d: .35, dir: 1, w: 700});
+/* ---------------- 13-18: ותקבלו דוח ---------------- */
+function sceneReport(t) {
+  mesh(t, '#00a3c4', '#0a56c9', '#33d17a');
+  cap('ותקבלו', t, 13.0, W / 2, 170, 104, {until: 17.95});
+  cap('דוח', t, 13.5, W / 2, 310, 160, {hl: YEL, rot: .03, until: 17.95});
+  cap('ברור', t, 14.0, W / 2, 450, 110, {c: YEL, until: 17.95});
+  const p = eob(ph(t, 13.2, .8)), cy = 850; g.save(); g.translate(W / 2, cy + (1 - p) * 700); g.rotate((1 - p) * -.25 + Math.sin(t * 1.3) * .012); g.scale(1, 1);
+  g.fillStyle = '#fffdf8'; g.shadowColor = 'rgba(0,0,0,.55)'; g.shadowBlur = 14; g.shadowOffsetY = 20; rr(-270, -330, 540, 700, 24); g.fill(); g.shadowBlur = 0; g.shadowOffsetY = 0;
+  g.fillStyle = NAVY; rr(-270, -330, 540, 110, 24); g.fill(); g.fillRect(-270, -270, 540, 50);
+  txt('דוח פרסום', 80, -272, 50, '#fff'); if (logo.complete) g.drawImage(logo, -250, -312, 130, 67);
+  const rows = [['צפיות', .92, OR], ['טלפון', .66, YEL], ['אתר', .54, CY], ['פניות', .8, GR]];
+  rows.forEach(([lab, v, c], i) => { const y = -150 + i * 95, bp = eob(ph(t, 14.1 + i * .25, .8)); txt(lab, 190, y, 34, NAVY, {w: 800}); g.fillStyle = '#ebe6dc'; rr(-240, y - 17, 340, 34, 17); g.fill(); g.fillStyle = c; rr(-240, y - 17, Math.max(8, 340 * v * bp), 34, 17); g.fill(); });
   // טבעת
-  const rp = eo(ph(t, 24.6, 1.2)), cx = 330, cy = 430;
-  g.save(); g.lineWidth = 46; g.lineCap = 'round';
-  g.strokeStyle = 'rgba(255,255,255,.1)'; g.beginPath(); g.arc(cx, cy, 120, 0, Math.PI * 2); g.stroke();
-  [[OR, .0, .38], [YEL, .4, .66], ['#6fb2ff', .68, .94]].forEach(([c, a, b]) => { g.strokeStyle = c; g.shadowColor = c; g.shadowBlur = 20; g.beginPath(); g.arc(cx, cy, 120, -Math.PI / 2 + a * Math.PI * 2, -Math.PI / 2 + lerp(a, b, rp) * Math.PI * 2); g.stroke(); });
-  g.restore(); text('☎', cx, cy, 90, CREAM, {w: 400});
-  // עמודות
-  const bars = [['צפיות', .92, OR], ['טלפון', .64, YEL], ['אתר', .52, '#6fb2ff'], ['פניות', .78, '#7be0a8']];
-  bars.forEach(([lab, v, c], i) => {
-    const q = eob(ph(t, 25 + i * .25, .8)), x = 640 + i * 150, hh = 280 * v * q;
-    g.fillStyle = 'rgba(255,255,255,.08)'; rrect(x, 330, 96, 280, 14); g.fill();
-    g.save(); g.shadowColor = c; g.shadowBlur = 24; g.fillStyle = c; rrect(x, 610 - hh, 96, Math.max(hh, 1), 14); g.fill(); g.restore();
-    text(lab, x + 48, 646, 28, CREAM, {w: 700});
+  const rp = eo(ph(t, 15, 1)); g.save(); g.translate(-130, 260); g.lineWidth = 26; g.lineCap = 'round'; g.strokeStyle = '#ebe6dc'; g.beginPath(); g.arc(0, 0, 70, 0, 6.3); g.stroke();
+  [[OR, 0, .4], [YEL, .42, .7], [CY, .72, .95]].forEach(([c, a, b]) => { g.strokeStyle = c; g.beginPath(); g.arc(0, 0, 70, -Math.PI / 2 + a * 6.283, -Math.PI / 2 + lerp(a, b, rp) * 6.283); g.stroke(); }); g.restore();
+  txt('סיכום מסודר', 120, 262, 34, NAVY, {w: 800}); txt('לכל עסק', 120, 305, 28, '#58698c', {w: 500});
+  g.restore();
+  // מעטפה: ישר למייל
+  const ep = eob(ph(t, 15.4, .6)); if (ep > .004) { g.save(); g.translate(lerp(W / 2, 600, eo(ph(t, 15.4, .8))), lerp(850, 560, eo(ph(t, 15.4, .8)))); g.scale(ep, ep); g.rotate(.2); g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 14; g.beginPath(); g.arc(0, 0, 66, 0, 6.3); g.fill(); g.shadowBlur = 0; g.font = `400 80px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('📧', 0, 6); g.restore(); cap('ישר למייל', t, 15.7, 560, 690, 54, {hl: GR, c: '#fff', rot: .1, until: 17.95}); }
+  // חותמת
+  const sp = ph(t, 16.6, .25); if (sp > 0) { const k = lerp(2.6, 1, eo(sp)); g.save(); g.translate(250, 520); g.rotate(-.28); g.scale(k, k); g.globalAlpha = clamp(sp * 3); g.strokeStyle = GR; g.lineWidth = 9; rr(-170, -48, 340, 96, 20); g.stroke(); txt('✓ ברור ומסודר', 0, 3, 42, GR, {w: 900}); g.restore(); }
+  if (t > 16.6 && t < 16.8) { g.save(); g.fillStyle = `rgba(255,255,255,${.5 * (1 - (t - 16.6) / .2)})`; g.fillRect(0, 0, W, H); g.restore(); }
+}
+
+/* ---------------- 18-19.5: שלוש שלאגים ---------------- */
+function sceneTriple(t) {
+  mesh(t, '#ff6a00', '#ffc42d', '#ff4f9a');
+  [['👀', 'כניסות', 18.0, 330, '#0a56c9'], ['📍', 'נוכחות', 18.5, 640, '#5b2bd6'], ['📊', 'דוח', 19.0, 950, '#00a3c4']].forEach(([e, s, t0, y, c]) => {
+    if (t < t0) return; const a = t - t0, k = a < .2 ? lerp(.2, 1.12, eo(a / .2)) : lerp(1.12, 1, eo(clamp((a - .2) / .15))), sx = t0 === 19.0 ? 1 : 1;
+    g.save(); g.translate(W / 2, y); g.scale(k, k); g.rotate((y === 640 ? .02 : -.02));
+    g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.4)'; g.shadowBlur = 14; g.shadowOffsetY = 14; rr(-320, -105, 640, 210, 46); g.fill(); g.shadowBlur = 0; g.shadowOffsetY = 0;
+    g.fillStyle = c; rr(-320, -105, 190, 210, 46); g.fill(); g.fillRect(-190, -105, 60, 210);
+    g.font = `400 112px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(e, -225, 8);
+    txt(s, 110, 4, 108, NAVY, {w: 900});
+    const ck = eob(ph(t, t0 + .2, .3)); g.save(); g.translate(262, 52); g.scale(ck, ck); g.fillStyle = GR; g.beginPath(); g.arc(0, 0, 30, 0, 6.3); g.fill(); txt('✓', 0, 2, 40, '#fff'); g.restore(); g.restore();
   });
-  g.save(); g.globalAlpha = ph(t, 26.4, .5) * .8; text('דוגמה להמחשה', W - 150, 690, 22, '#9fb6e0', {w: 500}); g.restore();
-  kin('ועד דוח PDF לבעל העסק', t, 26.4, W / 2, 262, 40, CREAM, {d: .35, dir: -1, w: 700});
-}
-function sceneE(t) {
-  if (t < 23) return;
-  const p = ph(t, 24, .95), ep = eio(p);
-  if (t < 24) { // השבב נולד מתוך הכרטיס: עיגול עם טלפון
-    const q = eob(ph(t, 22.9, .6)); g.save(); g.translate(W / 2, H / 2); g.scale(q, q);
-    const gr = g.createRadialGradient(0, 0, 4, 0, 0, 80); gr.addColorStop(0, '#ffc42d'); gr.addColorStop(1, OR); g.fillStyle = gr; g.shadowColor = OR; g.shadowBlur = 40; g.beginPath(); g.arc(0, 0, 66, 0, Math.PI * 2); g.fill(); g.shadowBlur = 0;
-    g.font = `400 70px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = NAVY; g.fillText('☎', 0, 4); g.restore(); return;
-  }
-  g.save();
-  const r = lerp(66, 1100, ep), n = lerp(2, 4.6, p), rot = lerp(0, Math.PI / 2, ep);
-  superellipse(W / 2, H / 2, r, n, rot); g.clip();
-  reportShot(t); g.restore();
-  if (p < 1) { g.save(); superellipse(W / 2, H / 2, r, n, rot); g.lineWidth = 8 * (1 - p); g.strokeStyle = YEL; g.shadowColor = YEL; g.shadowBlur = 30; g.stroke(); g.restore(); }
+  ring(t, 18, W / 2, 330, '#fff', 900);
 }
 
-/* ---------------- הסיום: קריאה לפעולה ---------------- */
-function sceneF(t) {
-  if (t < 27.6) return;
-  const a = ph(t, 27.6, .6); g.save(); g.globalAlpha = a; navyBG(t);
-  g.strokeStyle = 'rgba(110,170,255,.1)'; g.beginPath(); for (let x = 0; x < W; x += 40) { g.moveTo(x, 0); g.lineTo(x, H); } for (let y = 0; y < H; y += 40) { g.moveTo(0, y); g.lineTo(W, y); } g.stroke(); g.restore();
-  kin('הערב הבא של הלקוחות שלכם', t, 28, W / 2, 210, 92, CREAM, {d: .4, dir: -1, glow: 'rgba(255,255,255,.25)'});
-  kin('מתחיל אצלכם.', t, 29, W / 2, 330, 150, OR, {d: .4, dir: 1, stretch: 1.3, glow: 'rgba(255,106,0,.6)', gb: 50});
-  const bp = eob(ph(t, 29.8, .5)); if (bp > 0) {
-    const s = bp * (1 + pulse(t, 8) * .05); g.save(); g.translate(W / 2, 480); g.scale(s, s);
-    rrect(-250, -44, 500, 88, 44); const gr = g.createLinearGradient(-250, 0, 250, 0); gr.addColorStop(0, OR); gr.addColorStop(1, YEL); g.fillStyle = gr; g.shadowColor = OR; g.shadowBlur = 40; g.fill(); g.shadowBlur = 0;
-    g.font = `900 40px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl'; g.fillStyle = NAVY; g.fillText('לפרסום באתר מדליק', 0, 3); g.restore();
-  }
-  kin('madlik.autoclick.co.il', t, 30.4, W / 2, 575, 38, CREAM, {d: .3, dir: 1, w: 500});
-  if (logo.complete && t > 30) { g.save(); g.globalAlpha = ph(t, 30.2, .5); const lh = 110, lw = lh * 820 / 425; g.drawImage(logo, W / 2 - lw / 2, 618, lw, lh); g.restore(); }
+/* ---------------- 19.5-24: קריאה לפעולה ---------------- */
+function sceneCTA(t) {
+  mesh(t, '#ff6a00', '#0a56c9', '#5b2bd6');
+  ring(t, 19.5, W / 2, 330, YEL, 1000); confetti(t, 19.55, 70);
+  if (logo.complete) { const p = eob(ph(t, 19.5, .6)), lh = 250 * p, lw = lh * 820 / 425; g.save(); g.shadowColor = 'rgba(255,196,45,.9)'; g.shadowBlur = 14; g.drawImage(logo, W / 2 - lw / 2, 300 - lh / 2, lw, lh); g.restore(); }
+  cap('פרסמו', t, 19.6, W / 2, 520, 120, {until: 99});
+  cap('במדליק', t, 20.1, W / 2, 665, 140, {hl: YEL, rot: -.03, until: 99});
+  cap('הערב הבא שלהם מתחיל אצלכם', t, 21.2, W / 2, 830, 52, {c: CREAM, until: 99});
+  const bp = eob(ph(t, 21.6, .5)); if (bp > .004) { const s = bp * (1 + pulse(t, 8) * .06); g.save(); g.translate(W / 2, 1000); g.scale(s, s); rr(-290, -65, 580, 130, 65); const gr = g.createLinearGradient(-290, 0, 290, 0); gr.addColorStop(0, OR); gr.addColorStop(1, YEL); g.fillStyle = gr; g.shadowColor = OR; g.shadowBlur = 14; g.fill(); g.shadowBlur = 0; txt('לפרסום עכשיו', 0, 4, 60, NAVY); g.restore(); }
+  cap('madlik.autoclick.co.il', t, 22.2, W / 2, 1130, 40, {c: '#fff', until: 99});
+  sticker('🔥', t, 22.4, 120, 1030, 90, -.2); sticker('🚀', t, 22.6, 610, 1030, 90, .2);
 }
 
-/* ---------------- הדרופ: לוגו, הדף והאפקטים ---------------- */
-function sceneDrop(t) {
-  if (t < 16 || t > 25) return;
-  const d = t - 16, p = eob(ph(t, 16, .55));
-  if (logo.complete) {
-    const move = eio(ph(t, 17.1, .7)), sc0 = lerp(1, .3, move), lh = 270 * sc0 * (3 - 2 * p), lw = lh * 820 / 425;
-    const x = lerp(W / 2, W - 170, move), y = lerp(H / 2 - 20, 84, move);
-    g.save(); g.shadowColor = 'rgba(255,196,45,.8)'; g.shadowBlur = 60 * (1 - move) + 12; g.globalAlpha = clamp(p * 4); g.drawImage(logo, x - lw / 2, y - lh / 2, lw, lh); g.restore();
-  }
-  kin('האתר של ערב הלביבות', t, 16.55, W / 2, H / 2 + 190, 76, CREAM, {d: .4, hold: .6, dir: 1, glow: 'rgba(255,255,255,.25)'});
-  // גל הלם
-  const sw = ph(t, 16, .9); if (sw > 0 && sw < 1) { g.save(); g.strokeStyle = `rgba(255,196,45,${.8 * (1 - sw)})`; g.lineWidth = 14 * (1 - sw) + 2; g.beginPath(); g.arc(W / 2, H / 2, eo(sw) * 900, 0, Math.PI * 2); g.stroke(); g.restore(); }
-  const sw2 = ph(t, 16.04, 1.1); if (sw2 > 0 && sw2 < 1) { g.save(); g.strokeStyle = `rgba(255,106,0,${.5 * (1 - sw2)})`; g.lineWidth = 8; g.beginPath(); g.arc(W / 2, H / 2, eo(sw2) * 1200, 0, Math.PI * 2); g.stroke(); g.restore(); }
-  // רסיסי ניצוץ
-  for (let i = 0; i < 46; i++) {
-    const a = i * 2.399, sp = 200 + (i % 7) * 70, q = d * (1 + (i % 3) * .2); if (d > 2.2) break;
-    const x = W / 2 + Math.cos(a) * sp * q, y = H / 2 + Math.sin(a) * sp * q * .7 + 60 * q * q; g.fillStyle = `rgba(255,${180 + (i % 4) * 18},60,${Math.max(0, 1 - d / 2.2)})`; g.beginPath(); g.arc(x, y, 3 + (i % 3), 0, Math.PI * 2); g.fill();
+/* ---------------- מעברי חיתוך: זום, גליץ', הבזק ---------------- */
+function cutFX(t) {
+  for (const c of CUTS) { const d = t - c; if (d < 0 || d > .22) continue; const k = 1 - d / .22;
+    tg.clearRect(0, 0, W, H); tg.drawImage(sc, 0, 0);
+    for (let i = 0; i < 14; i++) { const y = Math.floor(rnd(i + c * 3) * H), h = 14 + Math.floor(rnd(i + 5 + c) * 90), dx = (rnd(i + c * 7) - .5) * 160 * k; g.drawImage(tmp, 0, y, W, h, dx, y, W, h); }
+    g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = .45 * k; g.drawImage(tmp, 14 * k, 0); g.globalCompositeOperation = 'screen'; g.fillStyle = `rgba(255,255,255,${.55 * k})`; g.fillRect(0, 0, W, H); g.restore();
   }
 }
 
 /* ---------------- הרכבת פריים ---------------- */
-function frame(t, playing) {
+function frame(t) {
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.shadowBlur = 0; g.clearRect(0, 0, W, H);
-  if (t < 15.5) paperBG(t); else if (t < 16) { g.fillStyle = '#000'; g.fillRect(0, 0, W, H); } else navyBG(t);
-  if (t >= 15.5 && t < 16) { const q = ph(t, 15.5, .5); text('...', W / 2, H / 2, 160, `rgba(255,255,255,${.5 * q})`, {glow: '#fff', gb: 40}); }
-  withCam(t, () => { sceneA(t); sceneB(t); });
-  if (t >= 16) { sceneC(t); sceneDrop(t); sceneE(t); sceneF(t); }
-  // הבזק הדרופ + פיצול צבע
-  if (t >= 16 && t < 16.5) { g.save(); g.globalAlpha = Math.exp(-(t - 16) * 9); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.restore(); }
-  if (t >= 30 && t < 30.4) { g.save(); g.globalAlpha = .5 * Math.exp(-(t - 30) * 10); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.restore(); }
-  const fo = ph(t, DUR - .7, .7); if (fo > 0) { g.fillStyle = `rgba(0,0,0,${fo})`; g.fillRect(0, 0, W, H); }
-  const fi = 1 - ph(t, 0, .5); if (fi > 0) { g.fillStyle = `rgba(0,0,0,${fi})`; g.fillRect(0, 0, W, H); }
-  // טשטוש תנועה: ערבוב עם הפריים הקודם לפי מהירות המצלמה
-  const c0 = cam(t), c1 = cam(t - 1 / 30), spd = Math.abs(c0.z - c1.z) * 14 + Math.abs(c0.r - c1.r) * 10 + Math.abs(c0.x - c1.x) * .02 + (t >= 16 && t < 16.6 ? .55 : 0) + (t >= 24 && t < 25 ? .35 : 0);
-  ag.globalAlpha = playing ? clamp(1 - spd, .42, 1) : 1; ag.drawImage(sc, 0, 0); ag.globalAlpha = 1;
-  // גימור קולנועי
-  out.setTransform(1, 0, 0, 1, 0, 0); out.globalCompositeOperation = 'source-over'; out.globalAlpha = 1; out.drawImage(acc, 0, 0);
-  bg2.clearRect(0, 0, 320, 180); bg2.drawImage(acc, 0, 0, 320, 180); out.save(); out.globalCompositeOperation = 'lighter'; out.globalAlpha = .34; out.filter = 'blur(3px)'; out.drawImage(bl, 0, 0, W, H); out.restore();   // זוהר
-  const vg = out.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * .95); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); out.fillStyle = vg; out.fillRect(0, 0, W, H);   // הכהיה בשוליים
-  const gi = Math.floor(t * 24); out.save(); out.globalAlpha = .07; out.globalCompositeOperation = 'overlay'; out.drawImage(noise, (gi * 97) % 256 - 256, (gi * 57) % 256 - 256, 1536, 1024); out.restore();   // גרעיניות
-  out.save(); out.fillStyle = 'rgba(0,0,0,.9)'; out.fillRect(0, 0, W, 22); out.fillRect(0, H - 22, W, 22); out.restore();   // פסי קולנוע דקים
+  // פעימת זום על כל ביט + פאנץ' בחיתוכים
+  let zoom = 1 + .012 * pulse(t, 10); for (const c of CUTS) { const d = t - c; if (d >= 0 && d < .4) zoom += .09 * Math.exp(-d * 9); }
+  const sh = (() => { let s = 0; for (const c of [0, 1.0, 1.5, 2.0, 16.6, 18, 18.5, 19, 19.5]) { const d = t - c; if (d >= 0 && d < .3) s = Math.max(s, 14 * Math.exp(-d * 12)); } return s; })();
+  g.save(); g.translate(W / 2 + (sh ? Math.sin(t * 120) * sh : 0), H / 2 + (sh ? Math.cos(t * 97) * sh : 0)); g.scale(zoom, zoom); g.translate(-W / 2, -H / 2);
+  if (t < 3) sceneHook(t); else if (t < 8) sceneVisits(t); else if (t < 13) scenePresence(t); else if (t < 18) sceneReport(t); else if (t < 19.5) sceneTriple(t); else sceneCTA(t);
+  g.restore();
+  cutFX(t);
+  const fi = 1 - ph(t, 0, .12); if (fi > 0) { g.fillStyle = `rgba(255,255,255,${fi})`; g.fillRect(0, 0, W, H); }
+  const fo = ph(t, DUR - .6, .6); if (fo > 0) { g.fillStyle = `rgba(0,0,0,${fo})`; g.fillRect(0, 0, W, H); }
+  out.setTransform(1, 0, 0, 1, 0, 0); out.globalCompositeOperation = 'source-over'; out.globalAlpha = 1; out.drawImage(sc, 0, 0);
+  bg2.clearRect(0, 0, 180, 320); bg2.drawImage(sc, 0, 0, 180, 320); out.save(); out.globalCompositeOperation = 'lighter'; out.globalAlpha = .2; out.drawImage(bl, 0, 0, W, H); out.restore();
+  const vg = out.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.32)'); out.fillStyle = vg; out.fillRect(0, 0, W, H);
+  const gi = Math.floor(t * 24); out.save(); out.globalAlpha = .045; out.globalCompositeOperation = 'overlay'; out.drawImage(noise, (gi * 97) % 256 - 256, (gi * 57) % 256 - 256, 1024, 1536); out.restore();
 }
 
-/* ---------------- סאונד מסונתז ומסונכרן לביט ---------------- */
+/* ---------------- סאונד: מוזיקה, אפקטים וקריינות גבר ---------------- */
+const VOICE = [  // [קובץ, שנייה להתחלה, מהירות]
+  ['v01', .05, 1], ['v02', .98, 1.3], ['v03', 1.55, 1.15], ['v04', 2.05, 1.1],
+  ['v05', 3.1, 1], ['v06', 5.7, 1],
+  ['v07', 8.05, 1], ['v08', 9.5, 1.1], ['v09', 11.45, 1.25],
+  ['v10', 13.05, 1], ['v11', 14.4, 1.15], ['v12', 16.2, 1],
+  ['v13', 18.0, 1], ['v14', 18.5, 1], ['v15', 19.0, 1],
+  ['v16', 19.7, 1.1], ['v17', 21.35, 1]
+];
+const POPS = [.05, 1, 1.5, 2, 3, 3.5, 4, 8, 8.5, 9.7, 10.2, 10.7, 13, 13.5, 14, 15.7, 19.6, 20.1, 21.2, 22.2];
+const voiceBuf = {};
+async function loadVoice(ctx) {
+  await Promise.all(VOICE.map(async ([id]) => {
+    try { const r = await fetch(`audio/${id}.mp3`), ab = await r.arrayBuffer(), buf = await ctx.decodeAudioData(ab), d = buf.getChannelData(0); let s = 0, e = d.length - 1; while (s < d.length && Math.abs(d[s]) < .015) s++; while (e > s && Math.abs(d[e]) < .015) e--; voiceBuf[id] = {buf, off: Math.max(0, s / buf.sampleRate - .03), len: (e - s) / buf.sampleRate + .08}; } catch (err) { voiceBuf[id] = null; }
+  }));
+}
 function buildAudio(ctx, dests, t0) {
-  const master = ctx.createGain(); master.gain.value = .9; const comp = ctx.createDynamicsCompressor(); master.connect(comp); dests.forEach(d => comp.connect(d));
+  const master = ctx.createGain(); master.gain.value = .55; const comp = ctx.createDynamicsCompressor(); master.connect(comp);
+  const vbus = ctx.createGain(); vbus.gain.value = 1.55; const vcomp = ctx.createDynamicsCompressor(); vbus.connect(vcomp);
+  dests.forEach(d => { comp.connect(d); vcomp.connect(d); });
   const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
   const A = t => t0 + t;
-  const env = (gn, t, a, d, v) => { gn.gain.setValueAtTime(0.0001, A(t)); gn.gain.exponentialRampToValueAtTime(v, A(t + a)); gn.gain.exponentialRampToValueAtTime(0.0001, A(t + a + d)); };
+  const env = (gn, t, a, d, v) => { gn.gain.setValueAtTime(.0001, A(t)); gn.gain.exponentialRampToValueAtTime(v, A(t + a)); gn.gain.exponentialRampToValueAtTime(.0001, A(t + a + d)); };
   const kick = (t, v = 1) => { const o = ctx.createOscillator(), gn = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(160, A(t)); o.frequency.exponentialRampToValueAtTime(42, A(t + .13)); env(gn, t, .004, .34, v); o.connect(gn); gn.connect(master); o.start(A(t)); o.stop(A(t + .5)); };
   const nz = (t, dur, f1, f2, type, v) => { const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), gn = ctx.createGain(); s.buffer = nb; fl.type = type; fl.frequency.setValueAtTime(f1, A(t)); if (f2) fl.frequency.exponentialRampToValueAtTime(f2, A(t + dur)); env(gn, t, .005, dur, v); s.connect(fl); fl.connect(gn); gn.connect(master); s.start(A(t)); s.stop(A(t + dur + .1)); };
-  const clap = (t, v = .6) => { nz(t, .18, 1700, 0, 'bandpass', v); nz(t + .012, .12, 2400, 0, 'bandpass', v * .6); };
-  const hat = (t, v = .15) => nz(t, .05, 8500, 0, 'highpass', v);
+  const clap = (t, v = .5) => { nz(t, .16, 1700, 0, 'bandpass', v); nz(t + .012, .1, 2400, 0, 'bandpass', v * .6); };
+  const hat = (t, v = .12) => nz(t, .045, 8500, 0, 'highpass', v);
   const tone = (t, f, dur, type, v, lp) => { const o = ctx.createOscillator(), fl = ctx.createBiquadFilter(), gn = ctx.createGain(); o.type = type; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.setValueAtTime(lp, A(t)); fl.frequency.exponentialRampToValueAtTime(Math.max(120, lp * .2), A(t + dur)); env(gn, t, .008, dur, v); o.connect(fl); fl.connect(gn); gn.connect(master); o.start(A(t)); o.stop(A(t + dur + .1)); };
-  const N = {A1: 55, C2: 65.4, E2: 82.4, A2: 110, C3: 130.8, E3: 164.8, A3: 220, C4: 261.6, E4: 329.6, G4: 392, A4: 440, C5: 523.3};
-  // פתיח: פד שקט, כתיבת עט, האטים
-  [N.A2, N.E3, N.A3, N.C4].forEach(f => { const o = ctx.createOscillator(), gn = ctx.createGain(); o.type = 'triangle'; o.frequency.value = f; gn.gain.setValueAtTime(0.0001, A(0)); gn.gain.linearRampToValueAtTime(.05, A(3)); gn.gain.linearRampToValueAtTime(.05, A(7.6)); gn.gain.linearRampToValueAtTime(0.0001, A(8.2)); o.connect(gn); gn.connect(master); o.start(A(0)); o.stop(A(8.3)); });
-  for (let t = .5; t < 5.8; t += .13) nz(t, .09, 2600 + Math.random() * 1400, 0, 'bandpass', .03 + Math.random() * .02);
-  for (let bar = 0; bar < 4; bar++) kick(bar * 2, .55);
-  for (let t = 2; t < 8; t += B) hat(t + B / 2, .09);
-  for (let t = 4; t < 8; t += B) { if (Math.round(t / B) % 2 === 1) clap(t, .22); }
-  // 8-14: ביט מלא, נחיתות מילים
-  for (let t = 8; t < 14; t += B) { kick(t, .9); hat(t + B / 2, .16); hat(t + B / 4, .06); hat(t + B * .75, .06); }
-  for (let t = 8 + B; t < 14; t += B * 2) clap(t, .5);
-  const bl = [N.A1, N.A1, N.C2, N.E2]; for (let i = 0; i < 12; i++) tone(8 + i * B + B / 2, bl[i % 4], B * .45, 'sawtooth', .22, 600);
-  const ar = [N.A3, N.C4, N.E4, N.C4]; for (let i = 0; i < 12; i++) tone(8 + i * B, ar[i % 4] * 2, .2, 'square', .05, 3200);
-  [8, 9, 10, 11, 12].forEach((t, i) => tone(t, 440 + i * 70, .22, 'sine', .22, 5000));
-  tone(13, 330, .5, 'sawtooth', .18, 3000); tone(13, 495, .5, 'sawtooth', .12, 3000);
-  // 14-16: רייזר, תיפוף מואץ, שקט לפני הדרופ
-  nz(14, 1.5, 300, 7000, 'bandpass', .35);
-  [14, 14.5, 15, 15.25, 15.5 - .25 / 2, 15.38, 15.44].forEach(t => { nz(t, .1, 1800, 0, 'bandpass', .35); kick(t, .6); });
-  const duck = master.gain; duck.setValueAtTime(.9, A(15.46)); duck.linearRampToValueAtTime(0.0001, A(15.5)); duck.setValueAtTime(0.0001, A(15.98)); duck.linearRampToValueAtTime(.95, A(16));
-  // 16: דרופ
-  kick(16, 1.4); nz(16, 1.2, 4000, 200, 'lowpass', .5);
-  { const o = ctx.createOscillator(), gn = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(70, A(16)); o.frequency.exponentialRampToValueAtTime(28, A(17.4)); env(gn, 16, .01, 1.5, 1.1); o.connect(gn); gn.connect(master); o.start(A(16)); o.stop(A(18)); }
-  for (let t = 16; t < 28; t += B) { kick(t, 1); hat(t + B / 2, .2); hat(t + B / 4, .07); hat(t + B * .75, .07); }
-  for (let t = 16 + B; t < 28; t += B * 2) clap(t, .6);
-  const sub = [N.A1, N.A1, N.A1, N.C2, N.A1, N.A1, N.E2, N.C2]; for (let i = 0; i < 24; i++) tone(16 + i * B, sub[i % 8], B * .8, 'sawtooth', .32, 420);
-  const lead1 = [N.A4, N.E4, N.C5, N.E4, N.A4, N.G4, N.E4, N.C4], lead2 = [N.C5, N.G4, N.A4, N.E4, N.C5, N.A4, N.G4, N.E4];
-  for (let i = 0; i < 16; i++) { const t = 16 + i * B; tone(t, lead1[i % 8], .26, 'sawtooth', .09, 4200); tone(t + B / 4, lead1[i % 8] * 2, .14, 'square', .03, 5000); }
-  for (let i = 16; i < 24; i++) { const t = 16 + i * B; tone(t, lead2[i % 8], .26, 'sawtooth', .09, 4600); }
-  // 23.5-24: מעבר, וואוש
-  nz(23.2, .85, 400, 9000, 'bandpass', .4); nz(24, .7, 6000, 500, 'bandpass', .4);
-  // 28-32: סיום
-  nz(28.4, 1.5, 500, 8000, 'bandpass', .22);
-  kick(30, 1.3); clap(30, .8); nz(30, 1.4, 5000, 300, 'lowpass', .5); [N.A2, N.E3, N.A3, N.C4, N.E4].forEach(f => tone(30, f, 2, 'sawtooth', .1, 3500));
-  master.gain.setValueAtTime(.95, A(31.2)); master.gain.linearRampToValueAtTime(0.0001, A(32));
-  return master;
+  const N = {C2: 65.4, G2: 98, A2: 110, F2: 87.3, C3: 130.8, E3: 164.8, G3: 196, A3: 220, C4: 261.6, D4: 293.7, E4: 329.6, F4: 349.2, G4: 392, A4: 440, C5: 523.3, E5: 659.3};
+  // הוק
+  kick(0, 1.4); nz(0, .9, 5000, 300, 'lowpass', .5); [1, 1.5, 2].forEach((t, i) => { tone(t, 180 + i * 70, .28, 'sine', .5, 2000); kick(t, .8); });
+  nz(2, 1, 400, 7000, 'bandpass', .3); [2.5, 2.75, 2.875, 2.94].forEach(t => clap(t, .35));
+  // גרוב 3–19.5
+  const root = [N.C2, N.C2, N.A2, N.F2, N.C2, N.C2, N.G2, N.G2];
+  for (let t = 3; t < 19.5; t += B) { kick(t, .95); hat(t + B / 2, .15); hat(t + B / 4, .05); hat(t + B * .75, .05); }
+  for (let t = 3 + B; t < 19.5; t += B * 2) clap(t, .5);
+  for (let i = 0; i < 33; i++) tone(3 + i * B, root[Math.floor(i / 2) % 8] * 2, B * .8, 'sawtooth', .17, 520);
+  const mel = [N.E4, N.G4, N.C5, N.G4, N.A4, N.C5, N.E5, N.C5, N.F4, N.A4, N.C5, N.A4, N.G4, N.D4, N.G4, N.D4];
+  for (let i = 0; i < 33; i++) { tone(3 + i * B, mel[i % 16], .24, 'square', .055, 3800); }
+  // מעברים
+  CUTS.forEach(c => { nz(c - .35, .35, 500, 8000, 'bandpass', .3); nz(c, .3, 6000, 500, 'bandpass', .3); kick(c, 1.2); });
+  // ספירה, פנג, חותמת, שלאגים
+  for (let t = 3.4; t < 7.4; t += .09) tone(t, 900 + (t - 3.4) * 180, .04, 'sine', .035, 6000);
+  tone(7.45, 1320, .5, 'sine', .22, 6000); tone(7.5, 1760, .6, 'sine', .15, 6000);
+  [10.9, 11.5].forEach(t => tone(t, 1000, .15, 'sine', .25, 5000)); tone(11.95, 1568, .3, 'sine', .25, 6000); tone(12.05, 2093, .3, 'sine', .2, 6000);
+  kick(16.6, 1.4); nz(16.6, .5, 3000, 200, 'lowpass', .5);
+  [18, 18.5, 19].forEach((t, i) => { kick(t, 1.3); tone(t, 330 * (1 + i * .25), .3, 'sawtooth', .22, 3000); });
+  // פופ לכל כתובית
+  POPS.forEach((t, i) => tone(t, 700 + (i % 5) * 140, .09, 'sine', .22, 6000));
+  // CTA + סיום
+  kick(19.5, 1.5); nz(19.5, 1.2, 5000, 300, 'lowpass', .55); [N.C3, N.E3, N.G3, N.C4, N.E4].forEach(f => tone(19.5, f, 1.6, 'sawtooth', .1, 3500));
+  for (let t = 20; t < 23.5; t += B) { kick(t, .8); hat(t + B / 2, .12); }
+  for (let i = 0; i < 8; i++) tone(20 + i * B, [N.E5, N.C5, N.G4, N.C5][i % 4], .3, 'square', .05, 4200);
+  master.gain.setValueAtTime(.55, A(23)); master.gain.linearRampToValueAtTime(.0001, A(DUR));
+  // קריינות
+  const lead = ctx.createGain(); lead.gain.value = 1; lead.connect(vbus);
+  VOICE.forEach(([id, t, rate]) => { const v = voiceBuf[id]; if (!v) return; const s = ctx.createBufferSource(); s.buffer = v.buf; s.playbackRate.value = rate || 1; s.connect(lead); s.start(A(t), v.off, v.len); });
 }
 
 /* ---------------- נגן והקלטה ---------------- */
 let actx = null, startAt = 0, raf = 0, rec = null, chunks = [], playing = false;
 const hint = document.getElementById('hint'), bPlay = document.getElementById('play'), bRec = document.getElementById('rec');
-function loop() {
-  const t = actx.currentTime - startAt;
-  if (t >= DUR + .2) { stop(); return; }
-  frame(Math.max(0, t), true); raf = requestAnimationFrame(loop);
-}
+function loop() { const t = actx.currentTime - startAt; if (t >= DUR + .2) { stop(); return; } frame(Math.max(0, t)); raf = requestAnimationFrame(loop); }
 function stop() { cancelAnimationFrame(raf); playing = false; bPlay.disabled = false; bRec.disabled = false; bPlay.textContent = '▶ הפעלה מחדש'; if (rec && rec.state !== 'inactive') rec.stop(); if (actx) { try { actx.close(); } catch (e) {} } hint.textContent = 'הסרטון הסתיים'; }
 async function start(record) {
-  if (playing) return; playing = true; bPlay.disabled = true; bRec.disabled = true;
+  if (playing) return; playing = true; bPlay.disabled = true; bRec.disabled = true; hint.textContent = 'טוענת קריינות...';
   try { await document.fonts.load(`900 100px ${FONT}`); await document.fonts.ready; } catch (e) {}
-  actx = new (window.AudioContext || window.webkitAudioContext)(); await actx.resume();
-  const dest = actx.createMediaStreamDestination(); startAt = actx.currentTime + .25;
+  actx = new (window.AudioContext || window.webkitAudioContext)(); await actx.resume(); await loadVoice(actx);
+  const dest = actx.createMediaStreamDestination(); startAt = actx.currentTime + .3;
   buildAudio(actx, record ? [actx.destination, dest] : [actx.destination], startAt);
   if (record) {
-    const vs = cv.captureStream(30), tracks = [...vs.getVideoTracks(), ...dest.stream.getAudioTracks()], ms = new MediaStream(tracks);
+    const vs = cv.captureStream(30), ms = new MediaStream([...vs.getVideoTracks(), ...dest.stream.getAudioTracks()]);
     const mt = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find(x => window.MediaRecorder && MediaRecorder.isTypeSupported(x));
-    rec = new MediaRecorder(ms, {mimeType: mt, videoBitsPerSecond: 5e6}); chunks = [];
+    rec = new MediaRecorder(ms, {mimeType: mt, videoBitsPerSecond: 6e6}); chunks = [];
     rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-    rec.onstop = () => { const blob = new Blob(chunks, {type: 'video/webm'}), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'madlik-promo.webm'; document.body.appendChild(a); a.click(); a.remove(); hint.textContent = 'הקובץ ירד: madlik-promo.webm (' + (blob.size / 1048576).toFixed(1) + 'MB)'; window.__promoDone = blob.size; };
-    rec.start(250); hint.textContent = 'מקליטה... (32 שניות)';
+    rec.onstop = () => { const blob = new Blob(chunks, {type: 'video/webm'}), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'madlik-promo-vertical.webm'; document.body.appendChild(a); a.click(); a.remove(); hint.textContent = 'הקובץ ירד: madlik-promo-vertical.webm (' + (blob.size / 1048576).toFixed(1) + 'MB)'; window.__promoDone = blob.size; };
+    rec.start(250); hint.textContent = 'מקליטה... (24 שניות)';
   } else hint.textContent = 'מנגן...';
   raf = requestAnimationFrame(loop);
 }
 bPlay.onclick = () => start(false); bRec.onclick = () => start(true);
-// תצוגת פריים בודד לבדיקה: ?t=12.5
-const q = new URLSearchParams(location.search).get('t');
-const draw0 = () => { frame(q != null ? +q : 3, false); };
+const qs = new URLSearchParams(location.search), qt = qs.get('t');
+const draw0 = () => frame(qt != null ? +qt : 2.2);
 (document.fonts && document.fonts.load ? document.fonts.load(`900 100px ${FONT}`) : Promise.resolve()).then(draw0, draw0);
 logo.onload = draw0;
-if (new URLSearchParams(location.search).get('auto') === 'rec') setTimeout(() => start(true), 800);
+if (qs.get('auto') === 'rec') setTimeout(() => start(true), 800);
+window.__frame = frame; window.__dur = async () => { const c = new AudioContext(); await loadVoice(c); const o = {}; Object.entries(voiceBuf).forEach(([k, v]) => o[k] = v && +(v.len).toFixed(2)); return o; };
 </script>
 </body>
 </html>

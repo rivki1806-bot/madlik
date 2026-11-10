@@ -1315,7 +1315,7 @@ pages.cards.after = () => {
   document.getElementById('mnPdf').onclick = e => miniPdf(e.currentTarget);
 };
 
-pages.advertise = () => pageHead('רוצים לפרסם?', 'בחרו אחת משלוש התכניות, ואחר כך צרו איתנו קשר.', 'פרסום') + `<div class="wrap"><a class="adv-video" href="promo/index.html" target="_blank" rel="noopener"><span aria-hidden="true">▶</span><b>צפו בסרטון: למה לפרסם במדליק</b><small>32 שניות</small></a>${adBlock()}</div>`;
+pages.advertise = () => pageHead('רוצים לפרסם?', 'בחרו אחת משלוש התכניות, ואחר כך צרו איתנו קשר.', 'פרסום') + `<div class="wrap"><a class="adv-video" href="promo/index.html" target="_blank" rel="noopener"><span aria-hidden="true">▶</span><b>צפו בסרטון: למה לפרסם במדליק</b><small>24 שניות · עם קריינות</small></a>${adBlock()}</div>`;
 pages.advertise.after = adBlockAfter;
 
 pages.submit = () => pageHead('שליחת רעיון', 'משחק, מתכון או רעיון לאתר. אם הוא יתאים, נוסיף אותו ונכתוב את שמך.', 'שליחת רעיון') + `
