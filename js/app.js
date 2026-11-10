@@ -466,6 +466,15 @@ function playMemory(words){
 }
 
 const styleCard = s => `<a class="card" href="#/studio/edit?style=${esc(s.id)}&fmt=invite"><div class="card-top style-top"><img src="${esc(s.img)}" alt="" loading="lazy"></div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="tags"><span class="tag tag-gold">שפה עיצובית</span></div></div></a>`;
+const STRIP_ORDER = ['sticker-s','sticker','sticker-l','rect-s','rect-m','rect-l','pick-flag','bottle','bottle-small','cup-wrap','oil-label','invite','schedule','placemat','entrance-sign','sign','menu','poster','certificate','seat','nametag','thanks','gift-tag','topper','table-number'];
+const tplStrip = (cur, style) => {
+  const T = D.templates, ids = STRIP_ORDER.filter(i => T.some(t => t.id === i)).concat(T.filter(t => !STRIP_ORDER.includes(t.id)).map(t => t.id));
+  const nm = t => String(t.title).replace(/\s*\(.*\)\s*/, '');
+  return '<nav class="tp-strip" aria-label="כל התבניות. אפשר לדלג בין תבנית לתבנית"><span class="tp-strip-l">תבניות</span><div class="tp-strip-row">' + ids.map(i => { const t = T.find(x => x.id === i), ar = Math.max(.45, Math.min(2.4, t.w / t.h));
+    return '<a class="tp-chip' + (t.id === cur ? ' on' : '') + '" data-tpl="' + esc(t.id) + '" href="#/studio/' + esc(t.id) + (style ? '?style=' + encodeURIComponent(style) : '') + '"' + (t.id === cur ? ' aria-current="page"' : '') + '><i class="tp-shape' + (t.round ? ' round' : '') + '" style="--ar:' + ar.toFixed(2) + '"></i><span>' + esc(nm(t)) + '</span></a>'; }).join('') + '</div></nav>';
+};
+const stripStyle = (root, id) => { const st = (D.styles || []).find(x => x.id === id), img = st ? (st.thumb || st.img) : '';
+  root.querySelectorAll('.tp-chip').forEach(c => { const sh = c.querySelector('.tp-shape'); if(sh) sh.style.backgroundImage = img ? 'url(' + img + ')' : ''; c.setAttribute('href', '#/studio/' + c.dataset.tpl + (id ? '?style=' + encodeURIComponent(id) : '')); }); };
 pages.studio = () => {
   const styles = (D.styles || []).filter(s => !s.legacy), fmts = window.MadlikEditor.FORMATS, mine = store.get('designs', []);
   const T = D.templates, by = ids => ids.map(i => T.find(t => t.id === i)).filter(Boolean), used = new Set();
@@ -477,14 +486,14 @@ pages.studio = () => {
     + grp('הזמנה, תכניה, פלייסמנט ושילוט', 'דפים להדפסה על A4 או A5.', ['invite','schedule','placemat','entrance-sign','sign','menu','poster','certificate'])
     + grp('עוד כרטיסים ותוויות', '', T.filter(t => t.repeat && !used.has(t.id)).map(t => t.id));
   return pageHead('סטודיו מיתוג', 'בוחרים שפה עיצובית, בוחרים מה להדפיס, עורכים את הטקסט, ורואים את הדף בדיוק כמו בהדפסה.', 'סטודיו מיתוג') + `
+  ${tplStrip('', styles[0] ? styles[0].id : 'plain')}
   <div class="wrap">
     <section class="st-sec"><h2 class="st-h"><i>1</i>איזו שפה עיצובית מדברת אליך?</h2>
       <div class="st-styles" role="radiogroup" aria-label="שפה עיצובית">
         ${styles.map((s,i)=>`<label class="st-card"><input type="radio" name="stl" value="${esc(s.id)}" ${i===0?'checked':''}><span class="st-img"><img src="${esc(s.thumb||s.img)}" loading="lazy" alt="תצוגה של הסגנון ${esc(s.name)}"></span><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></label>`).join('')}
         <label class="st-card"><input type="radio" name="stl" value="plain" ${styles.length?'':'checked'}><span class="st-img plain-img"><i></i></span><b>צבע אחד, בלי תמונה</b><small>בוחרים ערכת צבעים פשוטה</small></label>
       </div></section>
-    <section class="st-sec"><h2 class="st-h"><i>2</i>מה רוצים להדפיס?</h2>${products}</section>
-    <section class="st-sec"><h2 class="st-h">עורך חופשי</h2><p class="muted" style="margin:0 0 14px">רוצים להזיז כל דבר בעצמכם? פותחים דף ריק בשפה שבחרתם.</p>
+        <section class="st-sec"><h2 class="st-h">עורך חופשי</h2><p class="muted" style="margin:0 0 14px">רוצים להזיז כל דבר בעצמכם? פותחים דף ריק בשפה שבחרתם.</p>
       <div class="st-fmts" role="radiogroup" aria-label="גודל">${fmts.map(f=>`<label class="st-fmt"><input type="radio" name="fmt" value="${f.id}" ${f.id==='invite'?'checked':''}><span>${f.n}</span></label>`).join('')}</div>
       <div class="st-go"><a class="btn btn-gold" id="stGo" href="#/studio/edit?style=${styles[0]?esc(styles[0].id):'plain'}&fmt=invite">פותחים את העורך ←</a></div></section>
     ${mine.length ? `<section class="st-sec"><h2 class="st-h">העיצובים שלי</h2><div class="st-mine">${mine.map(d=>`<a href="#/studio/edit?load=${esc(d.id)}">${esc(d.title)}</a>`).join('')}</div></section>` : ''}
@@ -495,11 +504,7 @@ pages.studio.after = () => {
   const upd = () => {
     const sEl = document.querySelector('[name=stl]:checked'), f = document.querySelector('[name=fmt]:checked'), v = sEl ? sEl.value : 'plain', st = sty(v);
     go.setAttribute('href', `#/studio/edit?style=${v}&fmt=${f ? f.value : 'invite'}`);
-    document.querySelectorAll('a[data-tpl]').forEach(c => {
-      c.setAttribute('href', '#/studio/' + c.dataset.tpl + (st ? '?style=' + encodeURIComponent(v) : ''));
-      const top = c.querySelector('.tpl-top'); if(!top) return;
-      top.classList.toggle('has-bg', !!st); top.style.backgroundImage = st ? 'url(' + (st.thumb || st.img) + ')' : '';
-    });
+    stripStyle(document, st ? v : '');
   };
   document.querySelectorAll('[name=stl],[name=fmt]').forEach(i => i.onchange = upd); upd();
 };
@@ -545,7 +550,7 @@ pages.design = ([id], q) => {
   const rng = (key, label, min, max, val, unit, tip) => `<label class="pc"><span>${label}${tip ? `<em class="tp-tipi" title="${tip}">?</em>` : ''}</span><input type="range" data-sk="${key}" min="${min}" max="${max}" step="1" value="${val}" aria-label="${label}"><output>${val}${unit || '%'}</output></label>`;
   const head = tb => `<div class="tp-ph"><span class="tp-pi">${tpIc(tb.id)}</span><div><h3>${tb.title}</h3><p>${tb.sub}</p></div></div>`;
   const T = Object.fromEntries(TP_TABS.map(x => [x.id, x]));
-  return pageHead(esc(t.title), 'בוחרים שפה, משלימים את הטקסט, גוררים את הרקע למקום הנכון, והדף מוכן בדיוק כמו שיודפס.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + `
+  return pageHead(esc(t.title), 'בוחרים שפה, משלימים את הטקסט, גוררים את הרקע למקום הנכון, והדף מוכן בדיוק כמו שיודפס.', `<a href="#/studio">סטודיו</a> › ${esc(t.title)}`) + tplStrip(t.id, s.style || '') + `
   <div class="wrap builder">
     <form class="box form builder-panel ed-lite" id="df">
       <div class="tp-top"><button type="button" class="tp-ib" id="tpUndo" disabled title="ביטול (Ctrl+Z)">↶ ביטול</button><button type="button" class="tp-ib" id="tpRedo" disabled title="שחזור (Ctrl+Y)">↷ שחזור</button><button type="button" class="tp-ib" id="tpReset" title="חזרה להתחלה">איפוס הכול</button></div>
@@ -647,6 +652,7 @@ pages.design.after = ([id], q) => {
     ['pre','title','sub','body','foot'].forEach(k => { const el = f.elements[k]; if(el && !el.disabled) el.value = s[k] == null ? '' : s[k]; });
     const DEF = {fsz:100, ls:0, lh:100, po:100, bz:100, bb:0};
     f.querySelectorAll('[data-sk]').forEach(r => { const v = s[r.dataset.sk]; setRange(r, v == null || v === '' ? DEF[r.dataset.sk] : +v); });
+    stripStyle(document, s.style || '');
     f.querySelectorAll('.stp').forEach(b => b.classList.toggle('on', b.dataset.style === (s.style || '')));
     f.querySelectorAll('.swatch').forEach(b => b.classList.toggle('on', b.dataset.theme === s.theme));
     f.querySelectorAll('[data-pos]').forEach(b => b.setAttribute('aria-pressed', (s.pos || '') === b.dataset.pos));

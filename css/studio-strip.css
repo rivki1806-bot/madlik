@@ -1,0 +1,11 @@
+/* רצועה אחת ארוכה של כל התבניות בראש הסטודיו */
+.tp-strip{position:sticky;top:64px;z-index:20;display:flex;align-items:center;gap:12px;padding:10px clamp(12px,3vw,32px);background:rgba(252,247,236,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(10,34,68,.12)}
+.tp-strip-l{flex:none;font:600 .9rem 'Rubik',sans-serif;color:#0a2244}
+.tp-strip-row{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;scroll-snap-type:x proximity;scrollbar-width:thin;flex:1}
+.tp-chip{flex:none;display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:6px 16px 6px 12px;border-radius:999px;background:#fffdf8;box-shadow:0 0 0 1px rgba(10,34,68,.16);color:#0a2244;text-decoration:none;font:500 .92rem 'Rubik',sans-serif;white-space:nowrap;scroll-snap-align:center;transition:box-shadow .2s,transform .2s}
+.tp-chip:hover,.tp-chip:focus-visible{transform:translateY(-2px);box-shadow:0 0 0 2px #0a2244}
+.tp-chip:focus-visible{outline:3px solid #ff6a00;outline-offset:2px}
+.tp-chip.on{background:#0a2244;color:#fbf1dc;box-shadow:0 0 0 2px #0a2244}
+.tp-shape{flex:none;display:block;height:28px;aspect-ratio:var(--ar,1);max-width:52px;border-radius:5px;background:#efe7d6 center/cover;box-shadow:0 0 0 1px rgba(10,34,68,.25)}
+.tp-shape.round{border-radius:50%}
+@media (max-width:700px){.tp-strip{top:56px}.tp-strip-l{display:none}}
