@@ -207,7 +207,7 @@ pages.home = () => {
     .concat(['<a class="ad-card ad-cta" href="#/advertise"><b>ראית את זה?</b><span>ראו את זה עוד אלפי אנשים, מוזמן לפרסם באחת התכניות השוות!</span><em>לכל התכניות וטופס יצירת קשר ←</em></a>']);
   return `
   <section class="hero" id="hero">
-    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
+    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
         <aside class="ad-rail" aria-label="מודעות">
       <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button><img class="ad-logo" src="img/logo-mark.png" alt="">
       ${Date.now() < BIZ_NOTICE_UNTIL ? '<div class="ad-open" role="note" aria-label="פתיחת פרסום ביום שלישי 10.11.26"><b>פתיחת פרסום</b><span>ביום שלישי</span><i>10.11.26</i></div>' : ''}
@@ -1071,10 +1071,9 @@ pages.maalot = () => {
   return `<div class="maalot-gate" role="dialog" aria-modal="true" aria-labelledby="mgT"><form class="mg-card" id="mgForm">
     <img class="mg-logo" src="img/logo-mark.png" alt="מדליק">
     <h1 id="mgT">ברוכות הבאות למדליק</h1>
-    <p class="mg-sub">כל מה שצריך לערב לביבות. כדי להיכנס, כתבו מייל ואשרו קבלת דיוור.</p>
+    <p class="mg-remove"><b>תוכלו להסיר את עצמכם בכל עת, בקלות.</b> קישור הסרה בלחיצה אחת בכל מייל שנשלח.</p><p class="mg-sub">כל מה שצריך לערב לביבות. כדי להיכנס, כתבו מייל ואשרו קבלת דיוור.</p>
     <label>מייל<input type="email" name="email" required autocomplete="email" placeholder="name@example.com" dir="ltr"></label>
-    <label>שם (לא חובה)<input name="name" autocomplete="name"></label>
-    <label class="mg-ok"><input type="checkbox" name="ok" required><span>אני מאשרת קבלת דיוור (מיילים עם עדכונים, חדשות והצעות) ממרכז הכשרה מעלות ומאתר מדליק, בהתאם לחוק התקשורת (בזק ושידורים). אפשר להסיר את עצמי בכל עת בלחיצה על קישור ההסרה שבכל מייל.</span></label>
+    <label class="mg-ok"><input type="checkbox" name="ok" required><span>אני מאשרת קבלת דיוור (מיילים עם עדכונים, חדשות והצעות) ממרכז הכשרה מעלות ומאתר מדליק, בהתאם לחוק התקשורת (בזק ושידורים). </span></label>
     <button class="btn btn-gold" type="submit">כניסה לאתר ←</button>
     <small class="mg-note">האישור נדרש פעם אחת בלבד.</small>
   </form></div>`;
@@ -1086,7 +1085,7 @@ pages.maalot.after = () => {
     const v = Object.fromEntries(new FormData(f)), email = String(v.email || '').trim();
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('כתבו כתובת מייל תקינה');
     if(!v.ok) return toast('צריך לאשר קבלת דיוור כדי להיכנס');
-    subscribe(email, 'סמינר מעלות - אישר דיוור מעלות', String(v.name || '').trim());
+    subscribe(email, 'סמינר מעלות - אישר דיוור מעלות', '');
     store.set('maalot_ok', true); store.set('subscribedEmail', email);
     const nb = document.getElementById('newsBar'); if(nb) nb.classList.add('hidden');
     location.hash = '#/';
@@ -1340,7 +1339,7 @@ function newsTabHTML(){
   return `${setup}<div class="two-col" style="margin-top:20px;align-items:start">
     <div class="box"><h2>הנרשמים</h2>
       <p id="nCount" class="muted">טוענת...</p>
-      <div class="btn-row"><button class="btn btn-sm" id="nReload">רענון</button><button class="btn btn-sm" id="nCopy">העתקת כתובות</button><button class="btn btn-sm" id="nCsv">הורדה ל־CSV</button></div>
+      <div class="btn-row"><button class="btn btn-sm" id="nReload">רענון</button><button class="btn btn-sm" id="nCopy">העתקת כתובות</button><button class="btn btn-sm" id="nCsv">הורדה ל־CSV</button><button class="btn btn-sm btn-light" id="nMaalot">מעלות בלבד</button></div>
       <div id="nList" style="max-height:340px;overflow:auto"></div></div>
     <form class="box form" id="nf" style="margin-top:0"><h2>הודעה חדשה</h2>
       <label>נושא<input name="subject" required></label>
@@ -1354,10 +1353,12 @@ function newsTabHTML(){
 function initNews(){
   const $ = id => document.getElementById(id);
   const cnt = $('nCount'), list = $('nList'), keyIn = {get value(){ return adminKey(); }}, st = $('nStatus'), f = $('nf');
-  let subs = [];
+  let subs = [], onlyM = false;
+  const view = () => onlyM ? subs.filter(s => /מעלות/.test(s.source || '')) : subs;
   const draw = () => {
-    cnt.textContent = subs.length + ' נרשמים' + (API() ? '' : ' (רק מהדפדפן הזה, עד שתחברי את השרת)');
-    list.innerHTML = subs.length ? `<table class="table"><tr><th>מייל</th><th>תאריך</th><th>מקור</th></tr>${subs.slice(0,300).map(s=>`<tr><td>${esc(s.email)}</td><td>${esc(s.date)}</td><td>${esc(s.source)}</td></tr>`).join('')}</table>` : '<p class="muted">עוד אין נרשמים.</p>';
+    const sv = view(); $('nMaalot').textContent = onlyM ? 'כל הנרשמים' : 'מעלות בלבד';
+    cnt.textContent = (onlyM ? 'מאשרי דיוור מעלות: ' : '') + sv.length + ' נרשמים' + (API() ? '' : ' (רק מהדפדפן הזה, עד שתחברי את השרת)');
+    list.innerHTML = sv.length ? `<table class="table"><tr><th>תאריך ושעת אישור</th><th>מייל</th><th>מקור</th></tr>${sv.slice(0,300).map(s=>`<tr><td><b>${esc(s.date)}</b></td><td>${esc(s.email)}</td><td>${esc(s.source)}</td></tr>`).join('')}</table>` : '<p class="muted">עוד אין נרשמים.</p>';
   };
   const load = () => {
     if(!API()){ subs = store.get('subscribers',[]).map(x=>({email:x.email, date:x.date, source:x.source})); draw(); return; }
@@ -1368,8 +1369,9 @@ function initNews(){
       .catch(e => { cnt.textContent = 'לא הצלחתי לטעון: ' + e.message; });
   };
   $('nReload').onclick = load;
+  $('nMaalot').onclick = () => { onlyM = !onlyM; draw(); };
   $('nCopy').onclick = () => { if(!subs.length) return toast('אין כתובות'); (navigator.clipboard ? navigator.clipboard.writeText(subs.map(s=>s.email).join(', ')) : Promise.reject()).then(()=>toast('הכתובות הועתקו'), ()=>toast('לא הצלחתי להעתיק')); };
-  $('nCsv').onclick = () => { const txt = '﻿מייל,תאריך,מקור\n' + subs.map(r=>[r.email,r.date,r.source].map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt],{type:'text/csv'})); a.download = 'madlik-subscribers.csv'; a.click(); };
+  $('nCsv').onclick = () => { const txt = '﻿תאריך ושעת אישור,מייל,מקור\n' + view().map(r=>[r.date,r.email,r.source].map(x=>`"${String(x||'').replace(/"/g,'""')}"`).join(',')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt],{type:'text/csv'})); a.download = 'madlik-subscribers.csv'; a.click(); };
   const gc = $('gasCopy'); if(gc) gc.onclick = () => { const t = $('gasCode'); t.select(); (navigator.clipboard ? navigator.clipboard.writeText(GAS_CODE) : Promise.reject()).then(()=>toast('הקוד הועתק'), ()=>{ document.execCommand('copy'); toast('הקוד הועתק'); }); };
   $('nTest').onchange = e => { $('nToWrap').style.display = e.target.checked ? 'grid' : 'none'; };
   f.onsubmit = e => {
