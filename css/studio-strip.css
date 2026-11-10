@@ -27,11 +27,25 @@
 .mp-page .one{max-height:92%}
 
 /* קרדיט עם הלוגו המונפש */
-.hl-credit{max-width:1180px;margin:clamp(14px,2vw,26px) auto 8px;padding:14px clamp(16px,3vw,28px);display:flex;align-items:center;gap:clamp(14px,2.4vw,26px);border-radius:24px;background:#fffdf8;box-shadow:0 0 0 1px rgba(10,34,68,.13)}
+.hl-credit{max-width:1180px;margin:clamp(14px,2vw,26px) auto 8px;padding:6px clamp(16px,3vw,28px);display:flex;align-items:center;gap:clamp(14px,2.4vw,26px);background:transparent;box-shadow:none;border:0}
 .hl-logo{flex:none;width:clamp(96px,12vw,140px);height:auto;transform-origin:center;animation:hlIn 1s cubic-bezier(.2,1.5,.3,1) both,hlFloat 3.6s ease-in-out 1.2s infinite}
-.hl-credit p{margin:0;font:400 1.05rem/1.6 'Heebo',sans-serif;color:#1d2f52}
+.hl-credit p{margin:0;font:600 clamp(1.1rem,1.8vw,1.35rem)/1.6 'Rubik',sans-serif;color:#0a2244}
 .hl-credit b{font:600 1.1rem 'Rubik',sans-serif;color:#0a2244}
 @keyframes hlIn{from{opacity:0;transform:scaleX(.12) rotate(-6deg)}to{opacity:1;transform:none}}
 @keyframes hlFloat{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-4px) scaleX(1.07)}}
 @media (prefers-reduced-motion:reduce){.hl-logo{animation:none}}
 @media (max-width:640px){.hl-credit{flex-direction:column;text-align:center}.mp-grid{grid-template-columns:repeat(2,1fr)}}
+
+.tour-again{flex:none;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid rgba(10,34,68,.25);background:transparent;color:#0a2244;font:500 .9rem 'Rubik',sans-serif;cursor:pointer;white-space:nowrap}
+.tour-again:hover{background:#0a2244;color:#fbf1dc}
+/* הסיור */
+.tour-ov{position:fixed;inset:0;z-index:5000}
+.tour-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(10,34,68,.66),0 0 0 3px #ff6a00;transition:top .35s ease,left .35s ease,width .35s ease,height .35s ease;pointer-events:none}
+.tour-box{position:fixed;width:min(360px,calc(100vw - 20px));background:#fffdf8;color:#0a2244;border-radius:22px;padding:20px 22px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);font-family:'Heebo',sans-serif;text-align:right;transition:top .35s ease,left .35s ease}
+.tour-n{display:inline-block;font:600 .85rem 'Rubik',sans-serif;color:#ff6a00;letter-spacing:.06em}
+.tour-box h3{font:600 1.25rem 'Rubik',sans-serif;margin:4px 0 6px;color:#0a2244}
+.tour-box p{margin:0 0 16px;font:400 1rem/1.55 'Heebo',sans-serif;color:#3b4a66}
+.tour-btns{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tour-skip{background:none;border:0;color:#6c7893;font:500 .9rem 'Rubik',sans-serif;cursor:pointer;text-decoration:underline;padding:8px}
+.tour-box .btn{min-height:48px;border-radius:999px;padding:0 24px}
+@media (prefers-reduced-motion:reduce){.tour-hole,.tour-box{transition:none}}

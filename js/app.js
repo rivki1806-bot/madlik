@@ -466,12 +466,60 @@ function playMemory(words){
 }
 
 const styleCard = s => `<a class="card" href="#/studio/edit?style=${esc(s.id)}&fmt=invite"><div class="card-top style-top"><img src="${esc(s.img)}" alt="" loading="lazy"></div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="tags"><span class="tag tag-gold">שפה עיצובית</span></div></div></a>`;
+const TOURS = {
+  studio: [
+    {sel:'.st-sec .st-h', t:'שלב 1: בוחרים עיצוב', d:'לוחצים על התמונה שאהבתם. אחרי הלחיצה הדף יקפוץ לבחירת מוצר.'},
+    {sel:'.tp-strip', t:'כל התבניות בשורה אחת', d:'אפשר לגלול הצידה ולדלג מתבנית לתבנית בכל רגע, והעיצוב שבחרתם נשמר.'},
+    {sel:'#stProd .st-h', t:'שלב 2: בוחרים מוצר', d:'כל ציור מראה איך ייראה הדף כפי שיודפס. לוחצים על המוצר שרוצים ועוברים לעריכה.'}
+  ],
+  design: [
+    {sel:'.tp-tabs', t:'כאן כותבים', d:'מחליפים את הטקסט בשדות. אפשר גם לשנות גופן, צבע ורקע בלשוניות שלמעלה.'},
+    {sel:'.tp-vtools', t:'גוררים כדי למקם', d:'לוחצים על הכיתוב או על התמונה וגוררים למקום שאוהבים. כך מזיזים את העיצוב בתוך המוצר.'},
+    {sel:'.tp-dock', t:'מורידים או מדפיסים', d:'כשהכול נראה טוב, לוחצים כאן להדפסה, להורדה כתמונה או לשמירה.'}
+  ]
+};
+function runTour(key, force){
+  const steps = (TOURS[key] || []).filter(s => document.querySelector(s.sel));
+  const seenKey = 'tour_' + key;
+  if(!steps.length || document.querySelector('.tour-ov')) return;
+  if(!force && store.get(seenKey, false)) return;
+  let i = 0; const ov = document.createElement('div'); ov.className = 'tour-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'סיור קצר');
+  ov.innerHTML = '<div class="tour-hole"></div><div class="tour-box"><span class="tour-n"></span><h3></h3><p></p><div class="tour-btns"><button type="button" class="tour-skip">דלגו על הסיור</button><button type="button" class="tour-next btn btn-gold"></button></div></div>';
+  document.body.appendChild(ov);
+  const hole = ov.querySelector('.tour-hole'), box = ov.querySelector('.tour-box'), $q = s => ov.querySelector(s);
+  const end = () => { store.set(seenKey, true); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); document.removeEventListener('keydown', key_); ov.remove(); };
+  const place = () => {
+    const el = document.querySelector(steps[i].sel); if(!el) return;
+    const r = el.getBoundingClientRect(), pad = 8, vh = innerHeight, vw = innerWidth;
+    const top = Math.max(6, r.top - pad), h = Math.min(vh - 12, r.height + pad * 2);
+    Object.assign(hole.style, {top: top + 'px', left: Math.max(6, r.left - pad) + 'px', width: Math.min(vw - 12, r.width + pad * 2) + 'px', height: h + 'px'});
+    const bh = box.offsetHeight, below = top + h + 14 + bh < vh;
+    box.style.top = (below ? top + h + 14 : Math.max(10, top - bh - 14)) + 'px';
+    box.style.left = Math.max(10, Math.min(vw - box.offsetWidth - 10, r.left + r.width / 2 - box.offsetWidth / 2)) + 'px';
+  };
+  const show = () => {
+    const s = steps[i], el = document.querySelector(s.sel);
+    el.scrollIntoView({block:'center', behavior:'instant'});
+    $q('.tour-n').textContent = 'שלב ' + (i + 1) + ' מתוך ' + steps.length; $q('h3').textContent = s.t; $q('p').textContent = s.d;
+    $q('.tour-next').textContent = i === steps.length - 1 ? 'הבנתי, מתחילים' : 'הבא ←';
+    setTimeout(place, 60); setTimeout(place, 450); $q('.tour-next').focus({preventScroll:true});
+  };
+  const key_ = e => { if(e.key === 'Escape') end(); };
+  document.addEventListener('keydown', key_); window.addEventListener('resize', place); window.addEventListener('scroll', place, {passive:true});
+  $q('.tour-next').onclick = () => { if(i >= steps.length - 1) return end(); i++; show(); };
+  $q('.tour-skip').onclick = end; show();
+}
+const startTourSoon = key => {
+  if(store.get('tour_' + key, false)) return;
+  let tries = 0; const go = () => { if(document.getElementById('intro') && document.getElementById('intro').offsetParent !== null && tries++ < 40) return setTimeout(go, 300); setTimeout(() => runTour(key), 500); }; go();
+};
+document.addEventListener('click', e => { const b = e.target.closest('[data-tour]'); if(b) runTour(b.dataset.tour, true); });
 const STRIP_ORDER = ['sticker-s','sticker','sticker-l','rect-s','rect-m','rect-l','pick-flag','bottle','bottle-small','cup-wrap','oil-label','invite','schedule','placemat','entrance-sign','sign','menu','poster','certificate','seat','nametag','thanks','gift-tag','topper','table-number'];
 const tplStrip = (cur, style) => {
   const T = D.templates, ids = STRIP_ORDER.filter(i => T.some(t => t.id === i)).concat(T.filter(t => !STRIP_ORDER.includes(t.id)).map(t => t.id));
   const nm = t => String(t.title).replace(/\s*\(.*\)\s*/, '');
   return '<nav class="tp-strip" aria-label="כל התבניות. אפשר לדלג בין תבנית לתבנית"><span class="tp-strip-l">תבניות</span><div class="tp-strip-row">' + ids.map(i => { const t = T.find(x => x.id === i), ar = Math.max(.45, Math.min(2.4, t.w / t.h));
-    return '<a class="tp-chip' + (t.id === cur ? ' on' : '') + '" data-tpl="' + esc(t.id) + '" href="#/studio/' + esc(t.id) + (style ? '?style=' + encodeURIComponent(style) : '') + '"' + (t.id === cur ? ' aria-current="page"' : '') + '><i class="tp-shape' + (t.round ? ' round' : '') + '" style="--ar:' + ar.toFixed(2) + '"></i><span>' + esc(nm(t)) + '</span></a>'; }).join('') + '</div></nav>';
+    return '<a class="tp-chip' + (t.id === cur ? ' on' : '') + '" data-tpl="' + esc(t.id) + '" href="#/studio/' + esc(t.id) + (style ? '?style=' + encodeURIComponent(style) : '') + '"' + (t.id === cur ? ' aria-current="page"' : '') + '><i class="tp-shape' + (t.round ? ' round' : '') + '" style="--ar:' + ar.toFixed(2) + '"></i><span>' + esc(nm(t)) + '</span></a>'; }).join('') + '</div><button type="button" class="tour-again" data-tour="' + (cur ? 'design' : 'studio') + '">סיור קצר</button></nav>';
 };
 const stripStyle = (root, id) => { const st = (D.styles || []).find(x => x.id === id), img = st ? (st.thumb || st.img) : '';
   root.querySelectorAll('.tp-chip').forEach(c => { const sh = c.querySelector('.tp-shape'); if(sh) sh.style.backgroundImage = img ? 'url(' + img + ')' : ''; c.setAttribute('href', '#/studio/' + c.dataset.tpl + (id ? '?style=' + encodeURIComponent(id) : '')); }); };
@@ -498,7 +546,7 @@ pages.studio = () => {
     + grp('עוד כרטיסים ותוויות', '', T.filter(t => t.repeat && !used.has(t.id)).map(t => t.id));
   const mpIds = STRIP_ORDER.filter(i => T.some(t => t.id === i)).concat(T.filter(t => !STRIP_ORDER.includes(t.id)).map(t => t.id));
   return pageHead('סטודיו מיתוג', 'בוחרים שפה עיצובית, בוחרים מה להדפיס, עורכים את הטקסט, ורואים את הדף בדיוק כמו בהדפסה.', 'סטודיו מיתוג') + `
-  <section class="hl-credit" aria-label="על העיצובים"><img class="hl-logo" src="img/hila-logo.webp" alt="הלוגו של חיהלע דוידוביץ" width="150" height="75"><p><b>חיהלע דוידוביץ</b>, גרפיקאית מקצועית עם טאצ' ייחודי, עיצבה במיוחד עבור אתר מדליק עיצובים מרהיבים למיתוג מדליק :)</p></section>
+  <section class="hl-credit" aria-label="על העיצובים"><img class="hl-logo" src="img/hila-logo.webp" alt="הלוגו של חיהלה דוידוביץ" width="150" height="75"><p>חיהלה דוידוביץ, גרפיקאית מקצועית עם טאצ' ייחודי, עיצבה במיוחד עבור אתר מדליק עיצובים מרהיבים למיתוג מדליק :)</p></section>
   ${tplStrip('', styles[0] ? styles[0].id : 'plain')}
   <div class="wrap">
     <section class="st-sec"><h2 class="st-h"><i>1</i>איזו שפה עיצובית מדברת אליך?</h2>
@@ -522,7 +570,7 @@ pages.studio.after = () => {
     stripStyle(document, st ? v : '');
     const g = document.querySelector('.mp-grid'); if(g){ g.style.setProperty('--bg', st ? 'url(' + new URL(st.thumb || st.img, document.baseURI).href + ')' : 'none'); g.classList.toggle('plainbg', !st); g.querySelectorAll('.mp-card').forEach(c => c.setAttribute('href', '#/studio/' + c.dataset.tpl + (st ? '?style=' + encodeURIComponent(v) : ''))); }
   };
-  document.querySelectorAll('[name=stl],[name=fmt]').forEach(i => i.onchange = upd); upd();
+  document.querySelectorAll('[name=stl],[name=fmt]').forEach(i => i.onchange = upd); upd(); startTourSoon('studio');
   document.querySelectorAll('[name=stl]').forEach(i => i.addEventListener('change', () => { const p = document.getElementById('stProd'); if(!p) return; setTimeout(() => { window.scrollTo({top: Math.max(0, p.getBoundingClientRect().top + scrollY - 130), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'}); p.focus({preventScroll:true}); }, 120); }));
 };
 
@@ -862,7 +910,7 @@ pages.design.after = ([id], q) => {
   const onResize = () => document.body.contains(f) ? draw() : window.removeEventListener('resize', onResize);
   window.addEventListener('resize', onResize);
   f.querySelectorAll('input[type=range]').forEach(r => r.style.setProperty('--p', pctv(+r.value, +r.min, +r.max)));
-  syncUI(); setTab('text'); draw(); histBtns();
+  syncUI(); setTab('text'); draw(); histBtns(); startTourSoon('design');
 
   $('dPrint').onclick = () => { read(); const go = () => { const sh = sheetHTML(t, s, logo); printHTML(sh.html, {credit:false, page:sh.page, margin:0}); }; (F && F.BY[s.font] ? F.ensure(s.font) : Promise.resolve()).then(go); };
   $('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
