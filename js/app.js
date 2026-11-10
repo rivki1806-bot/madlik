@@ -1062,6 +1062,7 @@ function designHTML(t, s, logo){
 pages.recipes = () => {
   const cats = [...new Set(content('recipes').map(r=>r.cat))];
   return `<div class="kg kg-list"><div class="wrap kg-wrap">
+    <section class="gk-credit" aria-label="על המתכונים"><img class="gk-logo" src="img/goldie-logo.webp" alt="לוגו גולד CAKE" width="195" height="390"><p><b>גולדי כהן</b>, בעלת קייטרינג חלבי אהוב – <b>גולד קייק</b>, פרגנה לנו כמה מתכונים לטעימה, בלעדי לאתר מדליק :)</p></section>
     <header class="kg-lh"><h1>מתכונים</h1><p>לביבות, סופגניות, מגשי אירוח ושתייה – עם חישוב כמויות לפי מספר הסועדים.</p></header>
     <form class="kg-filters" id="rf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש מתכון או מצרך" aria-label="חיפוש מתכון"><select name="cat" aria-label="קטגוריה"><option value="">כל הקטגוריות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="diet" aria-label="חלבי או פרווה"><option value="">חלבי / פרווה</option><option>חלבי</option><option>פרווה</option><option>בשרי</option></select><select name="level" aria-label="רמת קושי"><option value="">כל הרמות</option><option>קל</option><option>בינוני</option><option>מאתגר</option></select></form>
     <div class="cards kg-cards" id="rl"></div></div></div>`;
@@ -1171,7 +1172,7 @@ pages.suppliers = () => {
 pages.suppliers.after = () => {
   showBizNotice();
   const f = document.getElementById('sf'), l = document.getElementById('sl');
-  const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('suppliers').filter(s=>(!v.q||JSON.stringify(s).includes(v.q))&&(!v.cat||s.cat===v.cat)&&(!v.region||s.region===v.region)&&(!v.price||s.price===v.price)).sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)); l.innerHTML = res.length ? res.map(supCard).join('') : '<div class="empty">אין עדיין עסקים שמתאימים. נסו אזור אחר.</div>'; };
+  const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('suppliers').filter(s=>(!v.q||JSON.stringify(s).includes(v.q))&&(!v.cat||s.cat===v.cat)&&(!v.region||s.region===v.region||s.region==='כל הארץ')&&(!v.price||s.price===v.price)).sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)); l.innerHTML = res.length ? res.map(supCard).join('') : '<div class="empty">אין עדיין עסקים שמתאימים. נסו אזור אחר.</div>'; };
   f.oninput = run; run();
   const st = document.querySelector('[data-scroll]'); if(st) st.onclick = e => { e.preventDefault(); document.getElementById('adBlock').scrollIntoView({behavior:'smooth', block:'start'}); };
   adBlockAfter();
@@ -1369,7 +1370,7 @@ function statsHTML(st, leads, live){
 }
 /* ---------- ניהול: עסקים מפרסמים (הוספה, עריכה, תמונה וקישור) ---------- */
 const BIZ_CATS = ['אולמות', 'קייטרינג', 'מפעילים', 'עיצוב ודקורציה', 'קינוחים', 'צילום'];
-const BIZ_REGIONS = ['צפון', 'חיפה', 'שרון', 'מרכז', 'ירושלים', 'שפלה', 'דרום'];
+const BIZ_REGIONS = ['כל הארץ', 'צפון', 'חיפה', 'שרון', 'מרכז', 'ירושלים', 'שפלה', 'דרום'];
 function bizTabHTML(){
   const cats = [...new Set(BIZ_CATS.concat((D.suppliers || []).map(s => s.cat)))];
   return `<div class="bz-wrap">
