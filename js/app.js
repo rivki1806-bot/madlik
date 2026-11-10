@@ -1212,11 +1212,43 @@ pages.maalot.after = () => {
   };
 };
 
+const miniPdf = async btn => {
+  const load = (src, test) => new Promise((ok, no) => { if(test()) return ok(); const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+  btn.disabled = true; toast('מכינה את קובץ ה־PDF...');
+  try{
+    await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', () => window.jspdf);
+    const pdf = new window.jspdf.jsPDF({orientation:'p', unit:'mm', format:'a4'}), W = 92, H = 62.6, gx = 4, gy = 4, x0 = (210 - 2 * W - gx) / 2, y0 = (297 - 4 * H - 3 * gy) / 2;
+    for(let i = 0; i < MINI.length; i++){
+      if(i && i % 8 === 0) pdf.addPage();
+      const im = await new Promise((ok, no) => { const m = new Image(); m.onload = () => ok(m); m.onerror = no; m.src = MINI[i].full; });
+      const cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight; cv.getContext('2d').drawImage(im, 0, 0);
+      const k = i % 8; pdf.addImage(cv.toDataURL('image/jpeg', .9), 'JPEG', x0 + (k % 2) * (W + gx), y0 + Math.floor(k / 2) * (H + gy), W, H);
+    }
+    pdf.save('miniatura-cards.pdf'); toast('הקובץ ירד למחשב');
+  }catch(e){ toast('לא הצלחתי ליצור PDF. אפשר ללחוץ על "הדפסת כל הקלפים" ולבחור "שמירה כ־PDF"'); }
+  btn.disabled = false;
+};
 pages.cards = () => `<div class="mn-page"><div class="wrap mn-wrap">
   <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/create">פעילויות להדפסה</a> › קלפים טיפוליים</div>
   <header class="mn-head"><div><span class="mn-k">מבית מיניאטורה · יהודית לרנר</span><h1>קלפים טיפוליים</h1><p>${MINI.length} קלפים להורדה ולהדפסה. לוחצים על קלף כדי להגדיל אותו.</p></div>
-    <div class="mn-acts"><a class="mn-btn gold" href="downloads/miniatura-cards.pdf" download="miniatura-cards.pdf"><b>הורדת כל הקלפים</b><small>קובץ PDF</small></a><button type="button" class="mn-btn" id="mnPrintAll"><b>הדפסת כל הקלפים</b><small>8 קלפים בדף</small></button></div></header>
+    <div class="mn-acts"><button type="button" class="mn-btn gold" id="mnPdf"><b>הורדת כל הקלפים</b><small>קובץ PDF להדפסה</small></button><button type="button" class="mn-btn" id="mnPrintAll"><b>הדפסת כל הקלפים</b><small>8 קלפים בדף</small></button></div></header>
   <div class="mn-grid" id="mnGrid">${MINI.map((c, i) => `<button type="button" class="mn-card" data-i="${i}" style="--i:${i}" aria-label="קלף ${i + 1} מתוך ${MINI.length}"><img src="${c.thumb}" alt="קלף טיפולי ${i + 1}" loading="lazy"><span class="mn-num">${i + 1}</span></button>`).join('')}</div>
+  <div class="mn-tip"><b>טיפ להדפסה לכבוד חנוכה</b><span>מומלץ להדפיס את 20 הקלפים על בריסטול איכותי (לפחות 300 גרם) בגודל 11×7.5 ס״מ. כדאי לצפות בלמינציה לעמידות, לגזור ולהניח בערמה במרכז השולחן כשהתמונות כלפי מטה.</span></div>
+  <section class="mn-guide" aria-labelledby="mnGH"><span class="mn-k">דף הסבר לערכה</span><h2 id="mnGH">החושך המתוק הזה</h2>
+    <div class="mn-intro">
+      <p>מי אוהבת חושך? לכולנו יש רגעי חושך. רגעים כאלו, שאת לא יודעת איך קוראים לך עכשיו, מה את הולכת לעשות, איך ממשיכים מפה הלאה. מה זה השחור הזה? מישהו יכול להדליק פה את האור? לא רואים פה כלום.</p>
+      <p>כשאת נמצאת בחושך, אולי את לא רואה כלום, אולי צלליות שלא היית רוצה לפגוש אותן לבד ברחוב. או אז, מגיע לך האור. איך זה שאחרי החדלון יבוא לנו האור?</p>
+      <p>היצר הרע יושב על קוצים. אם הוא יודע שאנו הולכים לנצח אותו, או הולך להגיע אלינו שפע גדול, הוא יוצא לפעולת מלכוד. הוא מתחיל לטפטף לנו ייאוש... טיפ טף. פתאום אנחנו לא בטוחים שיש לנו כוח. אבל את <b>רגע לפני הישועה!</b> רגע לפני האור!</p>
+      <p>מידת החסד – שזה השפע של העולם – לא יכולה להגיע בלי מידת הגבורה, בלי הצמצום. ומתוך הצמצום, שם ייפתח לך השפע. החושך הזה הוא רק מעבר. אם תעברי אותו בידיעה שהקב״ה מביא לך את הנעלם הזה באהבה – זה נעשה זמן שעשועים להקב״ה, ובוודאי שייהפך לטוב!</p>
+    </div>
+    <div class="mn-cols">
+      <article><h3>קלפים טיפוליים לשיח רגשי</h3><p>כשאנחנו נמצאות בחושך רגשי, קשה למצוא מילים. בדיוק בשביל זה פותחו הקלפים הטיפוליים. התמונה המאירה נותנת צורה ופנים למה שלא ידענו איך להגדיר. הרגש מקבל תמונה, מונח על השולחן באומץ, והחושך מתחיל לאבד מהאחיזה שלו.</p></article>
+      <article><h3>אפשרות א׳: מעגל מעניק</h3><p>כל אחת מרימה קלף, מתבוננת בו וחושבת למי במעגל הקלף הכי מתאים. היא מציגה אותו ומשתפת למה בחרה להעניק אותו. (מדברים רק על דברים טובים ומחזקים!)</p></article>
+      <article><h3>אפשרות ב׳: שיתוף אישי</h3><p>כל אחת מרימה קלף, מתבוננת בשקט ומשתפת: מה בקלף תופס את העין? למה הוא מתאים למצבי כרגע, או איזה זיכרון מהחיים הוא מעלה בי?</p></article>
+      <article><h3>רעיונות נוספים לבחירת קלפים פתוחים</h3><p>פורסים את הקלפים פתוחים ומבקשים לבחור: קלף שמתאר מה אני מרגיש עכשיו | קלף שהוא החלום שלי | דמות או תכונה שהייתי רוצה לאמץ | קלף שמעלה זיכרון מתוק | קלף שמשדר איחול או מסר לעולם | קלף שמתאים למארחת או לילדה ביום ההולדת.</p></article>
+    </div>
+    <p class="mn-about">סדרה זו היא חלק מערכת הקלפים <b>״מיניאטורה״</b> – כ־90 קלפים של סצנות יפיפיות לפיתוח שיח רגשי. <b>יהודית (דיתי) לרנר</b> – מטפלת רגשית ויוצרת קלפי מיניאטורה לפיתוח שיח רגשי אצל ילדים. לקבלת טריילר: <a href="mailto:diti3051@gmail.com" dir="ltr">diti3051@gmail.com</a></p>
+  </section>
   <p class="mn-credit">קלפים טיפוליים מבית מיניאטורה · יהודית לרנר · כל הזכויות שמורות</p>
 </div></div>`;
 pages.cards.after = () => {
@@ -1233,6 +1265,7 @@ pages.cards.after = () => {
   };
   document.getElementById('mnGrid').onclick = e => { const b = e.target.closest('.mn-card'); if(b) open(+b.dataset.i); };
   document.getElementById('mnPrintAll').onclick = () => miniPrint(MINI, true);
+  document.getElementById('mnPdf').onclick = e => miniPdf(e.currentTarget);
 };
 
 pages.advertise = () => pageHead('רוצים לפרסם?', 'בחרו אחת משלוש התכניות, ואחר כך צרו איתנו קשר.', 'פרסום') + `<div class="wrap">${adBlock()}</div>`;
