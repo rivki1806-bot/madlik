@@ -189,3 +189,9 @@ html[data-pal] body .site-footer .footer-links{border-color:rgba(10,34,68,.14)}
 
 /* תפריט עליון: שורה אחת גם עם השם הארוך של המדור */
 @media (min-width:1000px){html[data-pal] body .main-nav{flex-wrap:nowrap;gap:0}html[data-pal] body .main-nav a{font-size:.84rem;padding:.45em .5em;white-space:nowrap}}
+
+/* קישור לסרטון בעמוד הפרסום */
+.adv-video{display:flex;align-items:center;gap:14px;width:fit-content;max-width:100%;margin:0 0 22px;padding:10px 22px 10px 10px;border-radius:999px;background:#0a2244;color:#fbf1dc!important;text-decoration:none;box-shadow:0 16px 28px -16px rgba(10,34,68,.7);transition:transform .25s}
+.adv-video span{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(120deg,#ff6a00,#ffc42d);color:#0a2244;font-size:1.1rem;padding-inline-start:3px}
+.adv-video b{font:600 1rem 'Rubik',sans-serif}.adv-video small{font:400 .85rem 'Heebo',sans-serif;opacity:.7}
+.adv-video:hover{transform:translateY(-2px)}
