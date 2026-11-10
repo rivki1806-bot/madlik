@@ -599,7 +599,7 @@ pages.edit.after = (p, q) => {
 };
 
 const TP_SWATCHES = ['#ffffff','#111111','#f7f2e8','#4e0f26','#d4a64a','#e4572e','#ff6a00','#1a56b0','#2f80ed','#14a38a','#7b57c9','#ec008c'];
-const tpDefault = q => ({theme:'gold-blue', font: q.style ? 'suez' : 'frank', style: q.style || '', fsz:100, bz:100, tcol:'', icol:'', pos:'', bx:'', by:'', ls:0, lh:100, po:100, bb:0, tsh:0, tx:0, ty:0, lx:0, ly:0, lz:100});
+const tpDefault = q => ({theme:'gold-blue', font: q.style ? 'suez' : 'frank', style: q.style || '', fsz:100, bz:100, tcol:'', icol:'', pos:'', bx:'', by:'', ls:0, lh:100, po:100, pcol:'', pt:'', bb:0, tsh:0, tx:0, ty:0, lx:0, ly:0, lz:100});
 const tpStyle = s => s.style ? (D.styles || []).find(x => x.id === s.style && x.tpl) : null;
 const tpDefColors = s => { const st = tpStyle(s), th = D.themes.find(x => x.id === s.theme) || D.themes[0]; return st ? {t: st.tpl.title, i: st.tpl.ink} : {t: th.title, i: th.ink}; };
 const TPI = {
@@ -648,7 +648,7 @@ pages.design = ([id], q) => {
         <div class="tp-grp"><h4>מה צובעים?</h4><div class="seg tp-seg" role="group" aria-label="מה לצבוע"><button type="button" data-ct="tcol" aria-pressed="true">הכותרת</button><button type="button" data-ct="icol" aria-pressed="false">שאר הטקסט</button></div>
           <label class="pc pc-c"><span>צבע</span><span class="cpick" style="--c:#ffffff"><input type="color" id="tpColor" value="#ffffff" aria-label="צבע הטקסט"><code>#ffffff</code></span></label>
           <div class="sw-row" id="tpSw" role="group" aria-label="צבעים מהירים">${pal.map(c => `<button type="button" class="sw" data-sw="${c}" style="--c:${c}" aria-label="צבע ${c}" title="${c}"></button>`).join('')}<button type="button" class="tp-def" id="tpColDef" title="חזרה לצבע של השפה העיצובית">ברירת מחדל</button></div></div>
-        <div class="tp-grp" id="tpPlateBox"><h4>הרקע שמאחורי הטקסט</h4>${rng('po', 'עוצמת הלוחית', 0, 150, +s.po, '%', 'הלוחית היא הלוח הצבעוני שמאחורי הכתוב. 0% מסתיר אותה לגמרי')}
+        <div class="tp-grp" id="tpPlateBox"><h4>הרקע שמאחורי הטקסט</h4><label class="pc pc-c"><span>צבע הרקע</span><span class="cpick" style="--c:#ffffff"><input type="color" id="tpPcol" value="#ffffff" aria-label="צבע הרקע שמאחורי הטקסט"><code>#ffffff</code></span></label><div class="sw-row" id="tpPsw" role="group" aria-label="צבעים מהירים לרקע הטקסט">${pal.map(c => `<button type="button" class="sw" data-psw="${c}" style="--c:${c}" aria-label="צבע ${c}" title="${c}"></button>`).join('')}<button type="button" class="tp-def" id="tpPcDef" title="חזרה לרקע של השפה העיצובית">ברירת מחדל</button></div>${rng('pt', 'שקיפות הרקע', 0, 100, +s.pt || 0, '%', '0% = רקע אטום לגמרי, 100% = שקוף לגמרי ורואים רק את התמונה')}
           <div class="seg tp-seg" id="tpPosBox" role="group" aria-label="מיקום הטקסט"><button type="button" data-pos="top">למעלה</button><button type="button" data-pos="center">במרכז</button><button type="button" data-pos="bottom">למטה</button><button type="button" data-pos="">אוטומטי</button></div></div></div>
 
       <div class="tp-pane" data-pane="bg" style="--tc:${T.bg.col}" hidden>${head(T.bg)}
@@ -715,6 +715,14 @@ pages.design.after = ([id], q) => {
     const bb = $('tpBold'); bb.classList.toggle('on', bold); bb.setAttribute('aria-pressed', bold); $('tpBoldT').textContent = bold ? 'פעיל' : 'כבוי';
     const sh = $('tpShadow'); sh.setAttribute('aria-pressed', !!+s.tsh);
   }
+  const plateBase = () => { const st = tpStyle(s); if(!st) return null; const b = Math.min(t.w, t.h) < 80 ? st.tpl.pl : st.tpl.plb; const m = String(b || '').match(/rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)(?:[ ,/]+([\d.]+))?\s*\)/); return {c: m ? [+m[1], +m[2], +m[3]] : [255, 255, 255], a: b ? (m && m[4] != null ? +m[4] : 1) : .7}; };
+  const ptDef = () => { const b = plateBase(); return b ? Math.round((1 - Math.min(1, b.a * ((+s.po || 100) / 100))) * 100) : 30; };
+  const hex2 = n => ('0' + Math.max(0, Math.min(255, n)).toString(16)).slice(-2);
+  function syncPlate(){
+    const inp = $('tpPcol'); if(!inp) return; const b = plateBase(), def = b ? '#' + hex2(b.c[0]) + hex2(b.c[1]) + hex2(b.c[2]) : '#ffffff';
+    const cur = /^#[0-9a-f]{6}$/i.test(s.pcol || '') ? s.pcol : def; inp.value = cur; const cp = inp.parentElement; cp.style.setProperty('--c', cur); cp.querySelector('code').textContent = s.pcol ? cur : cur + ' (ברירת מחדל)';
+    $('tpPsw').querySelectorAll('.sw').forEach(x => x.classList.toggle('on', !!s.pcol && x.dataset.psw.toLowerCase() === s.pcol.toLowerCase()));
+  }
   function syncColor(){
     const d = tpDefColors(s), cur = s[ctarget] || (ctarget === 'tcol' ? d.t : d.i), inp = $('tpColor');
     inp.value = /^#[0-9a-f]{6}$/i.test(cur) ? cur : '#000000'; const cp = inp.parentElement; cp.style.setProperty('--c', inp.value); cp.querySelector('code').textContent = s[ctarget] ? inp.value : inp.value + ' (ברירת מחדל)';
@@ -728,13 +736,13 @@ pages.design.after = ([id], q) => {
   }
   function syncUI(){
     ['pre','title','sub','body','foot'].forEach(k => { const el = f.elements[k]; if(el && !el.disabled) el.value = s[k] == null ? '' : s[k]; });
-    const DEF = {fsz:100, ls:0, lh:100, po:100, bz:100, bb:0};
+    const DEF = {fsz:100, ls:0, lh:100, po:100, bz:100, bb:0, pt:ptDef()};
     f.querySelectorAll('[data-sk]').forEach(r => { const v = s[r.dataset.sk]; setRange(r, v == null || v === '' ? DEF[r.dataset.sk] : +v); });
     stripStyle(document, s.style || '');
     f.querySelectorAll('.stp').forEach(b => b.classList.toggle('on', b.dataset.style === (s.style || '')));
     f.querySelectorAll('.swatch').forEach(b => b.classList.toggle('on', b.dataset.theme === s.theme));
     f.querySelectorAll('[data-pos]').forEach(b => b.setAttribute('aria-pressed', (s.pos || '') === b.dataset.pos));
-    syncFont(); syncColor(); showBoxes();
+    syncFont(); syncColor(); syncPlate(); showBoxes();
   }
 
   /* ---------- ציור הדף ---------- */
@@ -883,6 +891,7 @@ pages.design.after = ([id], q) => {
     const el = e.target;
     if(el.dataset.sk){ s[el.dataset.sk] = +el.value; setRange(el, +el.value); draw(); push(); return; }
     if(el.id === 'tpColor'){ s[ctarget] = el.value; syncColor(); draw(); push(); return; }
+    if(el.id === 'tpPcol'){ s.pcol = el.value; syncPlate(); draw(); push(); return; }
     if(el.id === 'zm' || el.id === 'logoIn') return;
     draw(); push();
   };
@@ -893,6 +902,8 @@ pages.design.after = ([id], q) => {
     if(b.dataset.theme){ s.theme = b.dataset.theme; syncUI(); draw(); push(); return; }
     if(b.dataset.ct){ ctarget = b.dataset.ct; syncColor(); return; }
     if(b.dataset.sw){ s[ctarget] = b.dataset.sw; syncColor(); draw(); push(); return; }
+    if(b.dataset.psw){ s.pcol = b.dataset.psw; syncPlate(); draw(); push(); return; }
+    if(b.id === 'tpPcDef'){ s.pcol = ''; s.pt = ''; syncUI(); draw(); push(); return; }
     if(b.id === 'tpColDef'){ s[ctarget] = ''; syncColor(); draw(); push(); return; }
     if(b.id === 'tpShadow'){ s.tsh = +s.tsh ? 0 : 1; syncFont(); draw(); push(); return; }
     if(b.dataset.pos !== undefined){ s.pos = b.dataset.pos; syncUI(); draw(); push(); return; }
@@ -986,7 +997,14 @@ function designHTML(t, s, logo){
   let one;
   if(st){
     const k = st.tpl, base = small ? k.pl : k.plb, g = bgInfo(t, s, st);
-    const pl = base ? plateAlpha(base, (s.po == null || s.po === '' ? 100 : +s.po) / 100) : '';
+    let pl = base ? plateAlpha(base, (s.po == null || s.po === '' ? 100 : +s.po) / 100) : '';
+    const hasC = /^#[0-9a-f]{6}$/i.test(s.pcol || ''), hasT = s.pt !== '' && s.pt != null && !isNaN(+s.pt);
+    if(hasC || hasT){
+      const bm = String(base || '').match(/rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)(?:[ ,/]+([\d.]+))?\s*\)/);
+      const rgb = hasC ? [parseInt(s.pcol.slice(1, 3), 16), parseInt(s.pcol.slice(3, 5), 16), parseInt(s.pcol.slice(5, 7), 16)] : bm ? [+bm[1], +bm[2], +bm[3]] : [255, 255, 255];
+      const al = hasT ? 1 - Math.max(0, Math.min(100, +s.pt)) / 100 : Math.min(1, (base ? (bm && bm[4] != null ? +bm[4] : 1) : .7) * ((s.po == null || s.po === '' ? 100 : +s.po) / 100));
+      pl = al <= .01 ? 'transparent' : 'rgba(' + rgb.join(',') + ',' + al.toFixed(3) + ')';
+    }
     const bgc = g.wide ? '#efe3cf' : '#222', bb = +s.bb || 0;
     const bright = bb ? `;box-shadow:inset 0 0 0 300mm ${bb < 0 ? 'rgba(0,0,0,' + (-bb / 100).toFixed(2) + ')' : 'rgba(255,255,255,' + (bb / 100).toFixed(2) + ')'}` : '';
     const bg = `background:${bgc} url(${st.img}) ${g.px}% ${g.py}%/${g.size} no-repeat`;
