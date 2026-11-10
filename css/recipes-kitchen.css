@@ -1,14 +1,14 @@
 /* מדור המתכונים בסגנון מטבח: רקע מטושטש וכרטיסי זכוכית */
 html[data-pal] body[data-world=recipes]{
   background-color:#e8e4dc!important;
-  background-image:linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18)),url("../img/recipes-bg.webp")!important;
+  background-image:linear-gradient(rgba(255,255,255,.06),rgba(255,255,255,.06)),url("../img/recipes-bg2.webp")!important;
   background-repeat:no-repeat!important;
   background-position:center,center top!important;
   background-size:100% 100%,cover!important;
   background-attachment:fixed!important}
 html[data-pal] body[data-world=recipes] .amb,html[data-pal] body[data-world=recipes] .page-head{display:none!important}
 .kg{color:#4a2c1d;font-family:'Heebo',sans-serif}
-.kg-wrap{max-width:1060px!important;padding-bottom:clamp(36px,5vw,70px)}
+.kg-wrap{max-width:940px!important;padding-bottom:clamp(36px,5vw,70px)}
 .kg-card,.kg-lh,.kg-filters{background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(20px) saturate(1.2);backdrop-filter:blur(20px) saturate(1.2);border:1px solid rgba(255,255,255,.72);box-shadow:0 30px 60px -34px rgba(70,45,25,.45),inset 0 1px 0 rgba(255,255,255,.7)}
 .kg-card{margin:clamp(16px,3vw,36px) auto 0;padding:clamp(18px,3vw,38px);border-radius:28px}
 .kg-bc{font:500 .82rem 'Rubik',sans-serif;color:#7a6455;margin-bottom:14px}.kg-bc a{color:#7a6455}

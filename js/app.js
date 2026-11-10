@@ -36,7 +36,7 @@ function record(kind, data){
   try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'submit', kind, data})}).catch(()=>{}); }catch(e){}
 }
 // ספירת כניסות: לכל מדור ולכל בעל עסק. נשלח לשרת כשהוא מחובר, ותמיד נשמר גם בדפדפן הזה
-const SECTIONS = {cards:'פעילויות להדפסה', home:'עמוד הבית', games:'משחקים על המסך שניתנים גם להדפסה', game:'משחקים על המסך שניתנים גם להדפסה', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'בעלי עסקים', supplier:'בעלי עסקים', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
+const SECTIONS = {cards:'פעילויות להדפסה', home:'עמוד הבית', games:'משחקים על המסך שניתנים גם להדפסה', game:'משחקים על המסך שניתנים גם להדפסה', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'נותני שירות', supplier:'נותני שירות', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
 const visitorId = () => { let v = store.get('vid', ''); if(!v){ v = Math.random().toString(36).slice(2, 12); store.set('vid', v); } return v; };
 let lastHit = '';
 // לחיצה על "הטלפון שלנו" בעמוד עסק: נספרת לכל עסק. לשרת נשלחת כ"sup" עם הקידומת tel:, כך שגם שרת ישן לא ירשום כניסות מדומות
@@ -229,7 +229,7 @@ pages.home = () => {
     .concat(['<a class="ad-card ad-cta" href="#/advertise"><b>ראית את זה?</b><span>ראו את זה עוד אלפי אנשים, מוזמן לפרסם באחת התכניות השוות!</span><em>לכל התכניות וטופס יצירת קשר ←</em></a>']);
   return `
   <section class="hero" id="hero">
-    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ובעלי עסקים</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
+    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ונותני שירות</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
         <aside class="ad-rail" aria-label="מודעות">
       <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button><img class="ad-logo" src="img/logo-mark.png" alt="">
       ${Date.now() < BIZ_NOTICE_UNTIL ? '<div class="ad-open" role="note" aria-label="פתיחת פרסום ביום שלישי 10.11.26"><b>פתיחת פרסום</b><span>ביום שלישי</span><i>10.11.26</i></div>' : ''}
@@ -245,7 +245,7 @@ pages.home = () => {
   ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').slice(0,3).map(creatorCard).join(''))}
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
-  ${wshow('biz','בעלי עסקים','בעלי עסקים שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילים ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
+  ${wshow('biz','נותני שירות','נותני שירות שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילים ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
   <section class="final">
     <a class="big-link" href="#/games">מתחילים לשחק <i>←</i></a>
     <a class="big-link" href="#/submit">יש לך רעיון? <i>←</i></a>
@@ -253,7 +253,7 @@ pages.home = () => {
   </section>`;
 };
 pages.home.after = () => {
-  /* החלון הקופץ של בעלי עסקים: גם כשמגיעים למדור בעלי העסקים בעמוד הבית */
+  /* החלון הקופץ של נותני שירות: גם כשמגיעים למדור נותני השירות בעמוד הבית */
   const bizSec = document.querySelector('.wshow[data-w="biz"]');
   if('IntersectionObserver' in window && bizSec){
     const io = new IntersectionObserver(es => { if(es.some(e => e.isIntersecting)){ io.disconnect(); showBizNotice(); } }, {threshold:.45});
@@ -273,7 +273,7 @@ pages.search = (p,q) => {
   const term = (q.q||'').trim(); const m = x => JSON.stringify(x).includes(term);
   const g = content('games').filter(m), r = content('recipes').filter(m), s = content('suppliers').filter(m);
   const block = (t,arr,fn) => arr.length?`<h2>${t}</h2><div class="cards" style="margin-bottom:30px">${arr.map(fn).join('')}</div>`:'';
-  return pageHead('תוצאות חיפוש', `חיפשת: "${esc(term)}"`, 'חיפוש') + `<div class="wrap">${(g.length+r.length+s.length)?block('משחקים',g,gameCard)+block('מתכונים',r,recipeCard)+block('בעלי עסקים',s,supCard):'<div class="empty">לא נמצאו תוצאות. נסה מילה אחרת.</div>'}</div>`;
+  return pageHead('תוצאות חיפוש', `חיפשת: "${esc(term)}"`, 'חיפוש') + `<div class="wrap">${(g.length+r.length+s.length)?block('משחקים',g,gameCard)+block('מתכונים',r,recipeCard)+block('נותני שירות',s,supCard):'<div class="empty">לא נמצאו תוצאות. נסה מילה אחרת.</div>'}</div>`;
 };
 
 /* משחקים */
@@ -1115,7 +1115,7 @@ pages.recipe.after = ([id]) => {
   draw();
 };
 
-/* בעלי עסקים */
+/* נותני שירות */
 const ADS_EMAIL = 'rivki1806@gmail.com';
 const PLANS = [
   {id:'Basic', name:'Basic', price:'300 ₪', text:'רואים אותך בעמוד העסקים.', cls:'p1'},
@@ -1161,7 +1161,7 @@ function adBlockAfter(){
 
 pages.suppliers = () => {
   const all = content('suppliers'), cats = [...new Set(all.map(s=>s.cat))], regions = ['צפון','חיפה','שרון','מרכז','ירושלים','שפלה','דרום'];
-  return pageHead('בעלי עסקים שישדרגו לכם את האירוע', 'אולמות, קייטרינג, מפעילים, עיצוב וקינוחים. לפי אזור, סוג ומחיר.', 'בעלי עסקים') + `
+  return pageHead('נותני שירות שישדרגו לכם את האירוע', 'אולמות, קייטרינג, מפעילים, עיצוב וקינוחים. לפי אזור, סוג ומחיר.', 'נותני שירות') + `
   <div class="wrap">
     <a class="ad-strip" href="#/advertise" data-scroll="adBlock"><b>רוצים לפרסם?</b><span>צרו איתנו קשר</span><i>←</i></a>
     <form class="filters" id="sf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש עסק..."><select name="cat"><option value="">כל סוגי השירות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="region"><option value="">כל הארץ</option>${regions.map(c=>`<option>${c}</option>`).join('')}</select><select name="price"><option value="">כל טווחי המחיר</option><option>₪</option><option>₪₪</option><option>₪₪₪</option></select></form>
@@ -1180,7 +1180,7 @@ pages.suppliers.after = () => {
 
 pages.supplier = ([id]) => {
   const s = findIn('suppliers', id); if(!s) return notFound();
-  return pageHead(esc(s.name), esc(s.text), `<a href="#/suppliers">בעלי עסקים</a> › ${esc(s.name)}`) + `
+  return pageHead(esc(s.name), esc(s.text), `<a href="#/suppliers">נותני שירות</a> › ${esc(s.name)}`) + `
   <div class="wrap detail">
     <div class="box"><h2>שליחת פנייה</h2>
       <form class="form" id="lf"><div class="two-col"><label>שם<input name="name" required></label><label>טלפון<input name="phone" type="tel" required></label></div><label>מייל<input name="email" type="email"></label><div class="two-col"><label>תאריך האירוע<input name="date" type="date"></label><label>מספר משתתפים<input name="count" type="number" min="1"></label></div><label>פרטים<textarea name="msg"></textarea></label><button class="btn btn-gold">שליחה</button></form>
@@ -1326,7 +1326,7 @@ pages.admin = () => {
   if(!ADMIN_PAGE) return notFound();
   if(!sessionStorage.getItem('madlik_admin')) return pageHead('ניהול מדליק', '', 'ניהול') + `<div class="wrap"><div class="box" style="max-width:440px;margin:auto"><form class="form" id="loginF">${API() ? '<label>מפתח ניהול<input type="password" name="p" required autocomplete="off"></label><button class="btn btn-gold">כניסה</button><p class="hint">המפתח הסודי שקבעת בסקריפט של גוגל. הוא נבדק בשרת, ואינו נשמר באתר.</p>' : '<div class="notice">עדיין לא מחוברים לשרת של גוגל. בלי השרת אי אפשר לראות כניסות של גולשים אחרים או הודעות שנשלחו. אחרי הכניסה, בלשונית "רשימת תפוצה" יש הוראות חיבור.</div><button class="btn btn-gold">כניסה לניהול</button>'}</form></div></div>`;
   const tab = location.hash.split('tab=')[1] || 'stats', live = !!API();
-  const tabs = {stats:'כניסות', biz:'עסקים מפרסמים', subs:'רעיונות שנשלחו', leads:'פניות לבעלי עסקים', ads:'בקשות פרסום', contact:'יצירת קשר', news:'רשימת תפוצה', users:'משתמשים', add:'הוספת תוכן'};
+  const tabs = {stats:'כניסות', biz:'עסקים מפרסמים', subs:'רעיונות שנשלחו', leads:'פניות לנותני שירות', ads:'בקשות פרסום', contact:'יצירת קשר', news:'רשימת תפוצה', users:'משתמשים', add:'הוספת תוכן'};
   const tbl = (rows, cols) => adminTable(tab, rows, cols);
   let body = '';
   if(tab==='biz') body = bizTabHTML();
@@ -1341,7 +1341,7 @@ pages.admin = () => {
   <div class="box"><h3>תוכן שהוספת</h3>${['games','recipes','suppliers'].map(k=>addedContent(k).map(x=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span>${esc(x.title||x.name)} <span class="muted">(${k})</span></span><button class="btn btn-sm btn-light" data-del-extra="${k}|${esc(x.id)}">מחיקה</button></div>`).join('')).join('') || '<p class="muted">עוד לא הוספת.</p>'}</div>`;
   return pageHead('ניהול האתר', '', 'ניהול') + `<div class="wrap">${live ? `<div class="notice" style="margin-bottom:16px">מחובר לשרת של גוגל: כל הטפסים, הנרשמים והתוכן נשמרים בגיליון שלך.</div>` : `<div class="notice" style="margin-bottom:16px">עדיין לא מחובר לשרת: מה שמופיע כאן נשמר רק בדפדפן הזה. כדי שכל הטפסים והנרשמים יגיעו אלייך, חברי את השרת של גוגל (ההוראות בלשונית "רשימת תפוצה").</div>`}<div class="tabs">${Object.entries(tabs).map(([k,v])=>`<a class="chip ${k===tab?'on':''}" href="#/admin?tab=${k}">${v}</a>`).join('')}<button class="chip" id="logout">יציאה</button></div>${body}</div>`;
 };
-// לשונית הכניסות: טבלת מדורים וטבלת בעלי עסקים
+// לשונית הכניסות: טבלת מדורים וטבלת נותני שירות
 function localStats(){
   const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10), out = {sec:{}, sup:{}, tel:{}, web:{}};
   ['sec','sup'].forEach(t => Object.entries(st[t]||{}).forEach(([id,o]) => out[t][id] = {total:o.total, today:o.day===today?o.today:0, week:(o.week||[]).filter(x=>Date.now()-x<7*864e5).length, uniq:null}));
@@ -1516,7 +1516,7 @@ function initBiz(call, live, fail){
 
 function newsTabHTML(){
   const setup = API() ? '' : `<div class="box" id="nSetup"><h2>חיבור חד־פעמי של רשימת התפוצה</h2>
-    <p>כדי שכל מה שנשלח באתר יגיע אלייך (נרשמים, פניות לבעלי עסקים, בקשות פרסום, רעיונות ומשתמשים), שהתוכן שתוסיפי יופיע לכל הגולשים, ושההודעות ייצאו מהג׳ימייל שלך, צריך שרת קטן וחינמי של גוגל. 5 דקות, פעם אחת:</p>
+    <p>כדי שכל מה שנשלח באתר יגיע אלייך (נרשמים, פניות לנותני שירות, בקשות פרסום, רעיונות ומשתמשים), שהתוכן שתוסיפי יופיע לכל הגולשים, ושההודעות ייצאו מהג׳ימייל שלך, צריך שרת קטן וחינמי של גוגל. 5 דקות, פעם אחת:</p>
     <ol>
       <li>פתחי גיליון חדש בגוגל שיטס: <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a>.</li>
       <li>בתפריט למעלה: <b>תוספים</b> ← <b>Apps Script</b>.</li>
@@ -1667,7 +1667,7 @@ function render(){
   if(name && pages[name].after) pages[name].after(params, q);
   let isAdmin = false; try{ isAdmin = !!sessionStorage.getItem('madlik_admin'); }catch(e){}
   if(!isAdmin && !ADMIN_PAGE) countHit(name, params, path);
-  if(!ADMIN_PAGE){ const T = {games:'משחקים על המסך שניתנים גם להדפסה', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'בעלי עסקים לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
+  if(!ADMIN_PAGE){ const T = {games:'משחקים על המסך שניתנים גם להדפסה', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'נותני שירות לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
   if(window.MadlikFX) window.MadlikFX.onRender(app);
   if(window.MadlikWorlds) window.MadlikWorlds.apply(name, app);
   document.querySelectorAll('.main-nav a').forEach(a=>a.classList.toggle('active', path!=='/' && ('#'+path).startsWith(a.getAttribute('href'))));
@@ -1679,7 +1679,7 @@ window.addEventListener('hashchange', () => {
   render(); if(!same) window.scrollTo({top:0, left:0, behavior:'instant'});
 });
 
-/* ---------- הודעה בולטת בכניסה למדור בעלי עסקים ---------- */
+/* ---------- הודעה בולטת בכניסה למדור נותני שירות ---------- */
 const BIZ_NOTICE_UNTIL = new Date('2026-11-10T00:00:00+02:00').getTime(); // מיום שלישי 10.11.26 ההודעה כבר לא רלוונטית
 let bizClosedAt = 0;
 function showBizNotice(){
@@ -1687,7 +1687,7 @@ function showBizNotice(){
   const SECS = 8, el = document.createElement('div');
   el.className = 'biz-notice'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'bnT');
   el.innerHTML = '<div class="bn-card"><div class="bn-ico" aria-hidden="true">🤝</div>' +
-    '<p class="bn-kick">בעלי עסקים</p><h2 id="bnT">שימו לב, זה מתחיל ביום שלישי</h2>' +
+    '<p class="bn-kick">נותני שירות</p><h2 id="bnT">שימו לב, זה מתחיל ביום שלישי</h2>' +
     '<div class="bn-date"><b>שלישי</b><span>10.11.26</span></div>' +
     '<p class="bn-text">הסכם עם העסקים שמעוניינים בפרסום חל החל מיום שלישי 10.11.26, ורק מאז תוכלו לצפות בהם ולהנות משירותם.</p>' +
     '<button type="button" class="btn btn-gold bn-ok">הבנתי, להמשיך ←</button>' +
@@ -1758,7 +1758,7 @@ loadRemote();
 /* ---------- עיגול בצד בכל עמוד: "נהניתם? הכנסו ושתפו אותנו!" ---------- */
 (function feedbackBubble(){
   if(ADMIN_PAGE) return;
-  const FB_AREAS = ['משחקים', 'מתכונים', 'סטודיו מיתוג', 'פעילויות להדפסה', 'קלפים טיפוליים', 'בעלי עסקים'];
+  const FB_AREAS = ['משחקים', 'מתכונים', 'סטודיו מיתוג', 'פעילויות להדפסה', 'קלפים טיפוליים', 'נותני שירות'];
   let hideUntil = 0; try{ hideUntil = +sessionStorage.getItem('madlik_fb_hide') || 0; }catch(e){}
   const doneAt = store.get('fb_done', 0); if(doneAt && Date.now() - doneAt < 7 * 864e5) return;
   if(hideUntil) return;
