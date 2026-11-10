@@ -53,8 +53,7 @@ document.addEventListener('click', e => {
   e.preventDefault();
   const s = findIn('suppliers', t.dataset.tel); if(!s || !s.phone) return;
   countClick('tel', s.id);
-  t.outerHTML = '<a class="sup-tel open" href="tel:' + esc(s.phone) + '" dir="ltr">' + esc(s.phone) + '</a>';
-  location.href = 'tel:' + s.phone;
+  t.outerHTML = '<span class="sup-tel open" dir="ltr">' + esc(s.phone) + '</span>';
 });
 function countHit(name, params, path){
   if(!SECTIONS[name] || path === lastHit) return; lastHit = path;
@@ -1057,7 +1056,7 @@ pages.supplier = ([id]) => {
 };
 pages.supplier.after = ([id]) => {
   const tb = document.getElementById('telBtn');
-  if(tb) tb.onclick = () => { const s = findIn('suppliers', id); if(!s) return; countClick('tel', id); tb.outerHTML = '<a class="tel-btn open" href="tel:' + esc(s.phone) + '" dir="ltr">' + esc(s.phone) + '</a>'; location.href = 'tel:' + s.phone; };
+  if(tb) tb.onclick = () => { const s = findIn('suppliers', id); if(!s) return; countClick('tel', id); tb.outerHTML = '<span class="tel-btn open" dir="ltr">' + esc(s.phone) + '</span>'; };
   const f = document.getElementById('lf'); if(!f) return; f.onsubmit = e => { e.preventDefault(); record('leads', Object.assign({supplier:findIn('suppliers',id).name, sid:id}, Object.fromEntries(new FormData(f)))); f.reset(); toast('הפנייה נשלחה! בעל העסק יחזור אלייך בהקדם'); }; };
 
 /* קישור ייעודי לסמינר מעלות: כניסה עם מייל ואישור דיוור (פעם אחת). רק בקישור הזה */
