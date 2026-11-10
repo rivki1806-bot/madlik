@@ -473,9 +473,14 @@ const TOURS = {
     {ic:'🧁', tight:1, sel:'#stProd .st-h', t:'שלב 2: בוחרים מוצר', d:'כל ציור מראה איך ייראה הדף כפי שיודפס. לוחצים על המוצר שרוצים ועוברים לעריכה.'}
   ],
   design: [
-    {ic:'✏️', sel:'.tp-tabs', t:'כאן כותבים', d:'מחליפים את הטקסט בשדות. אפשר גם לשנות גופן, צבע ורקע בלשוניות שלמעלה.'},
-    {ic:'👆', sel:'.tp-vtools', t:'גוררים כדי למקם', d:'לוחצים על הכיתוב או על התמונה וגוררים למקום שאוהבים. כך מזיזים את העיצוב בתוך המוצר.'},
-    {ic:'🖨️', sel:'.tp-dock', t:'מורידים או מדפיסים', d:'כשהכול נראה טוב, לוחצים כאן להדפסה, להורדה כתמונה או לשמירה.'}
+    {ic:'🧰', sel:'.tp-tabs', t:'חמישה כלים בשורה אחת', d:'טקסט, גופן, צבע, רקע ותצוגה. לוחצים על כלי ועוברים אליו. מתחילים מהטקסט.'},
+    {ic:'✏️', sel:'[data-fld=title]', t:'קודם כותבים', d:'מחליפים את הכותרת במילים שלכם. אפשר להשאיר שורות ריקות. התוצאה מתעדכנת מיד בתצוגה.'},
+    {ic:'🔤', sel:'.tp-tab[data-tab=font]', t:'גופן וגודל', d:'יש כאן 300 גופנים. טיפ: כותרת בגופן עבה ושאר הטקסט בגופן פשוט נראים הכי מסודרים.'},
+    {ic:'🌈', sel:'.tp-tab[data-tab=color]', t:'צבעים וקריאות', d:'צובעים את הכותרת ואת שאר הטקסט. אם קשה לקרוא על התמונה, מחזקים את הלוחית או מוסיפים צל.'},
+    {ic:'🖼️', sel:'.tp-tab[data-tab=bg]', t:'הרקע והעיצוב', d:'מחליפים שפה עיצובית, מקרבים את התמונה ומכהים או מבהירים אותה, כדי שהטקסט יבלוט.'},
+    {ic:'👆', sel:'.tp-vtools', t:'גוררים כדי למקם', d:'לוחצים על הכיתוב או על התמונה וגוררים למקום הכי יפה. כך מזיזים את העיצוב בתוך המוצר. אפשר גם להגדיל ולהקטין.'},
+    {ic:'↩️', sel:'.tp-top', t:'טעות? אין בעיה', d:'ביטול ושחזור מחזירים כל פעולה. כפתור איפוס מחזיר הכול להתחלה.'},
+    {ic:'🖨️', sel:'.tp-dock', t:'מורידים או מדפיסים', d:'כשהכול נראה טוב: הדפסה, הורדה כתמונה או שמירה באזור האישי. מה שרואים בתצוגה הוא מה שיודפס.'}
   ]
 };
 function runTour(key, force){
@@ -484,7 +489,7 @@ function runTour(key, force){
   if(!steps.length || document.querySelector('.tour-ov')) return;
   if(!force && store.get(seenKey, false)) return;
   let i = 0; const ov = document.createElement('div'); ov.className = 'tour-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'סיור קצר');
-  ov.innerHTML = '<i class="tour-dim d1"></i><i class="tour-dim d2"></i><i class="tour-dim d3"></i><i class="tour-dim d4"></i><div class="tour-hole"></div><i class="tour-ping"></i><div class="tour-box"><i class="tour-spark s1"></i><i class="tour-spark s2"></i><i class="tour-spark s3"></i><div class="tour-head"><span class="tour-ic" aria-hidden="true"></span><div><span class="tour-n"></span><h3></h3></div></div><p></p><div class="tour-dots" aria-hidden="true"></div><div class="tour-btns"><button type="button" class="tour-skip">דלגו על הסיור</button><button type="button" class="tour-next btn btn-gold"></button></div></div>';
+  ov.innerHTML = '<i class="tour-dim d1"></i><i class="tour-dim d2"></i><i class="tour-dim d3"></i><i class="tour-dim d4"></i><div class="tour-hole"></div><i class="tour-ping"></i><div class="tour-box"><i class="tour-spark s1"></i><i class="tour-spark s2"></i><i class="tour-spark s3"></i><div class="tour-head"><span class="tour-ic" aria-hidden="true"></span><div><span class="tour-n"></span><h3></h3></div></div><p></p><div class="tour-dots" aria-hidden="true"></div><div class="tour-btns"><button type="button" class="tour-skip">דלגו על הסיור</button><button type="button" class="tour-next tour-go"><span></span><i aria-hidden="true">←</i></button></div></div>';
   document.body.appendChild(ov);
   const hole = ov.querySelector('.tour-hole'), ping = ov.querySelector('.tour-ping'), box = ov.querySelector('.tour-box'), $q = s => ov.querySelector(s);
   const end = () => { store.set(seenKey, true); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); document.removeEventListener('keydown', key_); ov.remove(); };
@@ -509,7 +514,7 @@ function runTour(key, force){
     el.scrollIntoView({block:'center', behavior:'instant'});
     $q('.tour-ic').textContent = s.ic || '✨'; $q('.tour-dots').innerHTML = steps.map((_, k) => '<b class="' + (k === i ? 'on' : k < i ? 'done' : '') + '"></b>').join(''); box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
     $q('.tour-n').textContent = 'שלב ' + (i + 1) + ' מתוך ' + steps.length; $q('h3').textContent = s.t; $q('p').textContent = s.d;
-    $q('.tour-next').textContent = i === steps.length - 1 ? 'הבנתי, מתחילים' : 'הבא ←';
+    $q('.tour-next span').textContent = i === steps.length - 1 ? 'הבנתי, מתחילים' : 'הבא'; $q('.tour-next i').textContent = i === steps.length - 1 ? '✓' : '←';
     setTimeout(place, 60); setTimeout(place, 450); $q('.tour-next').focus({preventScroll:true});
   };
   const key_ = e => { if(e.key === 'Escape') end(); };

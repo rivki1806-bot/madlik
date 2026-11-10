@@ -74,3 +74,16 @@
 
 .tour-dim{position:fixed;background:rgba(8,20,52,.68);transition:all .5s cubic-bezier(.22,.8,.3,1)}
 @media (prefers-reduced-motion:reduce){.tour-dim{transition:none}}
+
+/* כפתור "הבא": גלולה מעוגלת עם חץ וברק */
+.tour-go{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:12px;min-height:54px;padding:0 8px 0 22px;border:0;border-radius:999px;background:linear-gradient(120deg,#ff6a00,#ff9a2e 55%,#ffc42d);color:#0a2244;font:700 1.05rem 'Rubik',sans-serif;cursor:pointer;box-shadow:0 12px 26px -10px rgba(255,106,0,.75),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .25s cubic-bezier(.22,.8,.3,1),box-shadow .25s}
+.tour-go::before{content:"";position:absolute;top:0;bottom:0;width:46px;left:-70px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-20deg);animation:tourShine 3.2s ease-in-out infinite}
+@keyframes tourShine{0%,55%{left:-70px}100%{left:120%}}
+.tour-go i{font-style:normal;width:38px;height:38px;border-radius:50%;background:#0a2244;color:#fff;display:grid;place-items:center;font-size:1.05rem;transition:transform .3s cubic-bezier(.2,1.4,.3,1)}
+.tour-go:hover{transform:translateY(-2px);box-shadow:0 16px 30px -10px rgba(255,106,0,.85),inset 0 1px 0 rgba(255,255,255,.55)}
+.tour-go:hover i{transform:translateX(-4px)}
+.tour-go:active{transform:scale(.97)}
+.tour-go:focus-visible{outline:3px solid #0a2244;outline-offset:3px}
+.tour-skip{border-radius:999px;text-decoration:none;padding:10px 14px}
+.tour-skip:hover{background:rgba(10,34,68,.07);color:#0a2244}
+@media (prefers-reduced-motion:reduce){.tour-go::before{animation:none}}
