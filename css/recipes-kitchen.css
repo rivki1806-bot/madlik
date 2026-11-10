@@ -84,3 +84,18 @@ html[data-pal] body .kg-plug-t h3{font:600 clamp(1.05rem,1.8vw,1.35rem)/1.3 'Rub
 .gk-credit b{color:#3a1f12}
 @media (max-width:640px){.gk-credit{flex-direction:column;text-align:center}}
 @media (prefers-reduced-motion:reduce){.gk-logo{animation:none}}
+
+.gk-col{display:grid;gap:14px;min-width:0}
+.gk-credit p.gk-soon{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:12px;width:fit-content;max-width:100%;margin:0;padding:12px 22px 12px 18px;border-radius:999px;background:linear-gradient(110deg,#ff7a1a,#ffb02e 50%,#ffd84a);background-size:200% 100%;color:#3a1f12;font:700 clamp(1rem,1.9vw,1.3rem)/1.45 'Rubik',sans-serif;text-shadow:none;box-shadow:0 14px 26px -12px rgba(255,106,0,.85),inset 0 1px 0 rgba(255,255,255,.6);animation:gkPulse 3s ease-in-out infinite,gkSlide 6s linear infinite}
+.gk-soon::after{content:"";position:absolute;top:0;bottom:0;width:70px;left:-120px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-18deg);animation:gkShine 4.5s ease-in-out 1s infinite;pointer-events:none}
+.gk-fl{font-size:1.5em;line-height:1;display:inline-block;transform-origin:50% 90%;animation:gkFlame 1.1s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(255,255,255,.8))}
+.gk-st b{font-weight:800}
+.gk-dots{display:inline-flex;gap:3px;margin-inline-start:4px;vertical-align:baseline}
+.gk-dots u{width:6px;height:6px;border-radius:50%;background:#3a1f12;text-decoration:none;animation:gkDot 1.4s ease-in-out infinite}.gk-dots u:nth-child(2){animation-delay:.2s}.gk-dots u:nth-child(3){animation-delay:.4s}
+@keyframes gkFlame{0%,100%{transform:scale(1) rotate(-4deg)}35%{transform:scale(1.18,1.05) rotate(4deg)}70%{transform:scale(.94,1.14) rotate(-2deg)}}
+@keyframes gkPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+@keyframes gkSlide{0%{background-position:0 0}100%{background-position:200% 0}}
+@keyframes gkShine{0%,55%{left:-120px}100%{left:115%}}
+@keyframes gkDot{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+@media (max-width:640px){.gk-credit p.gk-soon{border-radius:26px;text-align:center;justify-content:center}}
+@media (prefers-reduced-motion:reduce){.gk-credit p.gk-soon,.gk-fl,.gk-dots u,.gk-soon::after{animation:none!important}}

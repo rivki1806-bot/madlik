@@ -584,7 +584,7 @@ pages.studio = () => {
     + grp('עוד כרטיסים ותוויות', '', T.filter(t => t.repeat && !used.has(t.id)).map(t => t.id));
   const mpIds = STRIP_ORDER.filter(i => T.some(t => t.id === i)).concat(T.filter(t => !STRIP_ORDER.includes(t.id)).map(t => t.id));
   return pageHead('סטודיו מיתוג', 'בוחרים שפה עיצובית, בוחרים מה להדפיס, עורכים את הטקסט, ורואים את הדף בדיוק כמו בהדפסה.', 'סטודיו מיתוג') + `
-  <section class="hl-credit" aria-label="על העיצובים"><span class="hl-logo"><img src="img/hila-logo.gif" alt="הלוגו המונפש של חיהלה דוידוביץ" width="1684" height="364"></span><p>חיהלה דוידוביץ, גרפיקאית מקצועית עם טאצ' ייחודי, עיצבה במיוחד עבור אתר מדליק עיצובים מרהיבים למיתוג מדליק :)</p></section>
+  <section class="hl-credit" aria-label="על העיצובים"><span class="hl-logo"><img src="img/hila-logo.gif" alt="הלוגו המונפש של חיהלה דוידוביץ" width="1684" height="364"></span><p>חיהלה דוידוביץ, גרפיקאית מקצועית עם טאצ' ייחודי, עיצבה במיוחד עבור אתר מדליק עיצובים מרהיבים למיתוג מדליק :)</p></div></section>
   ${tplStrip('', styles[0] ? styles[0].id : 'plain')}
   <div class="wrap">
     <section class="st-sec"><h2 class="st-h"><i>1</i>איזו שפה עיצובית מדברת אליך?</h2>
@@ -1062,8 +1062,8 @@ function designHTML(t, s, logo){
 pages.recipes = () => {
   const cats = [...new Set(content('recipes').map(r=>r.cat))];
   return `<div class="kg kg-list"><div class="wrap kg-wrap">
-    <section class="gk-credit" aria-label="על המתכונים"><img class="gk-logo" src="img/goldie-logo.webp" alt="לוגו גולד CAKE" width="195" height="390"><p><b>גולדי כהן</b>, בעלת קייטרינג חלבי אהוב – <b>גולד קייק</b>, פרגנה לנו כמה מתכונים לטעימה, בלעדי לאתר מדליק :)</p></section>
     <header class="kg-lh"><h1>מתכונים</h1><p>לביבות, סופגניות, מגשי אירוח ושתייה – עם חישוב כמויות לפי מספר הסועדים.</p></header>
+    <section class="gk-credit" aria-label="על המתכונים"><img class="gk-logo" src="img/goldie-logo.webp" alt="לוגו גולד CAKE" width="195" height="390"><div class="gk-col"><p><b>גולדי כהן</b>, בעלת קייטרינג חלבי אהוב – <b>גולד קייק</b>, פרגנה לנו כמה מתכונים לטעימה, בלעדי לאתר מדליק :)</p><p class="gk-soon" role="note"><span class="gk-fl" aria-hidden="true">🔥</span><span class="gk-st"><b>מתכונים נוספים יעלו לקראת חנוכה</b> – בכל אופן, לשמור משהו לערב לביבות<i class="gk-dots" aria-hidden="true"><u></u><u></u><u></u></i></span></p></section>
     <form class="kg-filters" id="rf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש מתכון או מצרך" aria-label="חיפוש מתכון"><select name="cat" aria-label="קטגוריה"><option value="">כל הקטגוריות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="diet" aria-label="חלבי או פרווה"><option value="">חלבי / פרווה</option><option>חלבי</option><option>פרווה</option><option>בשרי</option></select><select name="level" aria-label="רמת קושי"><option value="">כל הרמות</option><option>קל</option><option>בינוני</option><option>מאתגר</option></select></form>
     <div class="cards kg-cards" id="rl"></div></div></div>`;
 };
