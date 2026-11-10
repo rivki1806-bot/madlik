@@ -1194,19 +1194,18 @@ function adBlockAfter(){
 
 pages.suppliers = () => {
   const all = content('suppliers'), cats = [...new Set(all.map(s=>s.cat))], regions = ['צפון','חיפה','שרון','מרכז','ירושלים','שפלה','דרום'];
-  return pageHead('נותני שירות שישדרגו לכם את האירוע', 'אולמות, קייטרינג, מפעילים, עיצוב וקינוחים. לפי אזור, סוג ומחיר.', 'נותני שירות') + `
+  return pageHead('נותני שירות שישדרגו לכם את האירוע', 'אולמות, קייטרינג, מפעילים, עיצוב וקינוחים.', 'נותני שירות') + `
   <div class="wrap">
     <a class="ad-strip" href="#/advertise" data-scroll="adBlock"><b>רוצים לפרסם?</b><span>צרו איתנו קשר</span><i>←</i></a>
-    <form class="filters" id="sf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש עסק..."><select name="cat"><option value="">כל סוגי השירות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="region"><option value="">כל הארץ</option>${regions.map(c=>`<option>${c}</option>`).join('')}</select><select name="price"><option value="">כל טווחי המחיר</option><option>₪</option><option>₪₪</option><option>₪₪₪</option></select></form>
     <div class="cards" id="sl"></div>
     ${adBlock()}
   </div>`;
 };
 pages.suppliers.after = () => {
   showBizNotice();
-  const f = document.getElementById('sf'), l = document.getElementById('sl');
-  const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('suppliers').filter(s=>(!v.q||JSON.stringify(s).includes(v.q))&&(!v.cat||s.cat===v.cat)&&(!v.region||s.region===v.region||s.region==='כל הארץ')&&(!v.price||s.price===v.price)).sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)); l.innerHTML = res.length ? res.map(supCard).join('') : '<div class="empty">אין עדיין עסקים שמתאימים. נסו אזור אחר.</div>'; };
-  f.oninput = run; run();
+  const l = document.getElementById('sl');
+  const run = () => { const v = {}; const res = content('suppliers').filter(s=>(!v.q||JSON.stringify(s).includes(v.q))&&(!v.cat||s.cat===v.cat)&&(!v.region||s.region===v.region||s.region==='כל הארץ')&&(!v.price||s.price===v.price)).sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)); l.innerHTML = res.length ? res.map(supCard).join('') : '<div class="empty">אין עדיין עסקים שמתאימים. נסו אזור אחר.</div>'; };
+  run();
   const st = document.querySelector('[data-scroll]'); if(st) st.onclick = e => { e.preventDefault(); document.getElementById('adBlock').scrollIntoView({behavior:'smooth', block:'start'}); };
   adBlockAfter();
 };
