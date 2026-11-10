@@ -36,7 +36,7 @@ function record(kind, data){
   try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'submit', kind, data})}).catch(()=>{}); }catch(e){}
 }
 // ספירת כניסות: לכל מדור ולכל בעל עסק. נשלח לשרת כשהוא מחובר, ותמיד נשמר גם בדפדפן הזה
-const SECTIONS = {home:'עמוד הבית', games:'משחקים על המסך שניתנים גם להדפסה', game:'משחקים על המסך שניתנים גם להדפסה', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'בעלי עסקים', supplier:'בעלי עסקים', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
+const SECTIONS = {cards:'פעילויות להדפסה', home:'עמוד הבית', games:'משחקים על המסך שניתנים גם להדפסה', game:'משחקים על המסך שניתנים גם להדפסה', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'בעלי עסקים', supplier:'בעלי עסקים', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
 const visitorId = () => { let v = store.get('vid', ''); if(!v){ v = Math.random().toString(36).slice(2, 12); store.set('vid', v); } return v; };
 let lastHit = '';
 // לחיצה על "הטלפון שלנו" בעמוד עסק: נספרת לכל עסק. לשרת נשלחת כ"sup" עם הקידומת tel:, כך שגם שרת ישן לא ירשום כניסות מדומות
@@ -137,6 +137,21 @@ const content = k => {
 };
 const findIn = (k,id) => content(k).find(x=>x.id===id);
 
+/* ---------- קלפים טיפוליים מבית מיניאטורה (יהודית לרנר) ---------- */
+const MINI = Array.from({length:20}, (_, i) => { const n = String(i + 1).padStart(2, '0'); return {n, full:'img/miniatura/card-' + n + '.jpg', thumb:'img/miniatura/t-' + n + '.jpg'}; });
+const miniFeature = () => '<div class="wrap mn-feat-wrap"><a class="mn-feat" href="#/cards" aria-label="קלפים טיפוליים מבית מיניאטורה, יהודית לרנר. לצפייה, הורדה והדפסה">' +
+  '<span class="mn-fan" aria-hidden="true">' + [[2, -17, -150, 34], [7, -8, -75, 10], [11, 0, 0, 0], [15, 8, 75, 10], [19, 17, 150, 34]].map(([k, r, x, y], i) => '<i style="--r:' + r + ';--x:' + x + ';--y:' + y + ';--d:' + (i * .12).toFixed(2) + 's;--z:' + (i === 2 ? 5 : 3 - Math.abs(i - 2)) + '"><img src="' + MINI[k].thumb + '" alt="" loading="lazy"></i>').join('') + '</span>' +
+  '<span class="mn-txt"><span class="mn-tag"><b></b>חדש להורדה ולהדפסה</span><h2>קלפים טיפוליים</h2><p>מבית <b>מיניאטורה</b> · יהודית לרנר</p><span class="mn-cta">לצפייה, הורדה והדפסה <i>←</i></span></span>' +
+  '<s class="mn-sp s1"></s><s class="mn-sp s2"></s><s class="mn-sp s3"></s><s class="mn-sp s4"></s></a></div>';
+const miniPrint = (list, sheet) => {
+  const imgs = list.map(c => { const im = new Image(); im.src = c.full; return im.decode ? im.decode().catch(() => {}) : Promise.resolve(); });
+  toast('מכינה להדפסה...');
+  Promise.all(imgs).then(() => {
+    if(!sheet){ printHTML('<div style="width:297mm;height:209mm;display:grid;place-items:center;background:#fff"><img src="' + list[0].full + '" style="width:236mm;height:auto;border-radius:4mm" alt=""></div>', {credit:false, page:'A4 landscape', margin:0}); return; }
+    const pages = []; for(let i = 0; i < list.length; i += 8) pages.push(list.slice(i, i + 8));
+    printHTML(pages.map(p => '<div style="width:210mm;height:296mm;box-sizing:border-box;padding:10mm;display:grid;grid-template-columns:repeat(2,92mm);grid-auto-rows:63mm;gap:4mm;justify-content:center;align-content:start;background:#fff;page-break-after:always">' + p.map(c => '<img src="' + c.full + '" style="width:92mm;height:63mm;object-fit:cover;border-radius:2.5mm" alt="">').join('') + '</div>').join(''), {credit:false, page:'A4', margin:0});
+  });
+};
 /* ---------- מועדפים ---------- */
 const favs = () => store.get('favs', {games:[],recipes:[],suppliers:[]});
 const isFav = (k,id) => (favs()[k]||[]).includes(id);
@@ -331,7 +346,7 @@ const PRINT_FILES = [
   {href:'kids/booklet.html', ico:'📖', title:'חוברת פעילות: מסע האור', text:'חוברת פעילות לילדים לחנוכה, מוכנה להדפסה.', bg:'#e3ecff'}
 ];
 const printFileCard = x => `<a class="card" href="${x.href}" target="_blank" rel="noopener"><div class="card-top" style="--bg:${x.bg}"><span style="font-size:4.5rem;line-height:1">${x.ico}</span></div><div class="card-body"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><div class="tags"><span class="tag tag-new">חדש!</span><span class="tag tag-gold">חינם</span></div></div></a>`;
-pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרים פעילות, מכניסים את המילים שלכם, ומקבלים דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + `<div class="wrap pc-list">
+pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרים פעילות, מכניסים את המילים שלכם, ומקבלים דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + miniFeature() + `<div class="wrap pc-list">
   <h2 class="sec-h">מעצבים פעילות משלכם</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').map(creatorCard).join('')}</div>
   <h2 class="sec-h">דפי צביעה וחוברת פעילות</h2><div class="cards">${PRINT_FILES.map(printFileCard).join('')}</div>
   <h2 class="sec-h">פעילויות מוכנות</h2><div class="cards">${content('games').filter(g=>!isScreenGame(g)&&!['quartets-hanukkah','bingo-hanukkah','who-am-i'].includes(g.id)).map(gameCard).join('')}</div>
@@ -1197,6 +1212,29 @@ pages.maalot.after = () => {
   };
 };
 
+pages.cards = () => `<div class="mn-page"><div class="wrap mn-wrap">
+  <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/create">פעילויות להדפסה</a> › קלפים טיפוליים</div>
+  <header class="mn-head"><div><span class="mn-k">מבית מיניאטורה · יהודית לרנר</span><h1>קלפים טיפוליים</h1><p>${MINI.length} קלפים להורדה ולהדפסה. לוחצים על קלף כדי להגדיל אותו.</p></div>
+    <div class="mn-acts"><a class="mn-btn gold" href="downloads/miniatura-cards.pdf" download="miniatura-cards.pdf"><b>הורדת כל הקלפים</b><small>קובץ PDF</small></a><button type="button" class="mn-btn" id="mnPrintAll"><b>הדפסת כל הקלפים</b><small>8 קלפים בדף</small></button></div></header>
+  <div class="mn-grid" id="mnGrid">${MINI.map((c, i) => `<button type="button" class="mn-card" data-i="${i}" style="--i:${i}" aria-label="קלף ${i + 1} מתוך ${MINI.length}"><img src="${c.thumb}" alt="קלף טיפולי ${i + 1}" loading="lazy"><span class="mn-num">${i + 1}</span></button>`).join('')}</div>
+  <p class="mn-credit">קלפים טיפוליים מבית מיניאטורה · יהודית לרנר · כל הזכויות שמורות</p>
+</div></div>`;
+pages.cards.after = () => {
+  let cur = 0, lb = null;
+  const close = () => { if(!lb) return; lb.classList.add('out'); const x = lb; lb = null; document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); setTimeout(() => x.remove(), 250); };
+  const show = i => { cur = (i + MINI.length) % MINI.length; const c = MINI[cur]; lb.querySelector('img').src = c.full; lb.querySelector('.mn-lb-n').textContent = (cur + 1) + ' / ' + MINI.length; const d = lb.querySelector('.mn-dl'); d.href = c.full; d.download = 'miniatura-card-' + c.n + '.jpg'; };
+  const key = e => { if(e.key === 'Escape') close(); if(e.key === 'ArrowLeft') show(cur + 1); if(e.key === 'ArrowRight') show(cur - 1); };
+  const open = i => {
+    lb = document.createElement('div'); lb.className = 'mn-lb'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true'); lb.setAttribute('aria-label', 'צפייה בקלף');
+    lb.innerHTML = '<button type="button" class="mn-x" aria-label="סגירה">×</button><button type="button" class="mn-nav prev" aria-label="הקודם">›</button><button type="button" class="mn-nav next" aria-label="הבא">‹</button><figure><img alt="קלף טיפולי"><figcaption><span class="mn-lb-n"></span><a class="mn-btn gold mn-dl" href="#"><b>הורדה</b><small>קובץ תמונה</small></a><button type="button" class="mn-btn mn-pr"><b>הדפסה</b><small>דף מלא</small></button></figcaption></figure>';
+    document.body.appendChild(lb); document.body.classList.add('bn-lock'); document.addEventListener('keydown', key); show(i);
+    lb.onclick = e => { if(e.target === lb || e.target.closest('.mn-x')) close(); else if(e.target.closest('.next')) show(cur + 1); else if(e.target.closest('.prev')) show(cur - 1); else if(e.target.closest('.mn-pr')) miniPrint([MINI[cur]], false); };
+    lb.querySelector('.mn-x').focus({preventScroll:true});
+  };
+  document.getElementById('mnGrid').onclick = e => { const b = e.target.closest('.mn-card'); if(b) open(+b.dataset.i); };
+  document.getElementById('mnPrintAll').onclick = () => miniPrint(MINI, true);
+};
+
 pages.advertise = () => pageHead('רוצים לפרסם?', 'בחרו אחת משלוש התכניות, ואחר כך צרו איתנו קשר.', 'פרסום') + `<div class="wrap">${adBlock()}</div>`;
 pages.advertise.after = adBlockAfter;
 
@@ -1567,7 +1605,7 @@ const routes = [
   [/^\/?$/, 'home'], [/^\/games$/, 'games'], [/^\/game\/(.+)$/, 'game'],
   [/^\/create$/, 'create'], [/^\/create\/(.+)$/, 'creator'], [/^\/studio$/, 'studio'], [/^\/studio\/edit$/, 'edit'], [/^\/studio\/(.+)$/, 'design'],
   [/^\/recipes$/, 'recipes'], [/^\/recipe\/(.+)$/, 'recipe'], [/^\/suppliers$/, 'suppliers'],
-  [/^\/supplier\/(.+)$/, 'supplier'], [/^\/advertise$/, 'advertise'], [/^\/submit$/, 'submit'], [/^\/me$/, 'me'], [/^\/admin$/, 'admin'], [/^\/maalot$/, 'maalot']
+  [/^\/supplier\/(.+)$/, 'supplier'], [/^\/advertise$/, 'advertise'], [/^\/submit$/, 'submit'], [/^\/me$/, 'me'], [/^\/admin$/, 'admin'], [/^\/maalot$/, 'maalot'], [/^\/cards$/, 'cards']
 ];
 function render(){
   clearInterval(window.__adTimer);
