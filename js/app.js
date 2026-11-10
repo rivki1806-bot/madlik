@@ -468,14 +468,14 @@ function playMemory(words){
 const styleCard = s => `<a class="card" href="#/studio/edit?style=${esc(s.id)}&fmt=invite"><div class="card-top style-top"><img src="${esc(s.img)}" alt="" loading="lazy"></div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="tags"><span class="tag tag-gold">שפה עיצובית</span></div></div></a>`;
 const TOURS = {
   studio: [
-    {sel:'.st-sec .st-h', t:'שלב 1: בוחרים עיצוב', d:'לוחצים על התמונה שאהבתם. אחרי הלחיצה הדף יקפוץ לבחירת מוצר.'},
-    {sel:'.tp-strip', t:'כל התבניות בשורה אחת', d:'אפשר לגלול הצידה ולדלג מתבנית לתבנית בכל רגע, והעיצוב שבחרתם נשמר.'},
-    {sel:'#stProd .st-h', t:'שלב 2: בוחרים מוצר', d:'כל ציור מראה איך ייראה הדף כפי שיודפס. לוחצים על המוצר שרוצים ועוברים לעריכה.'}
+    {ic:'🎨', sel:'.st-sec .st-h', t:'שלב 1: בוחרים עיצוב', d:'לוחצים על התמונה שאהבתם. אחרי הלחיצה הדף יקפוץ לבחירת מוצר.'},
+    {ic:'✨', sel:'.tp-strip', t:'כל התבניות בשורה אחת', d:'אפשר לגלול הצידה ולדלג מתבנית לתבנית בכל רגע, והעיצוב שבחרתם נשמר.'},
+    {ic:'🧁', sel:'#stProd .st-h', t:'שלב 2: בוחרים מוצר', d:'כל ציור מראה איך ייראה הדף כפי שיודפס. לוחצים על המוצר שרוצים ועוברים לעריכה.'}
   ],
   design: [
-    {sel:'.tp-tabs', t:'כאן כותבים', d:'מחליפים את הטקסט בשדות. אפשר גם לשנות גופן, צבע ורקע בלשוניות שלמעלה.'},
-    {sel:'.tp-vtools', t:'גוררים כדי למקם', d:'לוחצים על הכיתוב או על התמונה וגוררים למקום שאוהבים. כך מזיזים את העיצוב בתוך המוצר.'},
-    {sel:'.tp-dock', t:'מורידים או מדפיסים', d:'כשהכול נראה טוב, לוחצים כאן להדפסה, להורדה כתמונה או לשמירה.'}
+    {ic:'✏️', sel:'.tp-tabs', t:'כאן כותבים', d:'מחליפים את הטקסט בשדות. אפשר גם לשנות גופן, צבע ורקע בלשוניות שלמעלה.'},
+    {ic:'👆', sel:'.tp-vtools', t:'גוררים כדי למקם', d:'לוחצים על הכיתוב או על התמונה וגוררים למקום שאוהבים. כך מזיזים את העיצוב בתוך המוצר.'},
+    {ic:'🖨️', sel:'.tp-dock', t:'מורידים או מדפיסים', d:'כשהכול נראה טוב, לוחצים כאן להדפסה, להורדה כתמונה או לשמירה.'}
   ]
 };
 function runTour(key, force){
@@ -484,7 +484,7 @@ function runTour(key, force){
   if(!steps.length || document.querySelector('.tour-ov')) return;
   if(!force && store.get(seenKey, false)) return;
   let i = 0; const ov = document.createElement('div'); ov.className = 'tour-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'סיור קצר');
-  ov.innerHTML = '<div class="tour-hole"></div><div class="tour-box"><span class="tour-n"></span><h3></h3><p></p><div class="tour-btns"><button type="button" class="tour-skip">דלגו על הסיור</button><button type="button" class="tour-next btn btn-gold"></button></div></div>';
+  ov.innerHTML = '<div class="tour-hole"></div><div class="tour-box"><i class="tour-spark s1"></i><i class="tour-spark s2"></i><i class="tour-spark s3"></i><div class="tour-head"><span class="tour-ic" aria-hidden="true"></span><div><span class="tour-n"></span><h3></h3></div></div><p></p><div class="tour-dots" aria-hidden="true"></div><div class="tour-btns"><button type="button" class="tour-skip">דלגו על הסיור</button><button type="button" class="tour-next btn btn-gold"></button></div></div>';
   document.body.appendChild(ov);
   const hole = ov.querySelector('.tour-hole'), box = ov.querySelector('.tour-box'), $q = s => ov.querySelector(s);
   const end = () => { store.set(seenKey, true); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); document.removeEventListener('keydown', key_); ov.remove(); };
@@ -500,6 +500,7 @@ function runTour(key, force){
   const show = () => {
     const s = steps[i], el = document.querySelector(s.sel);
     el.scrollIntoView({block:'center', behavior:'instant'});
+    $q('.tour-ic').textContent = s.ic || '✨'; $q('.tour-dots').innerHTML = steps.map((_, k) => '<b class="' + (k === i ? 'on' : k < i ? 'done' : '') + '"></b>').join(''); box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
     $q('.tour-n').textContent = 'שלב ' + (i + 1) + ' מתוך ' + steps.length; $q('h3').textContent = s.t; $q('p').textContent = s.d;
     $q('.tour-next').textContent = i === steps.length - 1 ? 'הבנתי, מתחילים' : 'הבא ←';
     setTimeout(place, 60); setTimeout(place, 450); $q('.tour-next').focus({preventScroll:true});
