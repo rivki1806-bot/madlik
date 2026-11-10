@@ -204,10 +204,10 @@ function notifySupplier_(data) {
   for (let i = 1; i < rows.length; i++) if (String(rows[i][0]) === sid && rows[i][2] === 'suppliers') { try { item = JSON.parse(rows[i][4]); } catch (err) {} break; }
   if (!item) return;
   const to = valid_(String(item.email || '')) ? String(item.email).trim() : NOTIFY_COPY;
-  const body = 'פנייה חדשה דרך מדליק עבור ' + (item.name || '') + '\n\n' +
+  const body = 'הפרסום במדליק עובד! התקבלה פנייה חדשה דרך מדליק עבור ' + (item.name || '') + '\n\n' +
     'שם: ' + (data.name || '') + '\nטלפון: ' + (data.phone || '') + '\nמייל: ' + (data.email || '') +
     '\nתאריך האירוע: ' + (data.date || '') + '\nמספר משתתפים: ' + (data.count || '') + '\n\nפרטים:\n' + (data.msg || '');
-  const opt = { to: to, subject: 'פנייה חדשה ממדליק: ' + (data.name || ''), body: body, name: 'מדליק' };
+  const opt = { to: to, subject: 'פנייה חדשה מ' + (data.name || 'לקוח') + ' | הפרסום במדליק עובד', body: body, name: (data.name || 'לקוח') + ' (דרך מדליק)' };
   if (to !== NOTIFY_COPY) opt.bcc = NOTIFY_COPY;
   if (valid_(String(data.email || ''))) opt.replyTo = String(data.email).trim();
   MailApp.sendEmail(opt);
