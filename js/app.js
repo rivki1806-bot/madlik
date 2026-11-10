@@ -468,9 +468,9 @@ function playMemory(words){
 const styleCard = s => `<a class="card" href="#/studio/edit?style=${esc(s.id)}&fmt=invite"><div class="card-top style-top"><img src="${esc(s.img)}" alt="" loading="lazy"></div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="tags"><span class="tag tag-gold">שפה עיצובית</span></div></div></a>`;
 const TOURS = {
   studio: [
-    {ic:'🎨', sel:'.st-sec .st-h', t:'שלב 1: בוחרים עיצוב', d:'לוחצים על התמונה שאהבתם. אחרי הלחיצה הדף יקפוץ לבחירת מוצר.'},
+    {ic:'🎨', tight:1, sel:'.st-sec .st-h', t:'שלב 1: בוחרים עיצוב', d:'לוחצים על התמונה שאהבתם. אחרי הלחיצה הדף יקפוץ לבחירת מוצר.'},
     {ic:'✨', sel:'.tp-strip', t:'כל התבניות בשורה אחת', d:'אפשר לגלול הצידה ולדלג מתבנית לתבנית בכל רגע, והעיצוב שבחרתם נשמר.'},
-    {ic:'🧁', sel:'#stProd .st-h', t:'שלב 2: בוחרים מוצר', d:'כל ציור מראה איך ייראה הדף כפי שיודפס. לוחצים על המוצר שרוצים ועוברים לעריכה.'}
+    {ic:'🧁', tight:1, sel:'#stProd .st-h', t:'שלב 2: בוחרים מוצר', d:'כל ציור מראה איך ייראה הדף כפי שיודפס. לוחצים על המוצר שרוצים ועוברים לעריכה.'}
   ],
   design: [
     {ic:'✏️', sel:'.tp-tabs', t:'כאן כותבים', d:'מחליפים את הטקסט בשדות. אפשר גם לשנות גופן, צבע ורקע בלשוניות שלמעלה.'},
@@ -484,18 +484,25 @@ function runTour(key, force){
   if(!steps.length || document.querySelector('.tour-ov')) return;
   if(!force && store.get(seenKey, false)) return;
   let i = 0; const ov = document.createElement('div'); ov.className = 'tour-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'סיור קצר');
-  ov.innerHTML = '<div class="tour-hole"></div><div class="tour-box"><i class="tour-spark s1"></i><i class="tour-spark s2"></i><i class="tour-spark s3"></i><div class="tour-head"><span class="tour-ic" aria-hidden="true"></span><div><span class="tour-n"></span><h3></h3></div></div><p></p><div class="tour-dots" aria-hidden="true"></div><div class="tour-btns"><button type="button" class="tour-skip">דלגו על הסיור</button><button type="button" class="tour-next btn btn-gold"></button></div></div>';
+  ov.innerHTML = '<i class="tour-dim d1"></i><i class="tour-dim d2"></i><i class="tour-dim d3"></i><i class="tour-dim d4"></i><div class="tour-hole"></div><i class="tour-ping"></i><div class="tour-box"><i class="tour-spark s1"></i><i class="tour-spark s2"></i><i class="tour-spark s3"></i><div class="tour-head"><span class="tour-ic" aria-hidden="true"></span><div><span class="tour-n"></span><h3></h3></div></div><p></p><div class="tour-dots" aria-hidden="true"></div><div class="tour-btns"><button type="button" class="tour-skip">דלגו על הסיור</button><button type="button" class="tour-next btn btn-gold"></button></div></div>';
   document.body.appendChild(ov);
-  const hole = ov.querySelector('.tour-hole'), box = ov.querySelector('.tour-box'), $q = s => ov.querySelector(s);
+  const hole = ov.querySelector('.tour-hole'), ping = ov.querySelector('.tour-ping'), box = ov.querySelector('.tour-box'), $q = s => ov.querySelector(s);
   const end = () => { store.set(seenKey, true); window.removeEventListener('resize', place); window.removeEventListener('scroll', place); document.removeEventListener('keydown', key_); ov.remove(); };
   const place = () => {
     const el = document.querySelector(steps[i].sel); if(!el) return;
-    const r = el.getBoundingClientRect(), pad = 8, vh = innerHeight, vw = innerWidth;
+    let r = el.getBoundingClientRect(); if(steps[i].tight){ const g = document.createRange(); g.selectNodeContents(el); const q = g.getBoundingClientRect(); if(q.width) r = q; }
+    const pad = steps[i].tight ? 14 : 8, vh = innerHeight, vw = innerWidth;
     const top = Math.max(6, r.top - pad), h = Math.min(vh - 12, r.height + pad * 2);
     Object.assign(hole.style, {top: top + 'px', left: Math.max(6, r.left - pad) + 'px', width: Math.min(vw - 12, r.width + pad * 2) + 'px', height: h + 'px'});
     const bh = box.offsetHeight, below = top + h + 14 + bh < vh;
-    box.style.top = (below ? top + h + 14 : Math.max(10, top - bh - 14)) + 'px';
-    box.style.left = Math.max(10, Math.min(vw - box.offsetWidth - 10, r.left + r.width / 2 - box.offsetWidth / 2)) + 'px';
+    box.style.top = (below ? top + h + 18 : Math.max(10, top - bh - 18)) + 'px';
+    const bl = Math.max(10, Math.min(vw - box.offsetWidth - 10, r.left + r.width / 2 - box.offsetWidth / 2));
+    box.style.left = bl + 'px'; box.classList.toggle('up', !below);
+    box.style.setProperty('--tx', Math.max(26, Math.min(box.offsetWidth - 26, r.left + r.width / 2 - bl)) + 'px');
+    { const L = Math.max(6, r.left - pad), W = Math.min(vw - 12, r.width + pad * 2), q = ov.querySelectorAll('.tour-dim');
+      Object.assign(q[0].style, {top:'0', left:'0', right:'0', height:top + 'px'}); Object.assign(q[1].style, {top:(top + h) + 'px', left:'0', right:'0', bottom:'0'});
+      Object.assign(q[2].style, {top:top + 'px', left:'0', width:L + 'px', height:h + 'px'}); Object.assign(q[3].style, {top:top + 'px', left:(L + W) + 'px', right:'0', height:h + 'px'}); }
+    ping.style.top = (top + h / 2 - 9) + 'px'; ping.style.left = Math.max(12, Math.min(vw - 30, r.left + r.width - 4)) + 'px';
   };
   const show = () => {
     const s = steps[i], el = document.querySelector(s.sel);
