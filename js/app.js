@@ -138,11 +138,16 @@ const content = k => {
 const findIn = (k,id) => content(k).find(x=>x.id===id);
 
 /* ---------- קלפים טיפוליים מבית מיניאטורה (יהודית לרנר) ---------- */
-const MINI = Array.from({length:20}, (_, i) => { const n = String(i + 1).padStart(2, '0'); return {n, full:'img/miniatura/card-' + n + '.jpg', thumb:'img/miniatura/t-' + n + '.jpg'}; });
+const MINI = Array.from({length:20}, (_, i) => { const n = String(i + 1).padStart(2, '0'); return {n, full:'img/miniatura/card-' + n + '.webp', thumb:'img/miniatura/t-' + n + '.webp'}; });
 const miniFeature = () => '<div class="wrap mn-feat-wrap"><a class="mn-feat" href="#/cards" aria-label="קלפים טיפוליים מבית מיניאטורה, יהודית לרנר. לצפייה, הורדה והדפסה">' +
   '<span class="mn-fan" aria-hidden="true">' + [[2, -17, -150, 34], [7, -8, -75, 10], [11, 0, 0, 0], [15, 8, 75, 10], [19, 17, 150, 34]].map(([k, r, x, y], i) => '<i style="--r:' + r + ';--x:' + x + ';--y:' + y + ';--d:' + (i * .12).toFixed(2) + 's;--z:' + (i === 2 ? 5 : 3 - Math.abs(i - 2)) + '"><img src="' + MINI[k].thumb + '" alt="" loading="lazy"></i>').join('') + '</span>' +
   '<span class="mn-txt"><span class="mn-tag"><b></b>חדש להורדה ולהדפסה</span><h2>קלפים טיפוליים</h2><p>מבית <b>מיניאטורה</b> · יהודית לרנר</p><span class="mn-cta">לצפייה, הורדה והדפסה <i>←</i></span></span>' +
   '<s class="mn-sp s1"></s><s class="mn-sp s2"></s><s class="mn-sp s3"></s><s class="mn-sp s4"></s></a></div>';
+const miniDownload = c => {
+  const im = new Image(); im.onload = () => { const cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight; const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(im, 0, 0);
+    cv.toBlob(b => { if(!b) return toast('לא הצלחתי להכין את הקובץ'); const u = URL.createObjectURL(b), l = document.createElement('a'); l.href = u; l.download = 'miniatura-card-' + c.n + '.jpg'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); toast('הקלף ירד למחשב'); }, 'image/jpeg', .93); };
+  im.onerror = () => toast('לא הצלחתי להוריד את הקלף'); im.src = c.full;
+};
 const miniPrint = (list, sheet) => {
   const imgs = list.map(c => { const im = new Image(); im.src = c.full; return im.decode ? im.decode().catch(() => {}) : Promise.resolve(); });
   toast('מכינה להדפסה...');
@@ -1254,13 +1259,13 @@ pages.cards = () => `<div class="mn-page"><div class="wrap mn-wrap">
 pages.cards.after = () => {
   let cur = 0, lb = null;
   const close = () => { if(!lb) return; lb.classList.add('out'); const x = lb; lb = null; document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); setTimeout(() => x.remove(), 250); };
-  const show = i => { cur = (i + MINI.length) % MINI.length; const c = MINI[cur]; lb.querySelector('img').src = c.full; lb.querySelector('.mn-lb-n').textContent = (cur + 1) + ' / ' + MINI.length; const d = lb.querySelector('.mn-dl'); d.href = c.full; d.download = 'miniatura-card-' + c.n + '.jpg'; };
+  const show = i => { cur = (i + MINI.length) % MINI.length; const c = MINI[cur]; lb.querySelector('img').src = c.full; lb.querySelector('.mn-lb-n').textContent = (cur + 1) + ' / ' + MINI.length; const d = lb.querySelector('.mn-dl'); d.href = c.full; d.dataset.n = c.n; };
   const key = e => { if(e.key === 'Escape') close(); if(e.key === 'ArrowLeft') show(cur + 1); if(e.key === 'ArrowRight') show(cur - 1); };
   const open = i => {
     lb = document.createElement('div'); lb.className = 'mn-lb'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true'); lb.setAttribute('aria-label', 'צפייה בקלף');
     lb.innerHTML = '<button type="button" class="mn-x" aria-label="סגירה">×</button><button type="button" class="mn-nav prev" aria-label="הקודם">›</button><button type="button" class="mn-nav next" aria-label="הבא">‹</button><figure><img alt="קלף טיפולי"><figcaption><span class="mn-lb-n"></span><a class="mn-btn gold mn-dl" href="#"><b>הורדה</b><small>קובץ תמונה</small></a><button type="button" class="mn-btn mn-pr"><b>הדפסה</b><small>דף מלא</small></button></figcaption></figure>';
     document.body.appendChild(lb); document.body.classList.add('bn-lock'); document.addEventListener('keydown', key); show(i);
-    lb.onclick = e => { if(e.target === lb || e.target.closest('.mn-x')) close(); else if(e.target.closest('.next')) show(cur + 1); else if(e.target.closest('.prev')) show(cur - 1); else if(e.target.closest('.mn-pr')) miniPrint([MINI[cur]], false); };
+    lb.onclick = e => { if(e.target === lb || e.target.closest('.mn-x')) close(); else if(e.target.closest('.next')) show(cur + 1); else if(e.target.closest('.prev')) show(cur - 1); else if(e.target.closest('.mn-pr')) miniPrint([MINI[cur]], false); else if(e.target.closest('.mn-dl')){ e.preventDefault(); miniDownload(MINI[cur]); } };
     lb.querySelector('.mn-x').focus({preventScroll:true});
   };
   document.getElementById('mnGrid').onclick = e => { const b = e.target.closest('.mn-card'); if(b) open(+b.dataset.i); };
