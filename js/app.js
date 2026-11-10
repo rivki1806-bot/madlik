@@ -1235,25 +1235,12 @@ const miniPdf = async btn => {
 };
 pages.cards = () => `<div class="mn-page"><div class="wrap mn-wrap">
   <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/create">פעילויות להדפסה</a> › קלפים טיפוליים</div>
+  <section class="mn-gd" aria-label="דף הסבר לערכה"><button type="button" class="mn-gd-thumb" id="mnGuideOpen" aria-label="לצפייה בדף ההסבר בגדול"><img src="img/miniatura/guide-t.webp" alt="דף הסבר לערכת הקלפים: החושך המתוק הזה" width="520" height="736"><span>לצפייה בגדול</span></button>
+    <div class="mn-gd-t"><span class="mn-k">דף הסבר לערכה · להדפסה</span><h2>החושך המתוק הזה</h2><p>דף ההסבר המלא של הערכה, בעיצוב המקורי: הוראות הדפסה והכנה לכבוד חנוכה, ואפשרויות למשחק ולשיח קבוצתי או משפחתי.</p>
+      <div class="mn-acts"><button type="button" class="mn-btn gold" id="mnGuidePrint"><b>הדפסת דף ההסבר</b><small>דף A4 מלא</small></button><button type="button" class="mn-btn" id="mnGuidePdf"><b>הורדה</b><small>קובץ PDF</small></button></div></div></section>
   <header class="mn-head"><div><span class="mn-k">מבית מיניאטורה · יהודית לרנר</span><h1>קלפים טיפוליים</h1><p>${MINI.length} קלפים להורדה ולהדפסה. לוחצים על קלף כדי להגדיל אותו.</p></div>
     <div class="mn-acts"><button type="button" class="mn-btn gold" id="mnPdf"><b>הורדת כל הקלפים</b><small>קובץ PDF להדפסה</small></button><button type="button" class="mn-btn" id="mnPrintAll"><b>הדפסת כל הקלפים</b><small>8 קלפים בדף</small></button></div></header>
   <div class="mn-grid" id="mnGrid">${MINI.map((c, i) => `<button type="button" class="mn-card" data-i="${i}" style="--i:${i}" aria-label="קלף ${i + 1} מתוך ${MINI.length}"><img src="${c.thumb}" alt="קלף טיפולי ${i + 1}" loading="lazy"><span class="mn-num">${i + 1}</span></button>`).join('')}</div>
-  <div class="mn-tip"><b>טיפ להדפסה לכבוד חנוכה</b><span>מומלץ להדפיס את 20 הקלפים על בריסטול איכותי (לפחות 300 גרם) בגודל 11×7.5 ס״מ. כדאי לצפות בלמינציה לעמידות, לגזור ולהניח בערמה במרכז השולחן כשהתמונות כלפי מטה.</span></div>
-  <section class="mn-guide" aria-labelledby="mnGH"><span class="mn-k">דף הסבר לערכה</span><h2 id="mnGH">החושך המתוק הזה</h2>
-    <div class="mn-intro">
-      <p>מי אוהבת חושך? לכולנו יש רגעי חושך. רגעים כאלו, שאת לא יודעת איך קוראים לך עכשיו, מה את הולכת לעשות, איך ממשיכים מפה הלאה. מה זה השחור הזה? מישהו יכול להדליק פה את האור? לא רואים פה כלום.</p>
-      <p>כשאת נמצאת בחושך, אולי את לא רואה כלום, אולי צלליות שלא היית רוצה לפגוש אותן לבד ברחוב. או אז, מגיע לך האור. איך זה שאחרי החדלון יבוא לנו האור?</p>
-      <p>היצר הרע יושב על קוצים. אם הוא יודע שאנו הולכים לנצח אותו, או הולך להגיע אלינו שפע גדול, הוא יוצא לפעולת מלכוד. הוא מתחיל לטפטף לנו ייאוש... טיפ טף. פתאום אנחנו לא בטוחים שיש לנו כוח. אבל את <b>רגע לפני הישועה!</b> רגע לפני האור!</p>
-      <p>מידת החסד – שזה השפע של העולם – לא יכולה להגיע בלי מידת הגבורה, בלי הצמצום. ומתוך הצמצום, שם ייפתח לך השפע. החושך הזה הוא רק מעבר. אם תעברי אותו בידיעה שהקב״ה מביא לך את הנעלם הזה באהבה – זה נעשה זמן שעשועים להקב״ה, ובוודאי שייהפך לטוב!</p>
-    </div>
-    <div class="mn-cols">
-      <article><h3>קלפים טיפוליים לשיח רגשי</h3><p>כשאנחנו נמצאות בחושך רגשי, קשה למצוא מילים. בדיוק בשביל זה פותחו הקלפים הטיפוליים. התמונה המאירה נותנת צורה ופנים למה שלא ידענו איך להגדיר. הרגש מקבל תמונה, מונח על השולחן באומץ, והחושך מתחיל לאבד מהאחיזה שלו.</p></article>
-      <article><h3>אפשרות א׳: מעגל מעניק</h3><p>כל אחת מרימה קלף, מתבוננת בו וחושבת למי במעגל הקלף הכי מתאים. היא מציגה אותו ומשתפת למה בחרה להעניק אותו. (מדברים רק על דברים טובים ומחזקים!)</p></article>
-      <article><h3>אפשרות ב׳: שיתוף אישי</h3><p>כל אחת מרימה קלף, מתבוננת בשקט ומשתפת: מה בקלף תופס את העין? למה הוא מתאים למצבי כרגע, או איזה זיכרון מהחיים הוא מעלה בי?</p></article>
-      <article><h3>רעיונות נוספים לבחירת קלפים פתוחים</h3><p>פורסים את הקלפים פתוחים ומבקשים לבחור: קלף שמתאר מה אני מרגיש עכשיו | קלף שהוא החלום שלי | דמות או תכונה שהייתי רוצה לאמץ | קלף שמעלה זיכרון מתוק | קלף שמשדר איחול או מסר לעולם | קלף שמתאים למארחת או לילדה ביום ההולדת.</p></article>
-    </div>
-    <p class="mn-about">סדרה זו היא חלק מערכת הקלפים <b>״מיניאטורה״</b> – כ־90 קלפים של סצנות יפיפיות לפיתוח שיח רגשי. <b>יהודית (דיתי) לרנר</b> – מטפלת רגשית ויוצרת קלפי מיניאטורה לפיתוח שיח רגשי אצל ילדים. לקבלת טריילר: <a href="mailto:diti3051@gmail.com" dir="ltr">diti3051@gmail.com</a></p>
-  </section>
   <p class="mn-credit">קלפים טיפוליים מבית מיניאטורה · יהודית לרנר · כל הזכויות שמורות</p>
 </div></div>`;
 pages.cards.after = () => {
@@ -1270,6 +1257,26 @@ pages.cards.after = () => {
   };
   document.getElementById('mnGrid').onclick = e => { const b = e.target.closest('.mn-card'); if(b) open(+b.dataset.i); };
   document.getElementById('mnPrintAll').onclick = () => miniPrint(MINI, true);
+  const GUIDE = 'img/miniatura/guide.webp';
+  const guideImg = () => new Promise((ok, no) => { const m = new Image(); m.onload = () => ok(m); m.onerror = no; m.src = GUIDE; });
+  document.getElementById('mnGuideOpen').onclick = () => {
+    const v = document.createElement('div'); v.className = 'mn-lb mn-lb-g'; v.setAttribute('role', 'dialog'); v.setAttribute('aria-modal', 'true'); v.setAttribute('aria-label', 'דף ההסבר');
+    v.innerHTML = '<button type="button" class="mn-x" aria-label="סגירה">×</button><figure><img src="' + GUIDE + '" alt="דף הסבר לערכת הקלפים"></figure>';
+    document.body.appendChild(v); document.body.classList.add('bn-lock');
+    const end = () => { document.removeEventListener('keydown', k); document.body.classList.remove('bn-lock'); v.classList.add('out'); setTimeout(() => v.remove(), 250); };
+    const k = e => { if(e.key === 'Escape') end(); }; document.addEventListener('keydown', k);
+    v.onclick = e => { if(e.target === v || e.target.closest('.mn-x')) end(); }; v.querySelector('.mn-x').focus({preventScroll:true});
+  };
+  document.getElementById('mnGuidePrint').onclick = async () => { toast('מכינה להדפסה...'); try{ await guideImg(); }catch(e){} printHTML('<div style="width:210mm;height:296mm;background:#fff;display:grid;place-items:center"><img src="' + GUIDE + '" style="width:210mm;height:296mm;object-fit:contain" alt=""></div>', {credit:false, page:'A4', margin:0}); };
+  document.getElementById('mnGuidePdf').onclick = async e => {
+    const btn = e.currentTarget; btn.disabled = true; toast('מכינה את קובץ ה־PDF...');
+    try{
+      await new Promise((ok, no) => { if(window.jspdf) return ok(); const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+      const im = await guideImg(), cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight; cv.getContext('2d').drawImage(im, 0, 0);
+      const pdf = new window.jspdf.jsPDF({orientation:'p', unit:'mm', format:'a4'}); pdf.addImage(cv.toDataURL('image/jpeg', .92), 'JPEG', 0, 0, 210, 297); pdf.save('miniatura-guide.pdf'); toast('הקובץ ירד למחשב');
+    }catch(err){ toast('לא הצלחתי ליצור PDF. אפשר ללחוץ על "הדפסת דף ההסבר" ולבחור "שמירה כ־PDF"'); }
+    btn.disabled = false;
+  };
   document.getElementById('mnPdf').onclick = e => miniPdf(e.currentTarget);
 };
 
@@ -1744,4 +1751,39 @@ document.getElementById('newsForm').onsubmit = e => {
 
 (window.MadlikIntro || Promise.resolve()).then(render);
 loadRemote();
+
+/* ---------- עיגול בצד בכל עמוד: "נהניתם? הכנסו ושתפו אותנו!" ---------- */
+(function feedbackBubble(){
+  if(ADMIN_PAGE) return;
+  const FB_AREAS = ['משחקים', 'מתכונים', 'סטודיו מיתוג', 'פעילויות להדפסה', 'קלפים טיפוליים', 'בעלי עסקים'];
+  let hideUntil = 0; try{ hideUntil = +sessionStorage.getItem('madlik_fb_hide') || 0; }catch(e){}
+  const doneAt = store.get('fb_done', 0); if(doneAt && Date.now() - doneAt < 7 * 864e5) return;
+  if(hideUntil) return;
+  const b = document.createElement('div'); b.className = 'fb-wrap';
+  b.innerHTML = '<button type="button" class="fb-bubble" aria-label="נהניתם? הכנסו ושתפו אותנו!"><span class="fb-ring" aria-hidden="true"></span><span class="fb-ring r2" aria-hidden="true"></span><span class="fb-txt"><b>נהניתם?</b><span>הכנסו ושתפו אותנו!</span></span><i class="fb-h h1" aria-hidden="true">♥</i><i class="fb-h h2" aria-hidden="true">♥</i><i class="fb-h h3" aria-hidden="true">♥</i></button><button type="button" class="fb-hide" aria-label="הסתרת העיגול">×</button>';
+  document.body.appendChild(b);
+  b.querySelector('.fb-hide').onclick = () => { b.remove(); try{ sessionStorage.setItem('madlik_fb_hide', '1'); }catch(e){} };
+  b.querySelector('.fb-bubble').onclick = () => {
+    if(document.querySelector('.fb-ov')) return;
+    const ov = document.createElement('div'); ov.className = 'fb-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'fbT');
+    ov.innerHTML = '<form class="fb-card" novalidate><button type="button" class="fb-x" aria-label="סגירה">×</button><div class="fb-ico" aria-hidden="true">😊</div><h2 id="fbT">נהניתי – תודה!</h2><p class="fb-sub">ממה נהניתם? אפשר לסמן, ולהוסיף במילים שלכם.</p>' +
+      '<div class="fb-chips" role="group" aria-label="ממה נהניתם">' + FB_AREAS.map(x => '<button type="button" aria-pressed="false">' + x + '</button>').join('') + '</div>' +
+      '<label class="fb-f"><span>ספרו לנו בכמה מילים (לא חובה)</span><textarea name="msg" rows="3" placeholder="ממה נהניתם?"></textarea></label>' +
+      '<label class="fb-f fb-name"><span>לא חייבים – רק אם רוצים לגלות לנו, מה השם שלך?</span><input name="name" autocomplete="name" placeholder="השם שלך"></label>' +
+      '<button type="submit" class="fb-send"><span>שליחה</span><i aria-hidden="true">←</i></button></form>';
+    document.body.appendChild(ov); document.body.classList.add('bn-lock');
+    const f = ov.querySelector('form'), close = () => { document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 250); };
+    const key = e => { if(e.key === 'Escape') close(); }; document.addEventListener('keydown', key);
+    ov.onclick = e => { if(e.target === ov || e.target.closest('.fb-x')) close(); const c = e.target.closest('.fb-chips button'); if(c) c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') !== 'true'); };
+    f.querySelector('textarea').focus({preventScroll:true});
+    f.onsubmit = e => {
+      e.preventDefault();
+      const chips = [...f.querySelectorAll('.fb-chips [aria-pressed=true]')].map(x => x.textContent), msg = f.elements.msg.value.trim(), name = f.elements.name.value.trim();
+      record('contact', {name, msg:'משוב: נהניתי' + (chips.length ? ' מ' + chips.join(', ') : '') + (msg ? ' · ' + msg : ''), page:location.hash || '#/'});
+      store.set('fb_done', Date.now());
+      f.innerHTML = '<div class="fb-thanks"><div class="fb-ico big" aria-hidden="true">💛</div><h2>תודה רבה' + (name ? ', ' + esc(name) : '') + '!</h2><p>שמחים שנהניתם. נשמח לראות אתכם שוב.</p></div>';
+      b.remove(); setTimeout(close, 2600);
+    };
+  };
+})();
 })();
