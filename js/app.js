@@ -1061,10 +1061,10 @@ function designHTML(t, s, logo){
 /* מתכונים */
 pages.recipes = () => {
   const cats = [...new Set(content('recipes').map(r=>r.cat))];
-  return `<div class="gp rp"><div class="wrap gp-wrap">
-    <header class="gp-top"><h1>מתכונים</h1><span class="gp-line"></span></header>
-    <form class="filters gp-bar" id="rf" onsubmit="return false"><div class="gp-bar-top"><input type="search" name="q" placeholder="חיפוש מתכון או מצרך" aria-label="חיפוש מתכון"><select name="cat" aria-label="קטגוריה"><option value="">כל הקטגוריות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="diet" aria-label="חלבי או פרווה"><option value="">חלבי / פרווה</option><option>חלבי</option><option>פרווה</option><option>בשרי</option></select><select name="level" aria-label="רמת קושי"><option value="">כל הרמות</option><option>קל</option><option>בינוני</option><option>מאתגר</option></select></div></form>
-    <div class="cards gp-list" id="rl"></div></div></div>`;
+  return `<div class="kg kg-list"><div class="wrap kg-wrap">
+    <header class="kg-lh"><h1>מתכונים</h1><p>לביבות, סופגניות, מגשי אירוח ושתייה – עם חישוב כמויות לפי מספר הסועדים.</p></header>
+    <form class="kg-filters" id="rf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש מתכון או מצרך" aria-label="חיפוש מתכון"><select name="cat" aria-label="קטגוריה"><option value="">כל הקטגוריות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="diet" aria-label="חלבי או פרווה"><option value="">חלבי / פרווה</option><option>חלבי</option><option>פרווה</option><option>בשרי</option></select><select name="level" aria-label="רמת קושי"><option value="">כל הרמות</option><option>קל</option><option>בינוני</option><option>מאתגר</option></select></form>
+    <div class="cards kg-cards" id="rl"></div></div></div>`;
 };
 pages.recipes.after = () => { const f = document.getElementById('rf'), l = document.getElementById('rl'); const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('recipes').filter(r=>(!v.q||JSON.stringify(r).includes(v.q))&&(!v.cat||r.cat===v.cat)&&(!v.diet||r.diet===v.diet)&&(!v.level||r.level===v.level)); l.innerHTML = res.length?res.map(recipeCard).join(''):'<div class="empty">לא נמצא מתכון.</div>'; }; f.oninput = run; run(); };
 
@@ -1076,39 +1076,38 @@ function fmtQty(n){
   const w = whole + (best[0]===1?1:0);
   return (w? w : '') + best[1] || '0';
 }
+const KG_ICONS = ['<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v7M8 10c0 6 1.5 9 4 11 2.5-2 4-5 4-11M10.5 10c0 5 .8 8 1.5 11M13.5 10c0 5-.8 8-1.5 11"/></svg>', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3c-2.2 0-3.5 2-3.5 4.2S6.800 11 9 11s3.500-1.600 3.500-3.800S11.200 3 9 3zM9 11v10"/></svg>', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l8-8M12 12l6-9 3 3-9 6z"/></svg>', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10h14v7a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3zM3 10h18M9 7c0-2 1-3 3-3s3 1 3 3"/></svg>'];
 pages.recipe = ([id]) => {
   const r = findIn('recipes', id); if(!r) return notFound();
-  const img = safeImg(r.img), plug = r.plug && safeUrl(r.plug.url) ? r.plug : null;
-  return `<div class="rd"><section class="rd-hero"><div class="wrap rd-hero-in${img ? ' has-img' : ''}">
-    <div class="rd-head">
-      <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/recipes">מתכונים</a> › ${esc(r.title)}</div>
-      <span class="rd-kick">${esc(r.cat)}</span>
-      <h1>${esc(r.title)}</h1>
-      ${REC_LOGOS[r.logo] ? `<div class="rd-by"><img src="${REC_LOGOS[r.logo].img}" alt="לוגו ${esc(REC_LOGOS[r.logo].brand)}"><span>מתכון מאת <b>${esc(REC_LOGOS[r.logo].name)}</b><small>${esc(REC_LOGOS[r.logo].brand)}</small></span></div>` : ''}
-      <ul class="rd-meta"><li><b>${esc(r.time)}</b> דק׳</li><li>${esc(r.level)}</li><li>${esc(r.diet)}</li></ul>
-      <div class="rd-acts"><button class="btn btn-light" data-fav="recipes|${esc(r.id)}">${isFav('recipes',r.id)?'♥':'♡'} מועדפים</button><button class="btn btn-light" id="rPrint">הדפסה</button><button class="btn btn-light" id="rShare">שיתוף</button></div>
+  const img = safeImg(r.img), plug = r.plug && safeUrl(r.plug.url) ? r.plug : null, lg = REC_LOGOS[r.logo], max = Math.max(30, r.serves * 4);
+  return `<div class="kg"><div class="wrap kg-wrap"><article class="kg-card">
+    <nav class="kg-bc" aria-label="מיקום"><a href="#/">ראשי</a> › <a href="#/recipes">מתכונים</a> › ${esc(r.title)}</nav>
+    <header class="kg-head"><span class="kg-cat">${esc(r.cat)}</span><h1>${esc(r.title)}</h1>
+      <p class="kg-meta">זמן הכנה: ${esc(r.time)} דק׳ · קושי: ${esc(r.level)} · ${esc(r.diet)}</p>
+      ${lg ? `<div class="kg-by"><img src="${lg.img}" alt="לוגו ${esc(lg.brand)}"><span>מתכון מאת <b>${esc(lg.name)}</b><small>${esc(lg.brand)}</small></span></div>` : ''}
+      <div class="kg-acts"><button class="btn btn-light" data-fav="recipes|${esc(r.id)}">${isFav('recipes',r.id)?'♥':'♡'} מועדפים</button><button class="btn btn-light" id="rPrint">הדפסה</button><button class="btn btn-light" id="rShare">שיתוף</button></div></header>
+    <div class="kg-top${img ? '' : ' noimg'}">
+      <aside class="kg-calc"><h2>מחשבון כמויות</h2>
+        <div class="kg-srv"><span>מספר סועדים:</span><div class="kg-sl"><button type="button" id="sMinus" aria-label="פחות">−</button><input type="range" id="sRange" min="1" max="${max}" value="${r.serves}" aria-label="מספר סועדים"><button type="button" id="sPlus" aria-label="יותר">+</button></div><strong><span id="sNum">${r.serves}</span> סועדים</strong></div>
+        <ul class="ing-list kg-ing" id="ing"></ul>
+        <button type="button" class="kg-btn" id="toShop">הוספה לרשימת הקניות</button>
+      </aside>
+      ${img ? `<figure class="kg-photo"><img src="${esc(img)}" alt="${esc(r.title)}">${recLogo(r, 'rd-logo')}</figure>` : ''}
     </div>
-    ${img ? `<figure class="rd-photo"><img src="${esc(img)}" alt="${esc(r.title)}">${recLogo(r, 'rd-logo')}</figure>` : ''}
-  </div></section>
-  <div class="wrap rd-body">
-    <section class="rd-ing"><h2>מצרכים</h2>
-      <div class="servings">מספר סועדים <button id="sMinus" aria-label="פחות">−</button><strong id="sNum">${r.serves}</strong><button id="sPlus" aria-label="יותר">+</button></div>
-      <ul class="ing-list" id="ing"></ul>
-      <button class="btn btn-gold" id="toShop">הוספה לרשימת הקניות</button>
-    </section>
-    <section class="rd-steps"><h2>אופן ההכנה</h2><ol class="steps">${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>${r.tip ? `<p class="rd-tip">${esc(r.tip)}</p>` : ''}</section>
-  </div>
-  ${plug ? `<div class="wrap"><aside class="rd-plug"><span class="rd-plug-ico" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 36h36M10 36a14 14 0 0 1 28 0M24 14v-3M21 11h6"/></svg></span><div class="rd-plug-t"><span>${esc(plug.kicker||'')}</span><h3>${esc(plug.title)}</h3><p>${esc(plug.text||'')}</p></div><a class="rd-plug-go" href="${esc(safeUrl(plug.url))}" target="_blank" rel="noopener noreferrer sponsored" data-web="rec-${esc(r.id)}">${esc(plug.btn||'לאתר')} <i>←</i></a></aside></div>` : ''}
-  ${r.credit ? `<p class="rd-credit">המתכון באדיבות ${esc(r.credit)}</p>` : ''}
-  </div>`;
+    <section class="kg-steps"><h2>הכנה</h2><ol>${r.steps.map((x, i) => `<li>${KG_ICONS[i % 4]}<span>${esc(x)}</span></li>`).join('')}</ol>${r.tip ? `<p class="kg-tip">${esc(r.tip)}</p>` : ''}</section>
+    ${plug ? `<aside class="kg-plug"><span class="kg-plug-ico" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 36h36M10 36a14 14 0 0 1 28 0M24 14v-3M21 11h6"/></svg></span><div class="kg-plug-t"><span>${esc(plug.kicker||'')}</span><h3>${esc(plug.title)}</h3><p>${esc(plug.text||'')}</p></div><a class="kg-plug-go" href="${esc(safeUrl(plug.url))}" target="_blank" rel="noopener noreferrer sponsored" data-web="rec-${esc(r.id)}">${esc(plug.btn||'לאתר')} <i>←</i></a></aside>` : ''}
+    ${r.credit ? `<p class="kg-credit">המתכון באדיבות ${esc(r.credit)}</p>` : ''}
+  </article></div></div>`;
 };
 pages.recipe.after = ([id]) => {
   const r = findIn('recipes', id); if(!r) return;
   let n = r.serves; const ing = document.getElementById('ing'), num = document.getElementById('sNum');
   const list = () => r.ing.map(([q,u,name])=>`${fmtQty(q*n/r.serves)} ${u} ${name}`.replace(/\s+/g, ' ').trim());
-  const draw = () => { num.textContent = n; ing.innerHTML = list().map(x=>`<li>${esc(x)}</li>`).join(''); };
+  const rg = document.getElementById('sRange');
+  const draw = () => { num.textContent = n; ing.innerHTML = list().map(x=>`<li>${esc(x)}</li>`).join(''); if(rg){ rg.value = n; rg.style.setProperty('--p', ((n - rg.min) / (rg.max - rg.min) * 100) + '%'); } };
   document.getElementById('sMinus').onclick = () => { if(n>1){ n--; draw(); } };
-  document.getElementById('sPlus').onclick = () => { n++; draw(); };
+  document.getElementById('sPlus').onclick = () => { if(n < (rg ? +rg.max : 99)){ n++; draw(); } };
+  if(rg) rg.oninput = () => { n = +rg.value; draw(); };
   document.getElementById('toShop').onclick = () => { const s = store.get('shop', []); list().forEach(x=>s.push({t:x, from:r.title, done:false})); store.set('shop', s); toast('נוסף לרשימת הקניות באזור האישי '); };
   document.getElementById('rShare').onclick = () => copyLink('#/recipe/'+r.id);
   document.getElementById('rPrint').onclick = () => printHTML(`<div class="sheet" style="aspect-ratio:auto"><h1>${esc(r.title)}</h1><p>${n} סועדים · ${esc(r.time)} דק׳ · ${esc(r.level)}</p><h2>מצרכים</h2><ul>${list().map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h2>אופן ההכנה</h2><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>${REC_LOGOS[r.logo] ? `<p style="text-align:center"><img src="${REC_LOGOS[r.logo].img}" alt="" style="height:26mm;border-radius:3mm"><br>מתכון מאת ${esc(REC_LOGOS[r.logo].name)} · ${esc(REC_LOGOS[r.logo].brand)}</p>` : ''}<p style="color:#c49a45;text-align:center">מדליק · כל מה שצריך לערב לביבות</p></div>`);
