@@ -18,19 +18,15 @@
   button{min-height:52px;padding:0 26px;border:0;border-radius:999px;font:700 1rem 'Rubik',sans-serif;cursor:pointer;color:#0a2244;background:linear-gradient(120deg,#ff6a00,#ff9a2e 55%,#ffc42d);box-shadow:0 12px 24px -10px rgba(255,106,0,.7)}
   button.ghost{background:transparent;color:#fbf1dc;border:1px solid rgba(251,241,220,.35);box-shadow:none}
   button:disabled{opacity:.5;cursor:default}
-  .ghostlink{display:inline-flex;align-items:center;min-height:52px;padding:0 26px;border-radius:999px;border:1px solid rgba(251,241,220,.35);color:#fbf1dc;text-decoration:none;font:700 1rem 'Rubik',sans-serif}
-  video{width:100%;height:auto;display:block;background:#000;border-radius:22px;box-shadow:0 30px 80px -30px #000;aspect-ratio:9/16;object-fit:contain}
   .hint{text-align:center;color:rgba(251,241,220,.6);font-size:.9rem;margin:8px 0 0}
 </style>
 </head>
 <body>
 <div class="stage">
-  <video id="vid" controls playsinline preload="metadata" hidden aria-label="סרטון: למה לפרסם במדליק"><source src="madlik-promo-vertical.webm" type="video/webm"></video>
   <canvas id="c" width="720" height="1280" aria-label="סרטון: למה לפרסם במדליק"></canvas>
   <div class="bar">
     <button id="play">▶ הפעלה עם סאונד</button>
-    <a id="dl" class="ghostlink" href="madlik-promo-vertical.webm" download="madlik-promo-vertical.webm" hidden>⬇ הורדת הסרטון</a>
-    <button id="rec" class="ghost">הקלטה מחדש (מתקדם)</button>
+    <button id="rec" class="ghost">⬇ הקלטה והורדה כקובץ וידאו</button>
   </div>
   <p class="hint" id="hint">24 שניות · עם קריינות וסאונד</p>
 </div>
@@ -343,15 +339,6 @@ async function start(record) {
   raf = requestAnimationFrame(loop);
 }
 bPlay.onclick = () => start(false); bRec.onclick = () => start(true);
-/* ברירת מחדל: מנגנת את קובץ הוידאו המוכן (חלק בכל מחשב). הציור בזמן אמת נשאר ככלי מתקדם */
-const vid = document.getElementById('vid'), dl = document.getElementById('dl');
-if (vid.canPlayType && vid.canPlayType('video/webm; codecs="vp9,opus"')) {
-  vid.hidden = false; cv.hidden = true; dl.hidden = false; hint.textContent = '24 שניות · עם קריינות וסאונד';
-  bPlay.onclick = () => { vid.currentTime = 0; vid.play(); };
-  bRec.onclick = () => { vid.pause(); vid.hidden = true; cv.hidden = false; dl.hidden = true; start(true); };
-  vid.addEventListener('play', () => { hint.textContent = 'מנגן'; });
-  setTimeout(() => { try { frame(2.2); vid.poster = cv.toDataURL('image/jpeg', .85); } catch (e) {} }, 1200);
-}
 const qs = new URLSearchParams(location.search), qt = qs.get('t');
 const draw0 = () => frame(qt != null ? +qt : 2.2);
 (document.fonts && document.fonts.load ? document.fonts.load(`900 100px ${FONT}`) : Promise.resolve()).then(draw0, draw0);
