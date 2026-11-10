@@ -468,9 +468,12 @@ function playMemory(words){
 const styleCard = s => `<a class="card" href="#/studio/edit?style=${esc(s.id)}&fmt=invite"><div class="card-top style-top"><img src="${esc(s.img)}" alt="" loading="lazy"></div><div class="card-body"><h3>${esc(s.name)}</h3><p>${esc(s.desc)}</p><div class="tags"><span class="tag tag-gold">שפה עיצובית</span></div></div></a>`;
 const TOURS = {
   studio: [
-    {ic:'🎨', tight:1, sel:'.st-sec .st-h', t:'שלב 1: בוחרים עיצוב', d:'לוחצים על התמונה שאהבתם. אחרי הלחיצה הדף יקפוץ לבחירת מוצר.'},
+    {ic:'👋', sel:'.hl-credit', t:'ברוכות הבאות לסטודיו', d:'העיצובים כאן נוצרו במיוחד למדליק על ידי גרפיקאית מקצועית. בשלושה צעדים מקבלים מיתוג מוכן להדפסה.'},
+    {ic:'🎨', tight:1, sel:'.st-sec .st-h', t:'שלב 1: בוחרים עיצוב', d:'גוללים בין התמונות ולוחצים על העיצוב שאהבתם. אחרי הלחיצה הדף קופץ לבחירת מוצר.'},
     {ic:'✨', sel:'.tp-strip', t:'כל התבניות בשורה אחת', d:'אפשר לגלול הצידה ולדלג מתבנית לתבנית בכל רגע, והעיצוב שבחרתם נשמר.'},
-    {ic:'🧁', tight:1, sel:'#stProd .st-h', t:'שלב 2: בוחרים מוצר', d:'כל ציור מראה איך ייראה הדף כפי שיודפס. לוחצים על המוצר שרוצים ועוברים לעריכה.'}
+    {ic:'🧁', tight:1, sel:'#stProd .st-h', t:'שלב 2: בוחרים מוצר', d:'מדבקות, הזמנות, פלייסמנט ועוד. כל ציור מראה איך ייראה הדף כפי שיודפס.'},
+    {ic:'👇', sel:'#stProd .mp-card', t:'לוחצים על מוצר', d:'לוחצים על הכרטיס ועוברים לעריכה. שם כותבים, גוררים ומורידים.'},
+    {ic:'🖌️', sel:'.st-fmts', t:'רוצים דף ריק?', d:'בעורך החופשי בוחרים גודל דף ומעצבים הכול בעצמכם, בעיצוב שבחרתם.'}
   ],
   design: [
     {ic:'🧰', sel:'.tp-tabs', t:'חמישה כלים בשורה אחת', d:'טקסט, גופן, צבע, רקע ותצוגה. לוחצים על כלי ועוברים אליו. מתחילים מהטקסט.'},
@@ -485,7 +488,7 @@ const TOURS = {
 };
 function runTour(key, force){
   const steps = (TOURS[key] || []).filter(s => document.querySelector(s.sel));
-  const seenKey = 'tour_' + key;
+  const seenKey = 'tour_' + key + '_v2';
   if(!steps.length || document.querySelector('.tour-ov')) return;
   if(!force && store.get(seenKey, false)) return;
   let i = 0; const ov = document.createElement('div'); ov.className = 'tour-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'סיור קצר');
@@ -523,7 +526,7 @@ function runTour(key, force){
   $q('.tour-skip').onclick = end; show();
 }
 const startTourSoon = key => {
-  if(store.get('tour_' + key, false)) return;
+  if(store.get('tour_' + key + '_v2', false)) return;
   let tries = 0; const go = () => { if(document.getElementById('intro') && document.getElementById('intro').offsetParent !== null && tries++ < 40) return setTimeout(go, 300); setTimeout(() => runTour(key), 500); }; go();
 };
 document.addEventListener('click', e => { const b = e.target.closest('[data-tour]'); if(b) runTour(b.dataset.tour, true); });
