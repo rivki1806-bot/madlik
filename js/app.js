@@ -1097,7 +1097,7 @@ pages.recipes = () => {
     <form class="kg-filters" id="rf" onsubmit="return false"><input type="search" name="q" placeholder="חיפוש מתכון או מצרך" aria-label="חיפוש מתכון"><select name="cat" aria-label="קטגוריה"><option value="">כל הקטגוריות</option>${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select><select name="diet" aria-label="חלבי או פרווה"><option value="">חלבי / פרווה</option><option>חלבי</option><option>פרווה</option><option>בשרי</option></select><select name="level" aria-label="רמת קושי"><option value="">כל הרמות</option><option>קל</option><option>בינוני</option><option>מאתגר</option></select></form>
     <div class="cards kg-cards" id="rl"></div></div></div>`;
 };
-pages.recipes.after = () => { const f = document.getElementById('rf'), l = document.getElementById('rl'); const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('recipes').filter(r=>(!v.q||JSON.stringify(r).includes(v.q))&&(!v.cat||r.cat===v.cat)&&(!v.diet||r.diet===v.diet)&&(!v.level||r.level===v.level)); l.innerHTML = res.length?res.map(recipeCard).join(''):'<div class="empty">לא נמצא מתכון.</div>'; }; f.oninput = run; run(); };
+pages.recipes.after = () => { const sd = document.createElement('aside'); sd.className = 'gk-side'; sd.innerHTML = '<span class="gk-fl" aria-hidden="true">🔥</span><b>מתכונים נוספים יעלו לקראת חנוכה</b><span class="gk-sub">בכל אופן, לשמור משהו לערב לביבות<i class="gk-dots" aria-hidden="true"><u></u><u></u><u></u></i></span>'; document.body.appendChild(sd); const f = document.getElementById('rf'), l = document.getElementById('rl'); const run = () => { const v = Object.fromEntries(new FormData(f)); const res = content('recipes').filter(r=>(!v.q||JSON.stringify(r).includes(v.q))&&(!v.cat||r.cat===v.cat)&&(!v.diet||r.diet===v.diet)&&(!v.level||r.level===v.level)); l.innerHTML = res.length?res.map(recipeCard).join(''):'<div class="empty">לא נמצא מתכון.</div>'; }; f.oninput = run; run(); };
 
 function fmtQty(n){
   if(!n) return '';
@@ -1690,6 +1690,7 @@ const routes = [
 ];
 function render(){
   clearInterval(window.__adTimer);
+  document.querySelectorAll('.gk-side').forEach(e => e.remove());
   if(window.MadlikEditor) window.MadlikEditor.unmount();
   const [path, qs] = (location.hash.slice(1) || '/').split('?');
   const q = Object.fromEntries(new URLSearchParams(qs||''));
