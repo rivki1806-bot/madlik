@@ -41,3 +41,22 @@ html[data-pal] body .fb-card h2{font:700 1.7rem 'Rubik',sans-serif!important;col
 .fb-send:hover{transform:translateY(-2px)}
 .fb-thanks{display:grid;gap:8px;padding:12px 0}.fb-thanks p{margin:0;color:#3b4a66}
 @media (prefers-reduced-motion:reduce){.fb-card,.fb-ico,.fb-ov{animation:none}}
+
+/* בקשת משחק חדש בעמוד המשחקים */
+.gq-cta{display:flex;align-items:center;gap:clamp(14px,2.4vw,26px);margin:0 0 clamp(22px,3vw,34px);padding:clamp(16px,2.2vw,24px) clamp(18px,3vw,32px);border-radius:26px;background:linear-gradient(115deg,#0a2244,#173a6e);color:#fbf1dc;box-shadow:0 24px 40px -28px rgba(10,34,68,.7);position:relative;overflow:hidden}
+.gq-cta::after{content:"";position:absolute;top:-30%;bottom:-30%;width:80px;left:-140px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.25),transparent);transform:skewX(-18deg);animation:gqShine 6s ease-in-out 1.5s infinite;pointer-events:none}
+@keyframes gqShine{0%,60%{left:-140px}100%{left:115%}}
+.gq-ico{flex:none;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:2rem;background:rgba(255,255,255,.12);animation:gqRoll 4s ease-in-out infinite}
+@keyframes gqRoll{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg) translateY(-3px)}}
+.gq-t{flex:1;min-width:0}
+html[data-pal] body .gq-t h2{font:600 clamp(1.15rem,2.2vw,1.55rem)/1.3 'Rubik',sans-serif!important;color:#fbf1dc!important;margin:0 0 4px!important;text-shadow:none!important}
+.gq-t p{margin:0;color:rgba(251,241,220,.8);font:300 1rem 'Heebo',sans-serif}
+.gq-go{flex:none;display:inline-flex;align-items:center;gap:12px;min-height:52px;padding:0 8px 0 22px;border:0;border-radius:999px;background:linear-gradient(120deg,#ff6a00,#ff9a2e 55%,#ffc42d);color:#0a2244;font:700 1rem 'Rubik',sans-serif;cursor:pointer;box-shadow:0 12px 22px -10px rgba(255,106,0,.8),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .25s}
+.gq-go i{font-style:normal;width:36px;height:36px;border-radius:50%;background:#0a2244;color:#fff;display:grid;place-items:center;transition:transform .3s}
+.gq-go:hover{transform:translateY(-2px)}.gq-go:hover i{transform:translateX(-4px)}.gq-go:focus-visible{outline:3px solid #fbf1dc;outline-offset:3px}
+.gq-card{max-height:calc(100vh - 32px);overflow:auto}
+.gq-by{margin:0 0 4px;padding:8px 14px;border-radius:14px;background:rgba(10,34,68,.06);font:500 .88rem 'Rubik',sans-serif;color:#3b4a66}.gq-by b{color:#0a2244}.gq-by a{color:#0a2244;text-decoration:underline}
+.gq-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gq-err{margin:0;padding:8px 12px;border-radius:12px;background:#fdecea;color:#a12a1f;font:500 .9rem 'Heebo',sans-serif}
+@media (max-width:700px){.gq-cta{flex-wrap:wrap}.gq-go{width:100%;justify-content:center}.gq-two{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.gq-cta::after,.gq-ico{animation:none}}

@@ -284,6 +284,7 @@ pages.games = () => {
   const tools = D.creators.filter(c=>canPlay(c.id)||c.id==='battle');
   return `<div class="gp"><div class="wrap gp-wrap">
     <header class="gp-top"><h1>משחקים על המסך</h1><span class="gp-line"></span></header>
+    <section class="gq-cta" aria-label="בקשת משחק חדש"><span class="gq-ico" aria-hidden="true">🎲</span><div class="gq-t"><h2>רוצים שנבנה לכם משחק חדש למשפחה שלכם?</h2><p>מספרים לנו על הרעיון, ואנחנו חוזרים אליכם.</p></div><button type="button" class="gq-go" id="gqOpen"><span>לבקשת משחק</span><i aria-hidden="true">←</i></button></section>
     <div class="cards gp-tools">${tools.map(creatorCard).join('')}</div>
     <div class="cards gp-list" id="gl"></div>
   </div></div>`;
@@ -291,6 +292,35 @@ pages.games = () => {
 pages.games.after = () => {
   const l = document.getElementById('gl');
   l.innerHTML = content('games').filter(isScreenGame).map(gameCard).join('');
+  document.getElementById('gqOpen').onclick = () => {
+    if(document.querySelector('.fb-ov')) return;
+    const ov = document.createElement('div'); ov.className = 'fb-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'gqT');
+    ov.innerHTML = '<form class="fb-card gq-card" novalidate><button type="button" class="fb-x" aria-label="סגירה">×</button><p class="gq-by">אפיון ופיתוח: <b>רבקי יוגב</b> · <a href="mailto:rivki1806@gmail.com" dir="ltr">rivki1806@gmail.com</a></p><div class="fb-ico" aria-hidden="true">🎲</div><h2 id="gqT">רוצים שנבנה לכם משחק חדש למשפחה שלכם?</h2><p class="fb-sub">ממלאים כמה פרטים, ואנחנו חוזרים אליכם.</p>' +
+      '<label class="fb-f"><span>שם *</span><input name="name" autocomplete="name" required></label>' +
+      '<div class="gq-two"><label class="fb-f"><span>טלפון</span><input name="phone" type="tel" autocomplete="tel" dir="ltr"></label><label class="fb-f"><span>מייל</span><input name="email" type="email" autocomplete="email" dir="ltr"></label></div>' +
+      '<label class="fb-f"><span>איזה משחק הייתם רוצים? *</span><textarea name="idea" rows="3" required placeholder="למשל: משחק שאלות על בני המשפחה לליל החג"></textarea></label>' +
+      '<label class="fb-f"><span>כמה משתתפים ובאיזה גילאים? (לא חובה)</span><input name="who"></label>' +
+      '<p class="gq-err" role="alert" hidden></p><button type="submit" class="fb-send"><span>שליחה</span><i aria-hidden="true">←</i></button></form>';
+    document.body.appendChild(ov); document.body.classList.add('bn-lock');
+    const f = ov.querySelector('form'), err = ov.querySelector('.gq-err'), close = () => { document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 250); };
+    const key = e => { if(e.key === 'Escape') close(); }; document.addEventListener('keydown', key);
+    ov.onclick = e => { if(e.target === ov || e.target.closest('.fb-x')) close(); };
+    f.elements.name.focus({preventScroll:true});
+    f.onsubmit = e => {
+      e.preventDefault(); const v = Object.fromEntries(new FormData(f)); err.hidden = true;
+      const name = String(v.name || '').trim(), phone = String(v.phone || '').trim(), email = String(v.email || '').trim(), idea = String(v.idea || '').trim(), who = String(v.who || '').trim();
+      if(!name || !idea){ err.textContent = 'חסר שם או תיאור המשחק'; err.hidden = false; return; }
+      if(!phone && !email){ err.textContent = 'כתבו טלפון או מייל כדי שנוכל לחזור אליכם'; err.hidden = false; return; }
+      if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent = 'כתובת המייל לא תקינה'; err.hidden = false; return; }
+      record('contact', {name, phone, email, msg:'בקשת משחק חדש: ' + idea + (who ? ' · משתתפים: ' + who : ''), page:location.hash || '#/games'});
+      if(!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)){
+        try{ const body = {_subject:'בקשה למשחק חדש מ' + name + ' | אתר מדליק', _template:'table', _captcha:'false', 'שם':name, 'טלפון':phone, 'מייל':email, 'המשחק המבוקש':idea, 'משתתפים וגילאים':who};
+          if(email) body._replyto = email;
+          fetch('https://formsubmit.co/ajax/rivki1806@gmail.com', {method:'POST', headers:{'Content-Type':'application/json', 'Accept':'application/json'}, body:JSON.stringify(body)}).catch(() => {}); }catch(x){}
+      }
+      f.innerHTML = '<div class="fb-thanks"><div class="fb-ico big" aria-hidden="true">🎉</div><h2>תודה, ' + esc(name) + '!</h2><p>הבקשה התקבלה. נחזור אליך בקרוב.</p></div>'; setTimeout(close, 3000);
+    };
+  };
 };
 
 pages.game = ([id]) => {
