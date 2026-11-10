@@ -1082,7 +1082,7 @@ pages.recipe = ([id]) => {
 pages.recipe.after = ([id]) => {
   const r = findIn('recipes', id); if(!r) return;
   let n = r.serves; const ing = document.getElementById('ing'), num = document.getElementById('sNum');
-  const list = () => r.ing.map(([q,u,name])=>`${fmtQty(q*n/r.serves)} ${u} ${name}`.trim());
+  const list = () => r.ing.map(([q,u,name])=>`${fmtQty(q*n/r.serves)} ${u} ${name}`.replace(/\s+/g, ' ').trim());
   const draw = () => { num.textContent = n; ing.innerHTML = list().map(x=>`<li>${esc(x)}</li>`).join(''); };
   document.getElementById('sMinus').onclick = () => { if(n>1){ n--; draw(); } };
   document.getElementById('sPlus').onclick = () => { n++; draw(); };
