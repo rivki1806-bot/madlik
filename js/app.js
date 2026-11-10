@@ -28,7 +28,7 @@ function record(kind, data){
   store.push(kind, Object.assign(kind==='subs' ? {status:'ממתין'} : {}, data));
   if(kind==='leads' && data.sid && !/^(localhost|127.0.0.1|[::1])$/.test(location.hostname)){ // מייל לבעל העסק דרך FormSubmit (בלי קוד נוסף בגוגל). עותק תמיד אל officeautoclick
     try{ const s = findIn('suppliers', data.sid) || {}, biz = /^[^@s]+@[^@s]+.[^@s]+$/.test(String(s.email||'')) ? String(s.email).trim() : '';
-      const body = {_subject:'פנייה חדשה מ' + (data.name||'לקוח') + ' | הפרסום במדליק עובד', _template:'table', _captcha:'false', 'הודעה ממדליק':'הפרסום במדליק עובד! התקבלה פנייה חדשה מלקוח דרך האתר', 'עסק':data.supplier||'', 'שם':data.name||'', 'טלפון':data.phone||'', 'מייל':data.email||'', 'תאריך האירוע':data.date||'', 'משתתפים':data.count||'', 'פרטים':data.msg||''};
+      const body = {_subject:'מדליק – פנייה חדשה מ' + (data.name||'לקוח') + ' | הפרסום במדליק עובד', _template:'table', _captcha:'false', 'הודעה ממדליק':'הפרסום במדליק עובד! התקבלה פנייה חדשה מלקוח דרך האתר', 'עסק':data.supplier||'', 'שם':data.name||'', 'טלפון':data.phone||'', 'מייל':data.email||'', 'תאריך האירוע':data.date||'', 'משתתפים':data.count||'', 'פרטים':data.msg||''};
       if(biz) body._cc = biz; if(/^[^@s]+@[^@s]+.[^@s]+$/.test(String(data.email||''))) body._replyto = data.email;
       fetch('https://formsubmit.co/ajax/officeautoclick@gmail.com', {method:'POST', headers:{'Content-Type':'application/json', 'Accept':'application/json'}, body:JSON.stringify(body)}).catch(()=>{}); }catch(e){}
   }
@@ -314,7 +314,7 @@ pages.games.after = () => {
       if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent = 'כתובת המייל לא תקינה'; err.hidden = false; return; }
       record('contact', {name, phone, email, msg:'בקשת משחק חדש: ' + idea + (who ? ' · משתתפים: ' + who : ''), page:location.hash || '#/games'});
       if(!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)){
-        try{ const body = {_subject:'בקשה למשחק חדש מ' + name + ' | אתר מדליק', _template:'table', _captcha:'false', 'שם':name, 'טלפון':phone, 'מייל':email, 'המשחק המבוקש':idea, 'משתתפים וגילאים':who};
+        try{ const body = {_subject:'מדליק – בקשה למשחק חדש מ' + name, _template:'table', _captcha:'false', 'שם':name, 'טלפון':phone, 'מייל':email, 'המשחק המבוקש':idea, 'משתתפים וגילאים':who};
           if(email) body._replyto = email;
           fetch('https://formsubmit.co/ajax/rivki1806@gmail.com', {method:'POST', headers:{'Content-Type':'application/json', 'Accept':'application/json'}, body:JSON.stringify(body)}).catch(() => {}); }catch(x){}
       }
