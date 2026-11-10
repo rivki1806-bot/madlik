@@ -26,6 +26,12 @@ const ADMIN_PAGE = !!window.MADLIK_ADMIN_PAGE; // דף הניהול נפתח ר�
 const adminKey = () => { try{ return (sessionStorage.getItem('madlik_key')||'').trim(); }catch(e){ return ''; } };
 function record(kind, data){
   store.push(kind, Object.assign(kind==='subs' ? {status:'ממתין'} : {}, data));
+  if(kind==='leads' && data.sid && !/^(localhost|127.0.0.1|[::1])$/.test(location.hostname)){ // מייל לבעל העסק דרך FormSubmit (בלי קוד נוסף בגוגל). עותק תמיד אל officeautoclick
+    try{ const s = findIn('suppliers', data.sid) || {}, biz = /^[^@s]+@[^@s]+.[^@s]+$/.test(String(s.email||'')) ? String(s.email).trim() : '';
+      const body = {_subject:'פנייה חדשה ממדליק: ' + (data.name||''), _template:'table', _captcha:'false', 'עסק':data.supplier||'', 'שם':data.name||'', 'טלפון':data.phone||'', 'מייל':data.email||'', 'תאריך האירוע':data.date||'', 'משתתפים':data.count||'', 'פרטים':data.msg||''};
+      if(biz) body._cc = biz; if(/^[^@s]+@[^@s]+.[^@s]+$/.test(String(data.email||''))) body._replyto = data.email;
+      fetch('https://formsubmit.co/ajax/officeautoclick@gmail.com', {method:'POST', headers:{'Content-Type':'application/json', 'Accept':'application/json'}, body:JSON.stringify(body)}).catch(()=>{}); }catch(e){}
+  }
   if(!API()) return;
   try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'submit', kind, data})}).catch(()=>{}); }catch(e){}
 }
