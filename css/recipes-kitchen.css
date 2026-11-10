@@ -121,3 +121,12 @@ html[data-pal] body .kg-plug-t h3{font:600 clamp(1.05rem,1.8vw,1.35rem)/1.3 'Rub
 @keyframes gkBorder{0%{background-position:0 0}100%{background-position:200% 200%}}
 @media (min-width:1180px){.gk-side{display:block}.gk-credit p.gk-soon{display:none!important}}
 @media (prefers-reduced-motion:reduce){.gk-side,.gk-side::before,.gk-side .gk-fl,.gk-credit p.gk-soon{animation:none!important}}
+
+/* גרסה מאורכת וקצת יותר פנימה */
+.gk-side{left:38px!important;top:32%!important;width:118px!important;min-height:250px;padding:24px 12px 22px!important;border-radius:70px!important;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.gk-side::before{border-radius:72px!important}
+.gk-side .gk-fl{font-size:2.1rem!important;margin:0!important}
+.gk-side b{font-size:.92rem!important;line-height:1.4!important;margin:0!important}
+.gk-side .gk-sub{font-size:.78rem!important;line-height:1.5!important}
+.gk-side .gk-sub .gk-dots{display:flex;justify-content:center;margin:8px 0 0}
+@media (min-width:1180px){.gk-side{display:flex!important}}
