@@ -170,3 +170,11 @@ html[data-pal] body .rd-plug-t h3{font:500 clamp(1.15rem,2vw,1.5rem)/1.3 'Rubik'
 
 .mg-remove{margin:0;padding:14px 16px;border-radius:16px;background:#fff3e6;border:1px solid rgba(255,106,0,.35);color:#0a2244;text-align:center;font:400 .95rem/1.5 'Heebo',sans-serif}
 .mg-remove b{display:block;font:600 1.08rem 'Rubik',sans-serif;color:#d94f00;margin-bottom:2px}
+
+/* ---------- תחתית האתר: ורוד עדין במקום החום, בכל האתר ---------- */
+html[data-pal] body .site-footer{background:linear-gradient(180deg,#ffeff1,#ffe3e8)!important;border-top:1px solid rgba(10,34,68,.1)!important;color:#0a2244!important}
+html[data-pal] body .site-footer p,html[data-pal] body .site-footer .copy,html[data-pal] body .site-footer .credit,html[data-pal] body .site-footer .credit-btn,html[data-pal] body .site-footer .credit-btn bdi{color:#3b4a66!important}
+html[data-pal] body .site-footer a{color:#0a2244!important;text-decoration:none;transition:color .2s}
+html[data-pal] body .site-footer a:hover{color:#ff6a00!important}
+html[data-pal] body .site-footer .credit-btn:hover{background:rgba(10,34,68,.06)!important}
+html[data-pal] body .site-footer .footer-links{border-color:rgba(10,34,68,.14)}

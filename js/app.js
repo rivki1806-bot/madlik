@@ -582,7 +582,7 @@ pages.studio = () => {
     + grp('עוד כרטיסים ותוויות', '', T.filter(t => t.repeat && !used.has(t.id)).map(t => t.id));
   const mpIds = STRIP_ORDER.filter(i => T.some(t => t.id === i)).concat(T.filter(t => !STRIP_ORDER.includes(t.id)).map(t => t.id));
   return pageHead('סטודיו מיתוג', 'בוחרים שפה עיצובית, בוחרים מה להדפיס, עורכים את הטקסט, ורואים את הדף בדיוק כמו בהדפסה.', 'סטודיו מיתוג') + `
-  <section class="hl-credit" aria-label="על העיצובים"><img class="hl-logo" src="img/hila-logo.webp" alt="הלוגו של חיהלה דוידוביץ" width="150" height="75"><p>חיהלה דוידוביץ, גרפיקאית מקצועית עם טאצ' ייחודי, עיצבה במיוחד עבור אתר מדליק עיצובים מרהיבים למיתוג מדליק :)</p></section>
+  <section class="hl-credit" aria-label="על העיצובים"><span class="hl-logo"><img src="img/hila-logo.gif" alt="הלוגו המונפש של חיהלה דוידוביץ" width="1684" height="364"></span><p>חיהלה דוידוביץ, גרפיקאית מקצועית עם טאצ' ייחודי, עיצבה במיוחד עבור אתר מדליק עיצובים מרהיבים למיתוג מדליק :)</p></section>
   ${tplStrip('', styles[0] ? styles[0].id : 'plain')}
   <div class="wrap">
     <section class="st-sec"><h2 class="st-h"><i>1</i>איזו שפה עיצובית מדברת אליך?</h2>
