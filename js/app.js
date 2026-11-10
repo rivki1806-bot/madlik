@@ -475,6 +475,17 @@ const tplStrip = (cur, style) => {
 };
 const stripStyle = (root, id) => { const st = (D.styles || []).find(x => x.id === id), img = st ? (st.thumb || st.img) : '';
   root.querySelectorAll('.tp-chip').forEach(c => { const sh = c.querySelector('.tp-shape'); if(sh) sh.style.backgroundImage = img ? 'url(' + img + ')' : ''; c.setAttribute('href', '#/studio/' + c.dataset.tpl + (id ? '?style=' + encodeURIComponent(id) : '')); }); };
+const mpCard = t => {
+  const land = t.land || (!t.repeat && t.w > t.h), pw = land ? 297 : 210, ph = land ? 210 : 297, tw = t.pair ? t.w * 2 + 6 : t.w, m = t.repeat ? 10 : 0;
+  let cols = 1, rows = 1, cells = 1;
+  if(t.repeat){ cols = Math.max(1, Math.floor((pw - 2 * m) / (tw + 4))); rows = Math.max(1, Math.floor((ph - 2 * m) / (t.h + 4))); cells = cols * rows; }
+  const nm = String(t.title).replace(/\s*\(.*\)\s*/, ''), mm = (t.w % 10 ? (t.w / 10).toFixed(1) : t.w / 10) + '×' + (t.h % 10 ? (t.h / 10).toFixed(1) : t.h / 10) + ' ס״מ';
+  const page = t.repeat
+    ? '<span class="mp-page' + (land ? ' land' : '') + '" style="aspect-ratio:' + pw + '/' + ph + ';padding:' + (m / pw * 100).toFixed(1) + '%"><span class="mp-cells" style="grid-template-columns:repeat(' + cols + ',1fr);gap:' + (4 / pw * 100).toFixed(2) + 'cqw">' + Array(cells).fill('<i class="mp-c' + (t.round ? ' round' : '') + '" style="aspect-ratio:' + tw + '/' + t.h + '"></i>').join('') + '</span></span>'
+    : '<span class="mp-page' + (land ? ' land' : '') + '" style="aspect-ratio:' + pw + '/' + ph + '"><i class="mp-c one" style="width:' + (Math.min(92, tw / pw * 100)).toFixed(1) + '%;aspect-ratio:' + tw + '/' + t.h + '"></i></span>';
+  const info = t.repeat ? 'דף A4 עם ' + cells + ' מדבקות' : 'דף ' + (Math.max(t.w, t.h) > 210 ? 'A4' : Math.max(t.w, t.h) > 148 ? 'A5' : 'קטן');
+  return '<a class="mp-card" data-tpl="' + esc(t.id) + '" href="#/studio/' + esc(t.id) + '">' + page + '<b>' + esc(nm) + '</b><small>' + mm + ' · ' + info + '</small></a>';
+};
 pages.studio = () => {
   const styles = (D.styles || []).filter(s => !s.legacy), fmts = window.MadlikEditor.FORMATS, mine = store.get('designs', []);
   const T = D.templates, by = ids => ids.map(i => T.find(t => t.id === i)).filter(Boolean), used = new Set();
@@ -485,7 +496,9 @@ pages.studio = () => {
     + grp('בקבוקים וכוסות', 'מדבקות לבקבוק גדול וקטן, ותבנית להדבקה על כוס קרטון.', ['bottle','bottle-small','cup-wrap','oil-label'])
     + grp('הזמנה, תכניה, פלייסמנט ושילוט', 'דפים להדפסה על A4 או A5.', ['invite','schedule','placemat','entrance-sign','sign','menu','poster','certificate'])
     + grp('עוד כרטיסים ותוויות', '', T.filter(t => t.repeat && !used.has(t.id)).map(t => t.id));
+  const mpIds = STRIP_ORDER.filter(i => T.some(t => t.id === i)).concat(T.filter(t => !STRIP_ORDER.includes(t.id)).map(t => t.id));
   return pageHead('סטודיו מיתוג', 'בוחרים שפה עיצובית, בוחרים מה להדפיס, עורכים את הטקסט, ורואים את הדף בדיוק כמו בהדפסה.', 'סטודיו מיתוג') + `
+  <section class="hl-credit" aria-label="על העיצובים"><img class="hl-logo" src="img/hila-logo.webp" alt="הלוגו של חיהלע דוידוביץ" width="150" height="75"><p><b>חיהלע דוידוביץ</b>, גרפיקאית מקצועית עם טאצ' ייחודי, עיצבה במיוחד עבור אתר מדליק עיצובים מרהיבים למיתוג מדליק :)</p></section>
   ${tplStrip('', styles[0] ? styles[0].id : 'plain')}
   <div class="wrap">
     <section class="st-sec"><h2 class="st-h"><i>1</i>איזו שפה עיצובית מדברת אליך?</h2>
@@ -493,6 +506,8 @@ pages.studio = () => {
         ${styles.map((s,i)=>`<label class="st-card"><input type="radio" name="stl" value="${esc(s.id)}" ${i===0?'checked':''}><span class="st-img"><img src="${esc(s.thumb||s.img)}" loading="lazy" alt="תצוגה של הסגנון ${esc(s.name)}"></span><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></label>`).join('')}
         <label class="st-card"><input type="radio" name="stl" value="plain" ${styles.length?'':'checked'}><span class="st-img plain-img"><i></i></span><b>צבע אחד, בלי תמונה</b><small>בוחרים ערכת צבעים פשוטה</small></label>
       </div></section>
+    <section class="st-sec" id="stProd" tabindex="-1"><h2 class="st-h"><i>2</i>מה רוצים להדפיס?</h2><p class="muted" style="margin:0 0 16px">הציור מראה איך ייראה הדף כפי שיודפס, עם העיצוב שבחרת.</p>
+      <div class="mp-grid">${mpIds.map(i => mpCard(T.find(t => t.id === i))).join('')}</div></section>
         <section class="st-sec"><h2 class="st-h">עורך חופשי</h2><p class="muted" style="margin:0 0 14px">רוצים להזיז כל דבר בעצמכם? פותחים דף ריק בשפה שבחרתם.</p>
       <div class="st-fmts" role="radiogroup" aria-label="גודל">${fmts.map(f=>`<label class="st-fmt"><input type="radio" name="fmt" value="${f.id}" ${f.id==='invite'?'checked':''}><span>${f.n}</span></label>`).join('')}</div>
       <div class="st-go"><a class="btn btn-gold" id="stGo" href="#/studio/edit?style=${styles[0]?esc(styles[0].id):'plain'}&fmt=invite">פותחים את העורך ←</a></div></section>
@@ -505,8 +520,10 @@ pages.studio.after = () => {
     const sEl = document.querySelector('[name=stl]:checked'), f = document.querySelector('[name=fmt]:checked'), v = sEl ? sEl.value : 'plain', st = sty(v);
     go.setAttribute('href', `#/studio/edit?style=${v}&fmt=${f ? f.value : 'invite'}`);
     stripStyle(document, st ? v : '');
+    const g = document.querySelector('.mp-grid'); if(g){ g.style.setProperty('--bg', st ? 'url(' + new URL(st.thumb || st.img, document.baseURI).href + ')' : 'none'); g.classList.toggle('plainbg', !st); g.querySelectorAll('.mp-card').forEach(c => c.setAttribute('href', '#/studio/' + c.dataset.tpl + (st ? '?style=' + encodeURIComponent(v) : ''))); }
   };
   document.querySelectorAll('[name=stl],[name=fmt]').forEach(i => i.onchange = upd); upd();
+  document.querySelectorAll('[name=stl]').forEach(i => i.addEventListener('change', () => { const p = document.getElementById('stProd'); if(!p) return; setTimeout(() => { window.scrollTo({top: Math.max(0, p.getBoundingClientRect().top + scrollY - 130), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'}); p.focus({preventScroll:true}); }, 120); }));
 };
 
 pages.edit = () => `<div class="wrap ed-page"><div id="edHost"></div></div>`;

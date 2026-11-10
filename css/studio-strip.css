@@ -9,3 +9,29 @@
 .tp-shape{flex:none;display:block;height:28px;aspect-ratio:var(--ar,1);max-width:52px;border-radius:5px;background:#efe7d6 center/cover;box-shadow:0 0 0 1px rgba(10,34,68,.25)}
 .tp-shape.round{border-radius:50%}
 @media (max-width:700px){.tp-strip{top:56px}.tp-strip-l{display:none}}
+
+/* כרטיסי מוצר עם ציור הדף */
+.mp-grid{--bg:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:clamp(12px,1.6vw,20px)}
+.mp-card{display:grid;gap:8px;align-content:start;padding:12px 12px 14px;border-radius:18px;background:#fffdf8;box-shadow:0 0 0 1px rgba(10,34,68,.13);color:#0a2244;text-decoration:none;text-align:center;transition:transform .3s cubic-bezier(.22,.8,.3,1),box-shadow .3s}
+.mp-card:hover,.mp-card:focus-visible{transform:translateY(-4px);box-shadow:0 0 0 2px #0a2244,0 18px 24px -18px rgba(10,34,68,.6)}
+.mp-card:focus-visible{outline:3px solid #ff6a00;outline-offset:3px}
+.mp-card b{font:500 .95rem/1.25 'Rubik',sans-serif}.mp-card small{font:400 .78rem/1.35 'Heebo',sans-serif;color:#6c7893}
+.mp-page{container-type:inline-size;display:block;width:78%;margin:0 auto;background:#fff;border-radius:3px;box-shadow:0 0 0 1px rgba(10,34,68,.18),0 6px 12px -6px rgba(10,34,68,.35);box-sizing:border-box;overflow:hidden;display:flex;align-items:flex-start;justify-content:center}
+.mp-page.land{width:100%}
+.mp-cells{display:grid;width:100%;align-content:start}
+.mp-c{display:block;width:100%;background:#efe7d6 var(--bg) center/cover;border-radius:2px;box-shadow:0 0 0 .5px rgba(10,34,68,.22)}
+.mp-c.round{border-radius:50%}
+.mp-c.one{margin:auto;align-self:center;border-radius:3px}
+.mp-grid.plainbg .mp-c{background:linear-gradient(135deg,#ffe780,#ff8a2e)}
+.mp-page:has(.one){align-items:center}
+.mp-page .one{max-height:92%}
+
+/* קרדיט עם הלוגו המונפש */
+.hl-credit{max-width:1180px;margin:clamp(14px,2vw,26px) auto 8px;padding:14px clamp(16px,3vw,28px);display:flex;align-items:center;gap:clamp(14px,2.4vw,26px);border-radius:24px;background:#fffdf8;box-shadow:0 0 0 1px rgba(10,34,68,.13)}
+.hl-logo{flex:none;width:clamp(96px,12vw,140px);height:auto;transform-origin:center;animation:hlIn 1s cubic-bezier(.2,1.5,.3,1) both,hlFloat 3.6s ease-in-out 1.2s infinite}
+.hl-credit p{margin:0;font:400 1.05rem/1.6 'Heebo',sans-serif;color:#1d2f52}
+.hl-credit b{font:600 1.1rem 'Rubik',sans-serif;color:#0a2244}
+@keyframes hlIn{from{opacity:0;transform:scaleX(.12) rotate(-6deg)}to{opacity:1;transform:none}}
+@keyframes hlFloat{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-4px) scaleX(1.07)}}
+@media (prefers-reduced-motion:reduce){.hl-logo{animation:none}}
+@media (max-width:640px){.hl-credit{flex-direction:column;text-align:center}.mp-grid{grid-template-columns:repeat(2,1fr)}}
