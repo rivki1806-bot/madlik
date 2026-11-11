@@ -105,7 +105,7 @@ function showRules(type, o){
     if(b.dataset.r === 'words' || b.dataset.r === 'print'){ close(); const f = document.getElementById('cf');
       if(!f){ location.hash = '#/create/' + type; return; }
       setTimeout(() => { if(b.dataset.r === 'print'){ const p = document.getElementById('doPrint'); if(p) p.click(); return; } const t = f.querySelector('textarea'); if(t){ t.scrollIntoView({block:'center', behavior:'smooth'}); t.focus({preventScroll:true}); t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 1600); } }, 260); } });
-  d.showModal(); const first = d.querySelector('.rules-btns .btn'); if(first) first.focus();
+  d.showModal(); const first = d.querySelector('.rules-btns .btn'); if(first) first.focus({preventScroll:true}); const top0 = () => { d.scrollTop = 0; const ri = d.querySelector('.rules-in'); if(ri) ri.scrollTop = 0; }; top0(); requestAnimationFrame(top0); setTimeout(top0, 120);
 }
 function autoRules(type, onPlay){ if(RULES[type] && !isHidden(type)) setTimeout(() => { if(document.querySelector('#cf')) showRules(type, {onPlay}); }, 420); }
 
