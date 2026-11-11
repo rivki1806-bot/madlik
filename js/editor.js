@@ -390,7 +390,7 @@ function mount(host, opts){
         if(!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
         url = (await window.html2canvas(c, {scale:2.4, backgroundColor:null, useCORS:true})).toDataURL('image/png');
       }
-      const a = document.createElement('a'); a.href = url; a.download = 'madlik-design.png'; a.click(); toast('התמונה ירדה'); celebrate();
+      const a = document.createElement('a'); a.href = url; a.download = 'madlik-design.png'; a.click(); if(window.countDoc) countDoc('dl', 'edit'); toast('התמונה ירדה'); celebrate();
     }catch(err){ toast('לא הצלחתי ליצור תמונה. אפשר להדפיס ולשמור כ־PDF'); }
     hold.remove();
   }
@@ -400,7 +400,7 @@ function mount(host, opts){
     root2.innerHTML = ''; const box = document.createElement('div'); box.className = 'ed-print'; box.style.cssText = `width:${f.w}mm;height:${f.h}mm`; box.appendChild(c); root2.appendChild(box);
     const st = document.createElement('style'); st.id = 'edPageStyle'; st.textContent = `@page{size:${f.w}mm ${f.h}mm;margin:0}`; document.head.appendChild(st);
     const done = () => { const s = document.getElementById('edPageStyle'); if(s) s.remove(); removeEventListener('afterprint', done); }; addEventListener('afterprint', done);
-    setTimeout(() => window.print(), 250); celebrate();
+    if(window.countDoc) countDoc('print', 'edit'); setTimeout(() => window.print(), 250); celebrate();
   }
   function celebrate(){
     if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;

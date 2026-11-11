@@ -23,12 +23,18 @@ const hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה'
 function stats_() {
   const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;
   const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
-  const out = { sec: {}, sup: {}, tel: {}, web: {}, game: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};
+  const out = { sec: {}, sup: {}, tel: {}, web: {}, game: {}, doc: {}, rec: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};
   for (let i = 1; i < rows.length; i++) {
     const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);
     if (type === 'sup' && /^(tel|web):/.test(id)) { // לחיצות על "הטלפון שלנו" ועל האתר של העסק
       const kind = id.slice(0, 3), tid = id.slice(4), grp = out[kind], t = grp[tid] = grp[tid] || { total: 0, today: 0, week: 0 };
       t.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) t.today++; if (now - d.getTime() < 7 * DAY) t.week++;
+      continue;
+    }
+    if (type === 'doc' || type === 'rec') { // הדפסות והורדות של מסמכים, וכניסות לכל מתכון
+      const o = out[type][id] = out[type][id] || { total: 0, today: 0, week: 0, uniq: 0 };
+      o.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++; if (now - d.getTime() < 7 * DAY) o.week++;
+      const dk2 = type + '|' + id + '|' + v; if (v && !seen[dk2]) { seen[dk2] = 1; o.uniq++; }
       continue;
     }
     if (type === 'game' || type === 'gtime') { // כניסות וזמן שהייה לכל משחק
@@ -97,7 +103,7 @@ function doPost(e) {
     }
 
     if (d.action === 'hit') {
-      const type = d.type === 'sup' ? 'sup' : (d.type === 'game' || d.type === 'gtime') ? d.type : 'sec';
+      const type = d.type === 'sup' ? 'sup' : (d.type === 'game' || d.type === 'gtime' || d.type === 'doc' || d.type === 'rec') ? d.type : 'sec';
       hitSheet_().appendRow([new Date(), type, String(d.id || '').slice(0, 60), String(d.v || '').slice(0, 20), type === 'gtime' ? Math.min(3600, Math.max(0, Math.round(Number(d.s) || 0))) : '']);
       return json_({ ok: true });
     }
