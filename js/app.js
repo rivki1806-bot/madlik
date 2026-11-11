@@ -1711,6 +1711,7 @@ const routes = [
 ];
 function render(){
   clearInterval(window.__adTimer);
+  document.querySelectorAll('dialog[open]').forEach(d => { try{ d.close(); }catch(e){} d.remove(); }); // חלון הוראות לא נשאר פתוח מעל עמוד אחר
   document.querySelectorAll('.gk-side').forEach(e => e.remove());
   if(window.MadlikEditor) window.MadlikEditor.unmount();
   const [path, qs] = (location.hash.slice(1) || '/').split('?');
