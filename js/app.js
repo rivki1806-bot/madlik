@@ -1706,11 +1706,32 @@ function render(){
   document.querySelectorAll('.main-nav a').forEach(a=>a.classList.toggle('active', path!=='/' && ('#'+path).startsWith(a.getAttribute('href'))));
   document.getElementById('mainNav').classList.remove('open');
 }
-let lastPath = location.hash.split('?')[0], navTok = 0;
+let lastPath = location.hash.split('?')[0], navTok = 0, navDepth = 0, lastY = 0, viaClick = false;
+const savedY = {};
+addEventListener('scroll', () => { lastY = scrollY; }, {passive:true});
+document.addEventListener('click', e => { viaClick = !!e.target.closest('a[href^="#/"]'); setTimeout(() => { viaClick = false; }, 400); }, true);
+/* כפתור חזרה בכל עמוד פנימי: חוזר לעמוד הקודם ולאותו מקום בגלילה */
+function syncBack(){
+  let b = document.getElementById('bkBtn');
+  const home = (location.hash.split('?')[0] || '#/') === '#/' || location.hash === '' || location.hash === '#';
+  if(home || ADMIN_PAGE){ if(b) b.remove(); return; }
+  if(!b){ b = document.createElement('button'); b.type = 'button'; b.id = 'bkBtn'; b.className = 'bk-btn'; b.innerHTML = '<i aria-hidden="true">→</i><span></span>';
+    b.onclick = () => { if(navDepth > 0){ navDepth--; history.back(); } else location.hash = '#/'; }; document.body.appendChild(b); }
+  b.querySelector('span').textContent = navDepth > 0 ? 'חזרה' : 'לדף הבית';
+  b.setAttribute('aria-label', navDepth > 0 ? 'חזרה לעמוד הקודם' : 'חזרה לדף הבית');
+}
 window.addEventListener('hashchange', () => {
-  const p = location.hash.split('?')[0], same = p === lastPath; lastPath = p;
-  render(); if(!same) window.scrollTo({top:0, left:0, behavior:'instant'});
+  const p = location.hash.split('?')[0], same = p === lastPath; savedY[lastPath] = lastY; const click = viaClick; lastPath = p;
+  if(click) navDepth++; else if(navDepth > 0 && !same) navDepth = Math.max(0, navDepth - 1);
+  render();
+  if(!same){
+    const y = click ? 0 : (savedY[p] || 0);
+    window.scrollTo({top:y, left:0, behavior:'instant'});
+    if(y) [150, 500, 1100].forEach(ms => setTimeout(() => { if(lastPath === p && Math.abs(scrollY - y) > 40) window.scrollTo({top:y, left:0, behavior:'instant'}); }, ms));
+  }
+  syncBack();
 });
+syncBack();
 
 /* ---------- הודעה בולטת בכניסה למדור נותני שירות ---------- */
 const BIZ_NOTICE_UNTIL = new Date('2026-11-10T00:00:00+02:00').getTime(); // מיום שלישי 10.11.26 ההודעה כבר לא רלוונטית

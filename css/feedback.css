@@ -60,3 +60,9 @@ html[data-pal] body .gq-t h2{font:600 clamp(1.15rem,2.2vw,1.55rem)/1.3 'Rubik',s
 .gq-err{margin:0;padding:8px 12px;border-radius:12px;background:#fdecea;color:#a12a1f;font:500 .9rem 'Heebo',sans-serif}
 @media (max-width:700px){.gq-cta{flex-wrap:wrap}.gq-go{width:100%;justify-content:center}.gq-two{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.gq-cta::after,.gq-ico{animation:none}}
+
+/* כפתור חזרה צף */
+.bk-btn{position:fixed;left:14px;bottom:18px;z-index:60;display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 20px 0 8px;border:0;border-radius:999px;background:#0a2244;color:#fbf1dc;font:600 1rem 'Rubik',sans-serif;cursor:pointer;box-shadow:0 14px 26px -10px rgba(10,34,68,.75),inset 0 0 0 2px rgba(255,255,255,.18);transition:transform .2s}
+.bk-btn i{font-style:normal;width:34px;height:34px;border-radius:50%;background:linear-gradient(120deg,#ff6a00,#ffc42d);color:#0a2244;display:grid;place-items:center;font-weight:800}
+.bk-btn:hover{transform:translateY(-2px)}.bk-btn:focus-visible{outline:3px solid #ffc42d;outline-offset:3px}
+@media print{.bk-btn{display:none}}
