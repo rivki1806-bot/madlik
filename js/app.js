@@ -311,7 +311,7 @@ pages.search = (p,q) => {
 
 /* משחקים */
 /* ---------- עמוד המשחקים: נקי ושקט ---------- */
-pages.famBingo = () => pageHead('בינגו תמונות משפחתיות', 'מעלים תמונות מהמשפחה, בוחרים גודל, ומקבלים לוחות להדפסה ומצב מנחה על המסך.', '<a href="#/games">משחקים</a> › בינגו תמונות משפחתיות') + (window.FamBingo ? FamBingo.html() : '');
+pages.famBingo = () => !(window.FamBingo && FamBingo.enabled) ? notFound() : pageHead('בינגו תמונות משפחתיות', 'מעלים תמונות מהמשפחה, בוחרים גודל, ומקבלים לוחות להדפסה ומצב מנחה על המסך.', '<a href="#/games">משחקים</a> › בינגו תמונות משפחתיות') + (window.FamBingo ? FamBingo.html() : '');
 pages.famBingo.after = () => { if(window.FamBingo) FamBingo.after(); };
 pages.games = () => {
   const all = content('games').filter(isScreenGame);
@@ -1406,9 +1406,18 @@ pages.admin = () => {
     <form class="box form" data-add="recipes"><h3>מתכון חדש</h3><label>שם<input name="title" required></label><div class="two-col"><label>קטגוריה<input name="cat" value="לביבות"></label><label>כשרות<select name="diet"><option>פרווה</option><option>חלבי</option><option>בשרי</option></select></label></div><div class="two-col"><label>זמן (דקות)<input type="number" name="time" value="30"></label><label>סועדים<input type="number" name="serves" value="6"></label></div><label>רמה<select name="level"><option>קל</option><option>בינוני</option><option>מאתגר</option></select></label><label>מצרכים <span class="hint">שורה לכל מצרך: כמות | יחידה | שם</span><textarea name="ing" placeholder="2 | כוסות | קמח"></textarea></label><label>שלבי הכנה <span class="hint">שורה לכל שלב</span><textarea name="steps"></textarea></label><button class="btn btn-gold">הוספה</button></form>
   </div>
   <div class="box"><h3>תוכן שהוספת</h3>${['games','recipes','suppliers'].map(k=>addedContent(k).map(x=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span>${esc(x.title||x.name)} <span class="muted">(${k})</span></span><button class="btn btn-sm btn-light" data-del-extra="${k}|${esc(x.id)}">מחיקה</button></div>`).join('')).join('') || '<p class="muted">עוד לא הוספת.</p>'}</div>`;
-  return pageHead('ניהול האתר', '', 'ניהול') + `<div class="wrap">${live ? `<div class="notice" style="margin-bottom:16px">מחובר לשרת של גוגל: כל הטפסים, הנרשמים והתוכן נשמרים בגיליון שלך.</div>` : `<div class="notice" style="margin-bottom:16px">עדיין לא מחובר לשרת: מה שמופיע כאן נשמר רק בדפדפן הזה. כדי שכל הטפסים והנרשמים יגיעו אלייך, חברי את השרת של גוגל (ההוראות בלשונית "רשימת תפוצה").</div>`}<div class="tabs">${Object.entries(tabs).map(([k,v])=>`<a class="chip ${k===tab?'on':''}" href="#/admin?tab=${k}">${v}</a>`).join('')}<button class="chip" id="logout">יציאה</button></div>${body}</div>`;
+  return pageHead('ניהול האתר', '', 'ניהול') + `<div class="wrap">${adminReminders()}${live ? `<div class="notice" style="margin-bottom:16px">מחובר לשרת של גוגל: כל הטפסים, הנרשמים והתוכן נשמרים בגיליון שלך.</div>` : `<div class="notice" style="margin-bottom:16px">עדיין לא מחובר לשרת: מה שמופיע כאן נשמר רק בדפדפן הזה. כדי שכל הטפסים והנרשמים יגיעו אלייך, חברי את השרת של גוגל (ההוראות בלשונית "רשימת תפוצה").</div>`}<div class="tabs">${Object.entries(tabs).map(([k,v])=>`<a class="chip ${k===tab?'on':''}" href="#/admin?tab=${k}">${v}</a>`).join('')}<button class="chip" id="logout">יציאה</button></div>${body}</div>`;
 };
 // לשונית הכניסות: טבלת מדורים וטבלת נותני שירות
+/* תזכורות בדף הניהול: מופיעות מהתאריך שנקבע, עד שמסמנים "טופל" */
+const ADMIN_REMINDERS = [
+  {id:'pay-gateway', from:'2026-11-15T00:00:00+02:00', icon:'💳', title:'תזכורת ליום ראשון: לחבר מערכת סליקה אוטומטית', text:'הגיע הזמן לחבר לאתר מערכת סליקה, כדי שפרסום של עסקים ישולם אוטומטית.'}
+];
+function adminReminders(){
+  const done = store.get('reminders_done', {});
+  return ADMIN_REMINDERS.filter(x => Date.now() >= new Date(x.from).getTime() && !done[x.id]).map(x => '<div class="notice admin-rem" role="alert" style="margin-bottom:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;border:2px solid #ff6a00;background:#fff3d6"><span style="font-size:2rem" aria-hidden="true">' + x.icon + '</span><div style="flex:1;min-width:220px"><b style="font-size:1.1rem">' + esc(x.title) + '</b><br><span>' + esc(x.text) + '</span></div><button type="button" class="btn btn-gold" data-rem-done="' + esc(x.id) + '">טופל, אפשר להסיר</button></div>').join('');
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-rem-done]'); if(!b) return; const d = store.get('reminders_done', {}); d[b.dataset.remDone] = Date.now(); store.set('reminders_done', d); const box = b.closest('.admin-rem'); if(box) box.remove(); });
 function localStats(){
   const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10), out = {sec:{}, sup:{}, tel:{}, web:{}, game:{}, doc:{}, rec:{}};
   ['sec','sup'].forEach(t => Object.entries(st[t]||{}).forEach(([id,o]) => out[t][id] = {total:o.total, today:o.day===today?o.today:0, week:(o.week||[]).filter(x=>Date.now()-x<7*864e5).length, uniq:null}));

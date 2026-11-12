@@ -129,7 +129,8 @@ function after(){
   refresh(); showBoards();
 }
 
-const card = () => '<a class="card" href="#/family-bingo"><div class="card-top fbn-cardtop" aria-hidden="true"><span>📸</span><i>🎉</i></div><div class="card-body"><h3>בינגו תמונות משפחתיות</h3><p>מעלים תמונות מהמשפחה, בוחרים גודל, ומקבלים לוחות להדפסה ומצב מנחה על המסך.</p><div class="tags"><span class="tag tag-new">חדש!</span><span class="tag tag-gold">חינם</span></div></div></a>';
+const ENABLED = false; // כבוי כרגע: המשחק מוסתר מהאתר. כדי להחזיר, לשנות ל־true
+const card = () => !ENABLED ? '' : '<a class="card" href="#/family-bingo"><div class="card-top fbn-cardtop" aria-hidden="true"><span>📸</span><i>🎉</i></div><div class="card-body"><h3>בינגו תמונות משפחתיות</h3><p>מעלים תמונות מהמשפחה, בוחרים גודל, ומקבלים לוחות להדפסה ומצב מנחה על המסך.</p><div class="tags"><span class="tag tag-new">חדש!</span><span class="tag tag-gold">חינם</span></div></div></a>';
 addEventListener('hashchange', () => { const o = document.querySelector('.fbn-call'); if(o){ o.remove(); document.body.classList.remove('bn-lock'); } });
-window.FamBingo = {html, after, card};
+window.FamBingo = {html, after, card, enabled:ENABLED};
 })();
