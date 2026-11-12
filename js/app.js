@@ -279,6 +279,12 @@ pages.home = () => {
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
   ${wshow('biz','נותני שירות','נותני שירות שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילים ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
+  <section class="mk-credit" aria-label="מי עומד מאחורי מדליק">
+    <div class="mkc-mono" aria-hidden="true"><span>ר״י</span><i></i><i></i></div>
+    <div class="mkc-body"><p class="mkc-kick">מי מאחורי מדליק</p><h2 class="mkc-name">רבקי יוגב</h2><p class="mkc-role">פיתוח, אפיון ועיצוב</p><p class="mkc-prod">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi></p></div>
+    <div class="mkc-acts"><button type="button" class="mkc-go" data-open-contact><span>דברו איתי</span><i aria-hidden="true">←</i></button><a class="mkc-chip" href="tel:0556771806" dir="ltr">055-677-1806</a><a class="mkc-chip" href="mailto:rivki1806@gmail.com" dir="ltr">rivki1806@gmail.com</a></div>
+    <s class="mkc-sp s1"></s><s class="mkc-sp s2"></s><s class="mkc-sp s3"></s>
+  </section>
   <section class="final">
     <a class="big-link" href="#/games">מתחילים לשחק <i>←</i></a>
     <a class="big-link" href="#/submit">יש לך רעיון? <i>←</i></a>
@@ -1853,7 +1859,7 @@ function openContact(){
   };
   d.showModal(); const first = f.querySelector('input'); if(first) first.focus();
 }
-document.addEventListener('click', e => { const c = e.target.closest('#creditBtn'); if(c){ e.preventDefault(); openContact(); } });
+document.addEventListener('click', e => { const c = e.target.closest('#creditBtn,[data-open-contact]'); if(c){ e.preventDefault(); openContact(); } });
 
 /* ---------- כללי ---------- */
 document.getElementById('menuToggle').onclick = () => document.getElementById('mainNav').classList.toggle('open');
