@@ -116,3 +116,10 @@ html[data-pal=logo] .sup-card .sup-form,.sup-card .sup-form{display:flex;align-i
 /* בתוך משחק על המסך: בלי הפס הלבן שלרוחב העמוד (הוא שייך רק לסרגל הסינון בעמוד המשחקים) */
 .gp-ov .gp-bar{position:relative!important;top:auto!important;background:transparent!important;backdrop-filter:none!important;border:0!important;box-shadow:none!important;margin:0!important;padding:84px 16px 0!important;display:flex!important;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 @media (max-width:640px){.gp-ov .gp-bar{padding-top:64px!important}}
+
+/* אישור דיוור בפתיחת אזור אישי */
+.uf-remove{margin:0 0 10px;padding:10px 14px;border-radius:12px;background:#fff3d6;border:1.5px solid #ffb02e;color:#5a2f08;font:400 .98rem/1.5 'Heebo',sans-serif}
+.uf-remove b{font-weight:800;color:#d9531a}
+.uf-ok{align-items:flex-start;font-weight:500}
+.uf-ok input{margin-top:4px;flex:none}
+.uf-err{margin:0 0 8px;padding:8px 12px;border-radius:12px;background:#fdecea;color:#a12a1f;font:500 .92rem 'Heebo',sans-serif}

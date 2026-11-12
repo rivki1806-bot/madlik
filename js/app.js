@@ -1371,7 +1371,7 @@ pages.me = () => {
   const all = favList('games',gameCard)+favList('recipes',recipeCard)+favList('suppliers',supCard);
   return pageHead('האזור שלי', user?`שלום ${esc(user.name)} `:'כאן נשמרים המועדפים, המשחקים והעיצובים שלך.', 'האזור שלי') + `
   <div class="wrap">
-    ${user?'':`<div class="box"><h2>פתיחת אזור אישי</h2><form class="form" id="uf"><div class="two-col"><label>שם<input name="name" required></label><label>מייל<input name="email" type="email" required></label></div><label class="check"><input type="checkbox" name="marketing"> אשמח לקבל במייל משחקים, תבניות ועדכונים חדשים</label><button class="btn btn-gold">פתיחה</button></form></div>`}
+    ${user?'':`<div class="box"><h2>פתיחת אזור אישי</h2><form class="form" id="uf"><div class="two-col"><label>שם<input name="name" required></label><label>מייל<input name="email" type="email" required></label></div><p class="uf-remove"><b>תוכלו להסיר את עצמכם בכל עת, בקלות.</b> בכל מייל שנשלח יש קישור הסרה בלחיצה אחת.</p><label class="check uf-ok"><input type="checkbox" name="marketing" required> אני מאשרת קבלת דיוור (מיילים עם משחקים, תבניות ועדכונים) מאוטוקליק – רבקי יוגב. ידוע לי שאפשר להסיר אותי מהרשימה בכל עת.</label><p class="uf-err" role="alert" hidden></p><button class="btn btn-gold">פתיחה</button></form></div>`}
     <section class="section"><h2>המועדפים שלי</h2>${all?`<div class="cards">${all}</div>`:'<div class="empty">עוד לא שמרת כלום. לחצי על ♡ ליד משחק, מתכון או עסק.</div>'}</section>
     <section class="box"><h2>משחקים ועיצובים ששמרתי</h2>${saved.length?`<table class="table"><tr><th>סוג</th><th>שם</th><th>נשמר</th><th></th></tr>${saved.map(x=>`<tr><td>${esc(x.kind)}</td><td><a href="${esc(x.link)}">${esc(x.title)}</a></td><td>${esc(x.date)}</td><td><button class="btn btn-sm btn-light" data-del-saved="${esc(x.id)}">מחיקה</button></td></tr>`).join('')}</table>`:'<p class="muted">עוד אין. ביצירת משחק או עיצוב לחצי "שמירה".</p>'}</section>
     <section class="box"><h2> רשימת הקניות</h2>${shop.length?`<ul style="list-style:none;padding:0" id="shopL">${shop.map((x,i)=>`<li><label class="check"><input type="checkbox" data-shop="${i}" ${x.done?'checked':''}> <span style="${x.done?'text-decoration:line-through;opacity:.6':''}">${esc(x.t)}</span> <span class="muted" style="font-size:.85rem">(${esc(x.from)})</span></label></li>`).join('')}</ul><div class="btn-row"><button class="btn btn-light" id="shopPrint"> הדפסה</button><button class="btn btn-light" id="shopClear">ניקוי הרשימה</button></div>`:'<p class="muted">הרשימה ריקה. במתכון לחצי "הוספה לרשימת הקניות".</p>'}</section>
@@ -1379,7 +1379,8 @@ pages.me = () => {
 };
 pages.me.after = () => {
   const uf = document.getElementById('uf');
-  if(uf) uf.onsubmit = e => { e.preventDefault(); const v = Object.fromEntries(new FormData(uf)); store.set('user', {name:v.name, email:v.email}); record('users', {name:v.name, email:v.email, marketing:v.marketing?'כן':'לא'}); if(v.marketing) subscribe(v.email, 'אזור אישי', v.name); toast('האזור האישי נפתח '); render(); };
+  if(uf) uf.onsubmit = e => { e.preventDefault(); const v = Object.fromEntries(new FormData(uf)); const er = uf.querySelector('.uf-err');
+    if(!v.marketing){ er.textContent = 'כדי לפתוח אזור אישי צריך לסמן אישור דיוור מאוטוקליק – רבקי יוגב'; er.hidden = false; return; } er.hidden = true; store.set('user', {name:v.name, email:v.email}); record('users', {name:v.name, email:v.email, marketing:v.marketing?'כן':'לא'}); if(v.marketing) subscribe(v.email, 'אזור אישי', v.name); toast('האזור האישי נפתח '); render(); };
   app.onclick = e => {
     const d = e.target.closest('[data-del-saved]'); if(d){ store.set('saved', store.get('saved',[]).filter(x=>x.id!==d.dataset.delSaved)); render(); }
   };
