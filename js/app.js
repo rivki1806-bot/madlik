@@ -263,7 +263,6 @@ pages.home = () => {
   return `
   <section class="hero" id="hero">
     <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ונותני שירות</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
-    <div class="mk-strip" role="note" aria-label="מי מאחורי מדליק"><p class="mks-t"><span class="mks-by">פיתוח, אפיון ועיצוב: <b>רבקי יוגב</b></span><span class="mks-dot" aria-hidden="true">✦</span><span class="mks-prod">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi></span></p><div class="mks-acts"><a class="mks-tel" href="tel:0556771806" dir="ltr">055-677-1806</a><button type="button" class="mks-go" data-open-contact><span>דברו איתי</span><i aria-hidden="true">←</i></button></div></div>
         <aside class="ad-rail" aria-label="מודעות">
       <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button><img class="ad-logo" src="img/logo-mark.png" alt="">
       ${Date.now() < BIZ_NOTICE_UNTIL ? '<div class="ad-open" role="note" aria-label="פתיחת פרסום ביום שלישי 10.11.26"><b>פתיחת פרסום</b><span>ביום שלישי</span><i>10.11.26</i></div>' : ''}
@@ -273,6 +272,7 @@ pages.home = () => {
     <div class="hero-copy">
       <p class="tagline">כל מה שצריך לערב לביבות<br><em>שמדליק שמחה בלבבות</em></p>
     </div>
+    <div class="mk-strip" role="note" aria-label="מי מאחורי מדליק"><p class="mks-t"><span class="mks-by">פיתוח, אפיון ועיצוב: <b>רבקי יוגב</b></span><span class="mks-dot" aria-hidden="true">✦</span><span class="mks-prod">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi></span></p><div class="mks-acts"><a class="mks-tel" href="tel:0556771806" dir="ltr">055-677-1806</a><button type="button" class="mks-go" data-open-contact><span>דברו איתי</span><i aria-hidden="true">←</i></button></div></div>
   </section>
   <div class="statement"><p>${stm}</p></div>
   ${wshow('games','משחקים על המסך שניתנים גם להדפסה','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון חנוכה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)||c.id==='battle').slice(0,3).map(creatorCard).join(''))}
