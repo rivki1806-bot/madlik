@@ -263,6 +263,7 @@ pages.home = () => {
   return `
   <section class="hero" id="hero">
     <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ונותני שירות</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
+    <div class="mk-strip" role="note" aria-label="מי מאחורי מדליק"><p class="mks-t"><span class="mks-by">פיתוח, אפיון ועיצוב: <b>רבקי יוגב</b></span><span class="mks-dot" aria-hidden="true">✦</span><span class="mks-prod">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi></span></p><div class="mks-acts"><a class="mks-tel" href="tel:0556771806" dir="ltr">055-677-1806</a><button type="button" class="mks-go" data-open-contact><span>דברו איתי</span><i aria-hidden="true">←</i></button></div></div>
         <aside class="ad-rail" aria-label="מודעות">
       <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button><img class="ad-logo" src="img/logo-mark.png" alt="">
       ${Date.now() < BIZ_NOTICE_UNTIL ? '<div class="ad-open" role="note" aria-label="פתיחת פרסום ביום שלישי 10.11.26"><b>פתיחת פרסום</b><span>ביום שלישי</span><i>10.11.26</i></div>' : ''}
@@ -279,12 +280,6 @@ pages.home = () => {
   ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
   ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
   ${wshow('biz','נותני שירות','נותני שירות שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילים ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
-  <section class="mk-credit" aria-label="מי עומד מאחורי מדליק">
-    <div class="mkc-mono" aria-hidden="true"><span>ר״י</span><i></i><i></i></div>
-    <div class="mkc-body"><p class="mkc-kick">מי מאחורי מדליק</p><h2 class="mkc-name">רבקי יוגב</h2><p class="mkc-role">פיתוח, אפיון ועיצוב</p><p class="mkc-prod">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi></p></div>
-    <div class="mkc-acts"><button type="button" class="mkc-go" data-open-contact><span>דברו איתי</span><i aria-hidden="true">←</i></button><a class="mkc-chip" href="tel:0556771806" dir="ltr">055-677-1806</a><a class="mkc-chip" href="mailto:rivki1806@gmail.com" dir="ltr">rivki1806@gmail.com</a></div>
-    <s class="mkc-sp s1"></s><s class="mkc-sp s2"></s><s class="mkc-sp s3"></s>
-  </section>
   <section class="final">
     <a class="big-link" href="#/games">מתחילים לשחק <i>←</i></a>
     <a class="big-link" href="#/submit">יש לך רעיון? <i>←</i></a>
