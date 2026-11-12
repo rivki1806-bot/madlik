@@ -36,7 +36,7 @@ function record(kind, data){
   try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'submit', kind, data})}).catch(()=>{}); }catch(e){}
 }
 // ספירת כניסות: לכל מדור ולכל בעל עסק. נשלח לשרת כשהוא מחובר, ותמיד נשמר גם בדפדפן הזה
-const SECTIONS = {cards:'פעילויות להדפסה', home:'עמוד הבית', games:'משחקים על המסך שניתנים גם להדפסה', game:'משחקים על המסך שניתנים גם להדפסה', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'נותני שירות', supplier:'נותני שירות', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
+const SECTIONS = {famBingo:'משחקים על המסך שניתנים גם להדפסה', cards:'פעילויות להדפסה', home:'עמוד הבית', games:'משחקים על המסך שניתנים גם להדפסה', game:'משחקים על המסך שניתנים גם להדפסה', create:'פעילויות להדפסה', creator:'פעילויות להדפסה', studio:'סטודיו מיתוג', edit:'סטודיו מיתוג', design:'סטודיו מיתוג', recipes:'מתכונים', recipe:'מתכונים', suppliers:'נותני שירות', supplier:'נותני שירות', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי', search:'חיפוש'};
 const visitorId = () => { let v = store.get('vid', ''); if(!v){ v = Math.random().toString(36).slice(2, 12); store.set('vid', v); } return v; };
 let lastHit = '';
 // לחיצה על "הטלפון שלנו" בעמוד עסק: נספרת לכל עסק. לשרת נשלחת כ"sup" עם הקידומת tel:, כך שגם שרת ישן לא ירשום כניסות מדומות
@@ -103,9 +103,9 @@ function countDoc(kind, what){
 window.countDoc = countDoc;
 /* לחיצה על כפתורי הדפסה והורדה: לפי מזהה הכפתור והעמוד שבו נמצאים */
 document.addEventListener('click', e => {
-  const b = e.target.closest('#printHow,#doPrint,#dPrint,#dPng,#rPrint,#shopPrint,#mnPrintAll,#mnPdf,#mnGuidePrint,#mnGuidePdf'); if(!b) return;
+  const b = e.target.closest('#printHow,#doPrint,#dPrint,#dPng,#rPrint,#shopPrint,#mnPrintAll,#mnPdf,#mnGuidePrint,#mnGuidePdf,#fbnPrint'); if(!b) return;
   const seg = (location.hash.slice(1).split('?')[0] || '').split('/'), id = decodeURIComponent(seg[2] || '');
-  const map = {printHow:['print','howto:'+id], doPrint:['print','creator:'+id], dPrint:['print','design:'+id], dPng:['dl','design:'+id], rPrint:['print','recipe:'+id], shopPrint:['print','shop-list'], mnPrintAll:['print','cards-all'], mnPdf:['dl','cards-pdf'], mnGuidePrint:['print','guide'], mnGuidePdf:['dl','guide']};
+  const map = {printHow:['print','howto:'+id], doPrint:['print','creator:'+id], dPrint:['print','design:'+id], dPng:['dl','design:'+id], rPrint:['print','recipe:'+id], shopPrint:['print','shop-list'], mnPrintAll:['print','cards-all'], mnPdf:['dl','cards-pdf'], mnGuidePrint:['print','guide'], mnGuidePdf:['dl','guide'], fbnPrint:['print','family-bingo']};
   const m = map[b.id]; if(m) countDoc(m[0], m[1]);
 }, true);
 let remote = store.get('remote_content', null);
@@ -311,6 +311,8 @@ pages.search = (p,q) => {
 
 /* משחקים */
 /* ---------- עמוד המשחקים: נקי ושקט ---------- */
+pages.famBingo = () => pageHead('בינגו תמונות משפחתיות', 'מעלים תמונות מהמשפחה, בוחרים גודל, ומקבלים לוחות להדפסה ומצב מנחה על המסך.', '<a href="#/games">משחקים</a> › בינגו תמונות משפחתיות') + (window.FamBingo ? FamBingo.html() : '');
+pages.famBingo.after = () => { if(window.FamBingo) FamBingo.after(); };
 pages.games = () => {
   const all = content('games').filter(isScreenGame);
   const types = [...new Set(all.map(g=>g.type))], formats = [...new Set(all.flatMap(g=>g.format||[]))], ages = [...new Set(all.map(g=>g.age))];
@@ -318,7 +320,7 @@ pages.games = () => {
   return `<div class="gp"><div class="wrap gp-wrap">
     <header class="gp-top"><h1>משחקים על המסך</h1><span class="gp-line"></span></header>
     <section class="gq-cta" aria-label="בקשת משחק חדש"><span class="gq-ico" aria-hidden="true">🎲</span><div class="gq-t"><h2>רוצים שנבנה לכם משחק חדש למשפחה שלכם?</h2><p>מספרים לנו על הרעיון, ואנחנו חוזרים אליכם.</p></div><button type="button" class="gq-go" id="gqOpen"><span>לבקשת משחק</span><i aria-hidden="true">←</i></button></section>
-    <div class="cards gp-tools">${tools.map(creatorCard).join('')}</div>
+    <div class="cards gp-tools">${window.FamBingo ? FamBingo.card() : ''}${tools.map(creatorCard).join('')}</div>
     <div class="cards gp-list" id="gl"></div>
   </div></div>`;
 };
@@ -417,7 +419,7 @@ const PRINT_FILES = [
 ];
 const printFileCard = x => `<a class="card" href="${x.href}" target="_blank" rel="noopener"><div class="card-top" style="--bg:${x.bg}"><span style="font-size:4.5rem;line-height:1">${x.ico}</span></div><div class="card-body"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p><div class="tags"><span class="tag tag-new">חדש!</span><span class="tag tag-gold">חינם</span></div></div></a>`;
 pages.create = () => pageHead('פעילויות להדפסה בהתאמה אישית', 'בוחרים פעילות, מכניסים את המילים שלכם, ומקבלים דף מעוצב להדפסה או ל־PDF. הכול בחינם.', 'פעילויות להדפסה') + miniFeature() + `<div class="wrap pc-list">
-  <h2 class="sec-h">מעצבים פעילות משלכם</h2><div class="cards">${D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').map(creatorCard).join('')}</div>
+  <h2 class="sec-h">מעצבים פעילות משלכם</h2><div class="cards">${window.FamBingo ? FamBingo.card() : ''}${D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').map(creatorCard).join('')}</div>
   <h2 class="sec-h">דפי צביעה וחוברת פעילות</h2><div class="cards">${PRINT_FILES.map(printFileCard).join('')}</div>
   <h2 class="sec-h">פעילויות מוכנות</h2><div class="cards">${content('games').filter(g=>!isScreenGame(g)&&!['quartets-hanukkah','bingo-hanukkah','who-am-i'].includes(g.id)).map(gameCard).join('')}</div>
   <div class="box center" style="margin-top:30px"><h3>רוצים לשחק על המסך?</h3><a class="btn btn-gold" href="#/games">למשחקים הדיגיטליים על המסך</a></div></div>`;
@@ -1432,7 +1434,7 @@ function statsHTML(st, leads, live){
   const grows = content('games').map(g => ({name:g.title, o:gs[g.id]||gz})).sort((a,b)=>b.o.total-a.o.total);
   const gmax = Math.max(1, ...grows.map(r=>r.o.total));
   const docName = id => { const [kind, what] = id.split('|'), [t, x] = String(what || '').split(':'); const D2 = (k, i) => (findIn(k, i) || {}).title || i;
-    const nm = {howto:() => 'הוראות משחק: ' + D2('games', x), creator:() => 'פעילות להדפסה: ' + D2('games', x), design:() => 'סטודיו: ' + (((D.templates || []).find(z => z.id === x) || {}).title || x), recipe:() => 'מתכון: ' + D2('recipes', x), 'shop-list':() => 'רשימת קניות', 'cards-all':() => 'כל הקלפים הטיפוליים (להדפסה)', 'cards-pdf':() => 'כל הקלפים הטיפוליים (PDF)', guide:() => 'מדריך הקלפים הטיפוליים', card:() => 'קלף טיפולי מספר ' + x};
+    const nm = {howto:() => 'הוראות משחק: ' + D2('games', x), creator:() => 'פעילות להדפסה: ' + D2('games', x), design:() => 'סטודיו: ' + (((D.templates || []).find(z => z.id === x) || {}).title || x), recipe:() => 'מתכון: ' + D2('recipes', x), 'shop-list':() => 'רשימת קניות', 'family-bingo':() => 'בינגו תמונות משפחתיות', 'cards-all':() => 'כל הקלפים הטיפוליים (להדפסה)', 'cards-pdf':() => 'כל הקלפים הטיפוליים (PDF)', guide:() => 'מדריך הקלפים הטיפוליים', card:() => 'קלף טיפולי מספר ' + x};
     return {name:(nm[t] || (() => what))(), kind:kind === 'dl' ? 'הורדה' : 'הדפסה'}; };
   const drows = Object.entries(st.doc || {}).map(([id, o]) => Object.assign(docName(id), {o})).sort((p, q) => q.o.total - p.o.total);
   const docsTable = drows.length ? '<div style="overflow:auto"><table class="table stats-t"><tr><th>מסמך</th><th>פעולה</th><th>סה"כ</th><th>היום</th><th>7 ימים</th>' + (live?'<th>מבקרים שונים</th>':'') + '</tr>' + drows.map(r => '<tr><td><b>' + esc(r.name) + '</b></td><td>' + r.kind + '</td><td><b>' + n(r.o.total) + '</b></td><td>' + n(r.o.today) + '</td><td>' + n(r.o.week) + '</td>' + (live?'<td>'+n(r.o.uniq)+'</td>':'') + '</tr>').join('') + '</table></div>' : '<p class="muted">עוד לא הודפס או הורד מסמך.</p>';
@@ -1737,7 +1739,7 @@ const routes = [
   [/^\/?$/, 'home'], [/^\/games$/, 'games'], [/^\/game\/(.+)$/, 'game'],
   [/^\/create$/, 'create'], [/^\/create\/(.+)$/, 'creator'], [/^\/studio$/, 'studio'], [/^\/studio\/edit$/, 'edit'], [/^\/studio\/(.+)$/, 'design'],
   [/^\/recipes$/, 'recipes'], [/^\/recipe\/(.+)$/, 'recipe'], [/^\/suppliers$/, 'suppliers'],
-  [/^\/supplier\/(.+)$/, 'supplier'], [/^\/advertise$/, 'advertise'], [/^\/submit$/, 'submit'], [/^\/me$/, 'me'], [/^\/admin$/, 'admin'], [/^\/maalot$/, 'maalot'], [/^\/cards$/, 'cards']
+  [/^\/supplier\/(.+)$/, 'supplier'], [/^\/advertise$/, 'advertise'], [/^\/submit$/, 'submit'], [/^\/me$/, 'me'], [/^\/admin$/, 'admin'], [/^\/family-bingo$/, 'famBingo'], [/^\/maalot$/, 'maalot'], [/^\/cards$/, 'cards']
 ];
 function render(){
   clearInterval(window.__adTimer);
@@ -1754,7 +1756,7 @@ function render(){
   let isAdmin = false; try{ isAdmin = !!sessionStorage.getItem('madlik_admin'); }catch(e){}
   gameEnd(); if(name === 'game') gameStart(params[0]);
   if(!isAdmin && !ADMIN_PAGE) countHit(name, params, path);
-  if(!ADMIN_PAGE){ const T = {games:'משחקים על המסך שניתנים גם להדפסה', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'נותני שירות לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
+  if(!ADMIN_PAGE){ const T = {games:'משחקים על המסך שניתנים גם להדפסה', famBingo:'בינגו תמונות משפחתיות', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'נותני שירות לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
   if(window.MadlikFX) window.MadlikFX.onRender(app);
   if(window.MadlikWorlds) window.MadlikWorlds.apply(name, app);
   document.querySelectorAll('.main-nav a').forEach(a=>a.classList.toggle('active', path!=='/' && ('#'+path).startsWith(a.getAttribute('href'))));
