@@ -113,3 +113,6 @@ html[data-pal=logo] .sup-card .sup-form,.sup-card .sup-form{display:flex;align-i
 @media (max-width:980px){
   .hero-word{order:0}.hero-copy{order:1}.hero .mk-strip{order:2}.hero .ad-rail{order:3;margin-top:6px}
 }
+/* בתוך משחק על המסך: בלי הפס הלבן שלרוחב העמוד (הוא שייך רק לסרגל הסינון בעמוד המשחקים) */
+.gp-ov .gp-bar{position:relative!important;top:auto!important;background:transparent!important;backdrop-filter:none!important;border:0!important;box-shadow:none!important;margin:0!important;padding:84px 16px 0!important;display:flex!important;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+@media (max-width:640px){.gp-ov .gp-bar{padding-top:64px!important}}

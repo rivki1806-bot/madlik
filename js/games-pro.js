@@ -115,7 +115,7 @@ const PLAYABLE = ['elias','crossword','quiz','wheel','cipher','candles'];
 const DEFAULTS = {
   crossword: {title:'תשבץ חנוכה', key:true, words:'סביבון - משחק עם ארבע אותיות שמסתובב\nלביבה - מטגנים אותה בשמן\nחנוכייה - יש בה שמונה קנים ושמש\nמכבים - הגיבורים שניצחו את היוונים\nסופגנייה - מאפה עם ריבה ואבקת סוכר\nשמש - הנר שמדליק את שאר הנרות\nכסלו - החודש שבו מתחיל החג\nשמן - הנס היה בפך של...\nמתתיהו - אבי החשמונאים\nנרות - מדליקים אותם בחלון'},
   quiz: {title:'חידון חנוכה', secs:20, words:'באיזה תאריך מתחילים שמונת ימי חנוכה? | כ"ז כסלו | *כ"ה כסלו | כ"ח כסלו\nמה עושים לזכר נס פך השמן? | שרים שירי חנוכה | *מדליקים נרות | משחקים בסביבונים\nכיצד צריך להעמיד את הנרות? | *בשורה ישרה | בעיגול | בריבוע\nמה הדין המיוחד של אור הנרות? | מצווה להשתמש בו. | בשעת הצורך מותר להשתמש בו. | *אסור להשתמש בו.\nבאיזה צד של פתח הבית מעמידים את החנוכייה? | *בשמאל מול המזוזה | בימין ליד המזוזה | מחוץ לפתח\nכמה זמן לכל הפחות צריכים הנרות להישאר דלוקים? | רבע שעה | שעתיים | *חצי שעה\nכמה ברכות מברכים ביום הראשון? | *שלוש ברכות | ארבע ברכות | שתי ברכות\nאיזה פיוט אומרים אחרי הדלקת הנרות? | *הנרות הללו | חנוכייה לי יש | נר לי דקיק\nמתי מדליקים נרות חנוכה ביום שישי? | אחרי הדלקת נרות שבת | תלוי במנהגים השונים | *לפני הדלקת נרות שבת\nמה מוסיפים בתפילת שמונה עשרה ובברכת המזון? | מעוז צור | *על הניסים, בימי מתתיהו | על הניסים בימי מרדכי ואסתר\nמה מוסיפים לתפילת שחרית? | *הלל שלם | תחנון | הושענות\nאילו שמנים כשרים להדלקת נרות חנוכה? | *כל השמנים כשרים | רק נרות | רק שמן זית\nחותמו של מי היה על פך השמן? | הלוי | *הכהן הגדול | המלך\nמי היה המלך בחנוכה? | פרעה | *אנטיוכוס | אחשוורוש\nלכמה זמן הספיק פך השמן? | יום אחד | תשעה ימים | *שמונה ימים\nמתי מדליקים את החנוכייה? | בשקיעה | בצאת הכוכבים | *יש כאלה בשקיעה ויש כאלה בצאת הכוכבים\nמהם המאכלים בחנוכה? | מאכלי חלב | מאכלים עם שמן | *2 התשובות נכונות'},
-  wheel: {title:'גלגל המשימות', remove:false, words:'לשיר שיר חנוכה\nלספר זיכרון מחנוכה\nלסובב סביבון\nלאכול לביבה בלי ידיים\nלעשות פנטומימה של סופגנייה\nלהדליק את הנר הבא\nלברך את כולם\nלבחור את המשחק הבא'},
+  wheel: {title:'גלגל המשימות', remove:false, words:'לשיר שיר חנוכה\nלספר זיכרון מחנוכה\nלסובב סביבון\nלאכול לביבה בלי ידיים\nלעשות פנטומימה של סופגנייה\nלברך את כולם\nלבחור את המשחק הבא'},
   cipher: {title:'הצופן הסודי', msg:'נס גדול היה פה', kind:'atbash', hints:3},
   candles: {title:'שמונה נרות', words:'סופגנייה - מאפה עם ריבה\nחנוכייה - יש בה תשעה קנים\nפך שמן - ממנו הדליקו במקדש\nמתתיהו - אבי החשמונאים\nסביבון - נ ג ה פ\nלביבות - מטגנים אותן בשמן\nמכבים - הגיבורים של החג'}
 };
@@ -235,11 +235,14 @@ function wheelSVG(items, cls){
   const n = Math.max(1, items.length), a = 2*Math.PI/n, fs = Math.max(4.2, Math.min(9, 13 - n*.42));
   const pt = t => `${(100*Math.cos(t)).toFixed(2)} ${(100*Math.sin(t)).toFixed(2)}`;
   const slices = items.map((it, i) => {
-    const t1 = -Math.PI/2 + i*a, t2 = t1 + a, mid = (t1 + a/2) * 180/Math.PI, flip = mid > 90 && mid < 270 ? ' rotate(180 58 0)' : '';
+    const t1 = -Math.PI/2 + i*a, t2 = t1 + a, mid = (t1 + a/2) * 180/Math.PI, flip = mid > 90 && mid < 270 ? ' rotate(180)' : '';
     const col = WHEEL_COLORS[i % WHEEL_COLORS.length], ink = ['#ffd23f','#3ddc97','#4cc9f0','#f6a04d'].includes(col) ? '#14213d' : '#ffffff';
-    const label = it.length > 18 ? it.slice(0, 17) + '…' : it;
+    const words = it.split(/\s+/).filter(Boolean); let lines = [it];
+    if(n <= 12 && it.length > 11 && words.length > 1){ let best = 1, bd = 1e9; for(let k = 1; k < words.length; k++){ const d = Math.abs(words.slice(0, k).join(' ').length - words.slice(k).join(' ').length); if(d < bd){ bd = d; best = k; } } lines = [words.slice(0, best).join(' '), words.slice(best).join(' ')]; }
+    lines = lines.map(l => l.length > 16 ? l.slice(0, 15) + '…' : l);
+    const label = lines.length > 1 ? `<tspan x="0" dy="-0.6em">${esc(lines[0])}</tspan><tspan x="0" dy="1.2em">${esc(lines[1])}</tspan>` : esc(lines[0]);
     return (n === 1 ? `<circle r="100" fill="${col}"/>` : `<path d="M0 0 L${pt(t1)} A100 100 0 ${a > Math.PI ? 1 : 0} 1 ${pt(t2)} Z" fill="${col}" stroke="#fff" stroke-width="1.2"/>`)
-      + `<text transform="rotate(${mid.toFixed(2)}) translate(58 0)${flip}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" font-weight="700" fill="${ink}" font-family="Assistant,sans-serif">${esc(label)}</text>`;
+      + `<text transform="rotate(${mid.toFixed(2)}) translate(58 0)${flip}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" font-weight="700" fill="${ink}" font-family="Assistant,sans-serif">${label}</text>`;
   }).join('');
   return `<svg class="${cls||''}" viewBox="-104 -104 208 208" aria-hidden="true"><circle r="103" fill="#14213d"/><g class="wh-rot">${slices}</g><circle r="13" fill="#fff" stroke="#14213d" stroke-width="3"/><circle r="5" fill="#ff6a00"/></svg>`;
 }
