@@ -123,3 +123,25 @@ html[data-pal=logo] .sup-card .sup-form,.sup-card .sup-form{display:flex;align-i
 .uf-ok{align-items:flex-start;font-weight:500}
 .uf-ok input{margin-top:4px;flex:none}
 .uf-err{margin:0 0 8px;padding:8px 12px;border-radius:12px;background:#fdecea;color:#a12a1f;font:500 .92rem 'Heebo',sans-serif}
+
+/* באנר "משחק בלי אינטרנט" ליד כל משחק */
+.off-ban{display:flex;align-items:center;gap:clamp(12px,2vw,22px);margin:0 0 22px;padding:14px clamp(14px,2.4vw,24px);border-radius:22px;background:linear-gradient(105deg,#fff8e6,#ffeab0 60%,#ffd989);border:2px solid #ffb02e;color:#5a2f08;box-shadow:0 16px 28px -18px rgba(255,106,0,.75);position:relative;overflow:hidden;animation:offPop .7s cubic-bezier(.2,1.5,.4,1) both}
+.off-ban::after{content:"";position:absolute;top:0;bottom:0;width:90px;left:-160px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-18deg);animation:offShine 5s ease-in-out 1s infinite;pointer-events:none}
+@keyframes offPop{from{transform:translateY(-14px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+@keyframes offShine{0%,55%{left:-160px}100%{left:115%}}
+.off-ico{position:relative;flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#fff;box-shadow:0 8px 16px -8px rgba(255,106,0,.8)}
+.off-ico b{font-size:1.7rem;animation:offBob 2.6s ease-in-out infinite}
+.off-ico i{position:absolute;inset:-6px;border:2px solid rgba(255,106,0,.5);border-radius:50%;animation:offRing 2.4s ease-out infinite}
+@keyframes offBob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-4px) rotate(6deg)}}
+@keyframes offRing{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.off-t{flex:1;margin:0;font:400 clamp(.98rem,1.8vw,1.15rem)/1.5 'Heebo',sans-serif}
+.off-t b{font:800 1.05em 'Rubik',sans-serif;color:#d9531a}
+.off-t bdi{font-weight:800;color:#d9531a}
+.off-go{flex:none;display:inline-flex;align-items:center;gap:12px;min-height:48px;padding:0 6px 0 20px;border:0;border-radius:999px;background:linear-gradient(120deg,#ff6a00,#ff9a2e 60%,#ffc42d);color:#4a2204;font:700 1rem 'Rubik',sans-serif;cursor:pointer;box-shadow:0 10px 18px -8px rgba(255,106,0,.9);transition:transform .2s}
+.off-go i{font-style:normal;width:34px;height:34px;border-radius:50%;background:#fff;color:#d9531a;display:grid;place-items:center}
+.off-go:hover{transform:translateY(-2px)}.off-go:focus-visible{outline:3px solid #d9531a;outline-offset:3px}
+@media (max-width:700px){.off-ban{flex-wrap:wrap;justify-content:center;text-align:center}.off-t{flex-basis:100%}.off-go{width:100%;justify-content:center}}
+@media (prefers-reduced-motion:reduce){.off-ban,.off-ban::after,.off-ico b,.off-ico i{animation:none}}
+@media print{.off-ban{display:none}}
+/* משחק על המסך: אלמנטים מסתובבים (כמו הגלגל) לא יוצרים גלילה */
+.gp-ov .gp-body{overflow:clip}

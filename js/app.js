@@ -359,6 +359,38 @@ pages.games.after = () => {
   };
 };
 
+/* משחק בלי אינטרנט: באנר מונפש ליד כל משחק, ופתיחת טופס פנייה מתאים */
+const offlineBanner = title => '<div class="wrap"><div class="off-ban" role="note"><span class="off-ico" aria-hidden="true"><i></i><b>📶</b></span><p class="off-t"><b>לקבלת המשחק באופן שלא תצטרכו אינטרנט כדי להפעילו</b> בתשלום, פנו אלינו: <bdi>autoclick</bdi> · רבקי יוגב</p><button type="button" class="off-go" data-offline="' + esc(title) + '"><span>לפנייה</span><i aria-hidden="true">←</i></button></div></div>';
+function openOfflineForm(title){
+  if(document.querySelector('.fb-ov')) return;
+  const ov = document.createElement('div'); ov.className = 'fb-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'offT');
+  ov.innerHTML = '<form class="fb-card gq-card" novalidate><button type="button" class="fb-x" aria-label="סגירה">×</button><p class="gq-by">אפיון ופיתוח: <b>רבקי יוגב</b> · autoclick</p><div class="fb-ico" aria-hidden="true">📶</div><h2 id="offT">המשחק בלי אינטרנט</h2><p class="fb-sub">רוצים את המשחק <b>' + esc(title) + '</b> בגרסה שעובדת בלי אינטרנט? השאירו פרטים, ונחזור אליכם עם הצעת מחיר.</p>' +
+    '<label class="fb-f"><span>שם *</span><input name="name" autocomplete="name" required></label>' +
+    '<div class="gq-two"><label class="fb-f"><span>טלפון</span><input name="phone" type="tel" autocomplete="tel" dir="ltr"></label><label class="fb-f"><span>מייל</span><input name="email" type="email" autocomplete="email" dir="ltr"></label></div>' +
+    '<label class="fb-f"><span>איפה ואיך תשחקו? (לא חובה)</span><textarea name="where" rows="3" placeholder="למשל: בבית כנסת, באולם, בקייטנה, בלי חיבור לרשת"></textarea></label>' +
+    '<p class="gq-err" role="alert" hidden></p><button type="submit" class="fb-send"><span>שליחה</span><i aria-hidden="true">←</i></button></form>';
+  document.body.appendChild(ov); document.body.classList.add('bn-lock');
+  const f = ov.querySelector('form'), err = ov.querySelector('.gq-err'), key = e => { if(e.key === 'Escape') close(); };
+  const close = () => { document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 250); };
+  document.addEventListener('keydown', key);
+  ov.onclick = e => { if(e.target === ov || e.target.closest('.fb-x')) close(); };
+  f.elements.name.focus({preventScroll:true});
+  f.onsubmit = e => {
+    e.preventDefault(); const v = Object.fromEntries(new FormData(f)); err.hidden = true;
+    const name = String(v.name || '').trim(), phone = String(v.phone || '').trim(), email = String(v.email || '').trim(), where = String(v.where || '').trim();
+    if(!name){ err.textContent = 'איך קוראים לכם?'; err.hidden = false; return; }
+    if(!phone && !email){ err.textContent = 'כתבו טלפון או מייל כדי שנוכל לחזור אליכם'; err.hidden = false; return; }
+    if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent = 'כתובת המייל לא תקינה'; err.hidden = false; return; }
+    record('contact', {name, phone, email, msg:'בקשה למשחק בלי אינטרנט (בתשלום): ' + title + (where ? ' · ' + where : ''), page:location.hash || '#/'});
+    if(!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)){
+      try{ const body = {_subject:'משחק בלי אינטרנט: ' + title + ' | ' + name + ' | אתר מדליק', _template:'table', _captcha:'false', 'שם':name, 'טלפון':phone, 'מייל':email, 'המשחק':title, 'איפה ואיך ישחקו':where};
+        if(email) body._replyto = email;
+        fetch('https://formsubmit.co/ajax/rivki1806@gmail.com', {method:'POST', headers:{'Content-Type':'application/json', 'Accept':'application/json'}, body:JSON.stringify(body)}).catch(() => {}); }catch(x){}
+    }
+    f.innerHTML = '<div class="fb-thanks"><div class="fb-ico big" aria-hidden="true">🎉</div><h2>תודה, ' + esc(name) + '!</h2><p>הפנייה התקבלה. נחזור אליך בקרוב.</p></div>'; setTimeout(close, 3000);
+  };
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-offline]'); if(b) openOfflineForm(b.dataset.offline); });
 pages.game = ([id]) => {
   const g = findIn('games', id); if(!g) return notFound();
   let play = '';
@@ -366,7 +398,7 @@ pages.game = ([id]) => {
   if(g.quartets) play = `<a class="btn btn-gold" href="#/create/quartets?d=${enc({title:g.title, groups:g.quartets.map(q=>q.t+': '+q.i.join(', ')).join('\n')})}"> להדפסת הקלפים</a>`;
   if(g.qa) play = `<button class="btn btn-gold" id="triviaPlay"> מצב הקרנה</button>`;
   if(g.battle) play = `<a class="btn btn-gold" href="#/create/battle">⚔️ לשחק עכשיו</a>`;
-  return pageHead(esc(g.title), esc(g.short), `${isScreenGame(g)?'<a href="#/games">משחקים על המסך שניתנים גם להדפסה</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(g.title)}`) + `
+  return pageHead(esc(g.title), esc(g.short), `${isScreenGame(g)?'<a href="#/games">משחקים על המסך שניתנים גם להדפסה</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(g.title)}`) + offlineBanner(g.title) + `
   <div class="wrap detail">
     <div>
       <div class="box"><h2>איך משחקים?</h2><p>${esc(g.how)}</p><div class="btn-row">${play}<button class="btn btn-light" id="printHow">הדפסת ההוראות</button><button class="btn btn-light" data-fav="games|${esc(g.id)}">${isFav('games',g.id)?'♥':'♡'} שמירה</button><button class="btn btn-light" id="share"> שיתוף</button></div></div>
@@ -435,7 +467,7 @@ pages.creator = ([type], q) => {
   const wordsField = GP.fields(type, s) || (type==='quartets'
     ? `<label>רביעיות <span class="hint">שורה לכל רביעייה: נושא: פריט, פריט, פריט, פריט</span><textarea name="groups" rows="8">${esc(s.groups)}</textarea></label>`
     : `<label>${type==='cards'?'שאלות':'מילים'} <span class="hint">אחת בכל שורה</span><textarea name="words" rows="10">${esc(s.words)}</textarea></label>`);
-  return pageHead(esc(c.title), esc(c.text), `${(canPlay(type)||type==='battle')?'<a href="#/games">משחקים על המסך שניתנים גם להדפסה</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(c.title)}`) + `
+  return pageHead(esc(c.title), esc(c.text), `${(canPlay(type)||type==='battle')?'<a href="#/games">משחקים על המסך שניתנים גם להדפסה</a>':'<a href="#/create">פעילויות להדפסה</a>'} › ${esc(c.title)}`) + ((canPlay(type)||type==='battle') ? offlineBanner(c.title) : '') + `
   <div class="wrap builder">
     <form class="box form builder-panel" id="cf">
       ${GP.RULES && GP.RULES[type]?'<button type="button" class="rules-btn" id="doRules"><span class="q">?</span><span>איך משחקים? הוראות מלאות<small>כל החוקים, שלב אחר שלב</small></span></button>':''}

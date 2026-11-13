@@ -30,11 +30,24 @@ function ov(cls){
   el.innerHTML = SKY + `<div class="gp-bar"><button class="gp-mute" aria-pressed="${muted}">${muted ? 'צליל: כבוי' : 'צליל: פועל'}</button><button class="gp-x" aria-label="סגירת המשחק">× סגירה</button></div><div class="gp-body"></div><div class="gp-credit">משחקים באתר מדליק · <bdi dir="ltr">madlik.autoclick.co.il</bdi></div>`;
   document.body.appendChild(el); document.body.classList.add('gp-lock');
   const T = [];
-  const close = () => { T.forEach(t => { clearInterval(t); clearTimeout(t); }); cancelAnimationFrame(el._raf); el.remove(); document.body.classList.remove('gp-lock'); document.removeEventListener('keydown', key); };
+  const close = () => { T.forEach(t => { clearInterval(t); clearTimeout(t); }); cancelAnimationFrame(el._raf); try{ mo.disconnect(); clearInterval(fitIv); window.removeEventListener('resize', askFit); }catch(e){} el.remove(); document.body.classList.remove('gp-lock'); document.removeEventListener('keydown', key); };
   const key = e => { if(e.key === 'Escape'){ e.preventDefault(); close(); } else if(el.onkey) el.onkey(e); };
   document.addEventListener('keydown', key);
   el.querySelector('.gp-x').onclick = close;
   const mb = el.querySelector('.gp-mute'); mb.onclick = () => { muted = !muted; mb.setAttribute('aria-pressed', muted); mb.textContent = muted ? 'צליל: כבוי' : 'צליל: פועל'; };
+  /* כל המשחק במסך אחד: אם התוכן גבוה מהמסך, מקטינים אותו בהתאמה (בלי גלילה תוך כדי משחק) */
+  const bodyEl = el.querySelector('.gp-body'); let fitRaf = 0;
+  const fit = () => { fitRaf = 0; if(!el.isConnected || !bodyEl) return;
+    bodyEl.style.zoom = ''; bodyEl.style.minHeight = '0';
+    const bar = el.querySelector('.gp-bar'), barH = bar ? bar.getBoundingClientRect().height : 0, avail = el.clientHeight - barH - 14, nat = bodyEl.getBoundingClientRect().height;
+    const isSetup = !!bodyEl.querySelector('.gp-setup');
+    if(nat > avail && avail > 120 && !(isSetup && avail / nat < .7)){ let z = Math.max(.42, avail / nat); bodyEl.style.zoom = z.toFixed(3);
+      for(let k = 0; k < 4; k++){ const h = bodyEl.getBoundingClientRect().height; if(h <= avail + 1 || z <= .42) break; z = Math.max(.42, z * avail / h); bodyEl.style.zoom = z.toFixed(3); } }
+    const zz = parseFloat(bodyEl.style.zoom) || 1; bodyEl.style.minHeight = Math.max(0, avail / zz) + 'px'; };
+  const askFit = () => { if(!fitRaf) fitRaf = requestAnimationFrame(fit); };
+  const mo = new MutationObserver(askFit); mo.observe(bodyEl, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['class','hidden']});
+  window.addEventListener('resize', askFit); [60, 400, 1200, 2500].forEach(ms => setTimeout(askFit, ms));
+  const fitIv = setInterval(() => { if(el.scrollHeight > el.clientHeight + 2) askFit(); }, 700); if(document.fonts && document.fonts.ready) document.fonts.ready.then(askFit);
   const o = {el, body:el.querySelector('.gp-body'), close, T};
   o.focus = () => { const f = o.body.querySelector('.gp-go, button, input'); if(f) f.focus({preventScroll:true}); };
   return o;
