@@ -1775,7 +1775,8 @@ pages.admin.after = () => {
   });
 };
 
-function notFound(){ return pageHead('לא מצאנו את העמוד', '', '') + '<div class="wrap"><a class="btn btn-gold" href="#/">לעמוד הבית</a></div>'; }
+/* כתובת לא מוכרת: חוזרים לעמוד הבית. פריט שעוד לא נטען מהשרת (משחק, מתכון או עסק שנוספו בניהול) מקבל כמה שניות לפני ההעברה */
+function notFound(now){ const h0 = location.hash; setTimeout(() => { if(location.hash === h0 && (location.hash.split('?')[0] || '#/') !== '#/' && document.querySelector('#app [data-nf]')) location.replace(location.pathname + location.search + '#/'); }, now === true ? 0 : 3000); return '<div data-nf>' + pageHead('מעבירים אותך לעמוד הבית', '', '') + '<div class="wrap"><a class="btn btn-gold" href="#/">לעמוד הבית</a></div></div>'; }
 
 /* ---------- ניתוב ---------- */
 const routes = [
@@ -1794,12 +1795,15 @@ function render(){
   let name = null, params = [];
   for(const [re,n] of routes){ const m = path.match(re); if(m){ name = n; params = m.slice(1).map(decodeURIComponent); break; } }
   app.onclick = null; app.onchange = null;
-  app.innerHTML = name ? pages[name](params, q) : notFound();
+  app.innerHTML = name ? pages[name](params, q) : notFound(true);
   if(name && pages[name].after) pages[name].after(params, q);
   let isAdmin = false; try{ isAdmin = !!sessionStorage.getItem('madlik_admin'); }catch(e){}
   gameEnd(); if(name === 'game') gameStart(params[0]);
   if(!isAdmin && !ADMIN_PAGE) countHit(name, params, path);
   if(!ADMIN_PAGE){ const T = {games:'משחקים על המסך שניתנים גם להדפסה', famBingo:'בינגו תמונות משפחתיות', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'נותני שירות לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
+  if(!ADMIN_PAGE){ try{ const kind = {game:['games','משחק לערב לביבות'], recipe:['recipes','מתכון לערב לביבות'], supplier:['suppliers','בעל עסק לערב לביבות']}[name]; let it = kind ? findIn(kind[0], params[0]) : null, tail = kind ? kind[1] : '';
+      if(name === 'creator'){ it = D.creators.find(x => x.id === params[0]); tail = 'פעילות להדפסה והפעלה על המסך'; } else if(name === 'design'){ it = D.templates.find(x => x.id === params[0]); tail = 'סטודיו מיתוג לערב לביבות'; }
+      if(it) document.title = (it.title || it.name) + ' | ' + tail + ' | מדליק'; }catch(e){} }
   if(window.MadlikFX) window.MadlikFX.onRender(app);
   if(window.MadlikWorlds) window.MadlikWorlds.apply(name, app);
   document.querySelectorAll('.main-nav a').forEach(a=>a.classList.toggle('active', path!=='/' && ('#'+path).startsWith(a.getAttribute('href'))));
