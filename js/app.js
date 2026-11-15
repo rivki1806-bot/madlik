@@ -1955,7 +1955,7 @@ loadRemote();
   const UNTIL = new Date('2026-12-14T00:00:00+02:00').getTime(); // עד סוף חנוכה
   const LINK = 'https://mrng.to/CZMZtxp0Ju', SUP = 'bmwb6fpdl', KEY = 'promo_otzar_closed', AGAIN = 3 * 864e5;
   if(ADMIN_PAGE || Date.now() >= UNTIL) return;
-  if(Date.now() - store.get(KEY, 0) < AGAIN) return;
+  try{ if(sessionStorage.getItem('madlik_' + KEY)) return; }catch(e){} // מופיע בכל גלישה חדשה; מי שסגר לא רואה שוב באותה גלישה
   let tries = 0;
   const busy = () => document.querySelector('dialog[open],.fb-ov,.gp-ov,.overlay,.tour-ov,.biz-notice,.fbn-call,.promo-ov') || (document.getElementById('intro') && document.getElementById('intro').offsetParent !== null) || /^#\/(admin|maalot)/.test(location.hash);
   const show = () => {
@@ -1971,13 +1971,13 @@ loadRemote();
       '<a class="promo-go" href="' + LINK + '" target="_blank" rel="noopener noreferrer sponsored"><span>אני רוצה את האוצר שלנו</span><i aria-hidden="true">←</i></a>' +
       '<p class="promo-small">ההנחה רק למי שנכנס מכאן · המשחק מוכן תוך כמה דקות ממילוי הטופס · <bdi>Whoo-Aha</bdi> חדרי בריחה דיגיטליים</p></div>';
     document.body.appendChild(ov); document.body.classList.add('bn-lock');
-    const close = () => { store.set(KEY, Date.now()); document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 260); };
+    const close = () => { try{ sessionStorage.setItem('madlik_' + KEY, '1'); }catch(e){} document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 260); };
     const key = e => { if(e.key === 'Escape') close(); };
     document.addEventListener('keydown', key);
     ov.addEventListener('click', e => { if(e.target === ov || e.target.closest('.promo-x')) return close(); if(e.target.closest('.promo-go')){ countClick('web', SUP); setTimeout(close, 150); } });
     ov.querySelector('.promo-go').focus({preventScroll:true});
   };
-  setTimeout(show, 7000);
+  setTimeout(show, 3000);
 })();
 (function feedbackBubble(){
   if(ADMIN_PAGE) return;
