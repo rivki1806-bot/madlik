@@ -1342,7 +1342,7 @@ const miniPdf = async btn => {
 };
 pages.cards = () => `<div class="mn-page"><div class="wrap mn-wrap">
   <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/create">פעילויות להדפסה</a> › משחק מיוחד מבית מיניאטורה</div>
-  <section class="mn-gd" aria-label="דף הסבר לערכה"><button type="button" class="mn-gd-thumb" id="mnGuideOpen" aria-label="לצפייה בדף ההסבר בגדול"><img src="img/miniatura/guide-t.webp" alt="דף הסבר לערכת הקלפים: החושך המתוק הזה" width="520" height="736"><span>לצפייה בגדול</span></button>
+  <section class="mn-gd" aria-label="דף הסבר לערכה"><button type="button" class="mn-gd-thumb" id="mnGuideOpen" aria-label="לצפייה בדף ההסבר בגדול"><img src="img/miniatura/guide-2-t.webp" alt="דף הסבר לערכת הקלפים: החושך המתוק הזה" width="520" height="736"><span>לצפייה בגדול</span></button>
     <div class="mn-gd-t"><span class="mn-k">דף הסבר לערכה · להדפסה</span><h2>החושך המתוק הזה</h2><p>דף ההסבר המלא של הערכה, בעיצוב המקורי: הוראות הדפסה והכנה לכבוד חנוכה, ואפשרויות למשחק ולשיח קבוצתי או משפחתי.</p>
       <div class="mn-acts"><button type="button" class="mn-btn gold" id="mnGuidePrint"><b>הדפסת דף ההסבר</b><small>דף A4 מלא</small></button><button type="button" class="mn-btn" id="mnGuidePdf"><b>הורדה</b><small>קובץ PDF</small></button></div></div></section>
   <header class="mn-head"><div><span class="mn-k">מבית מיניאטורה · יהודית לרנר</span><h1>משחק מיוחד מבית מיניאטורה <span class="mn-sub">– עולם קטן, רגש גדול</span></h1><p>${MINI.length} קלפים להורדה ולהדפסה. לוחצים על קלף כדי להגדיל אותו.</p></div>
@@ -1364,7 +1364,7 @@ pages.cards.after = () => {
   };
   document.getElementById('mnGrid').onclick = e => { const b = e.target.closest('.mn-card'); if(b) open(+b.dataset.i); };
   document.getElementById('mnPrintAll').onclick = () => miniPrint(MINI, true);
-  const GUIDE = 'img/miniatura/guide.webp';
+  const GUIDE = 'img/miniatura/guide-2.webp';
   const guideImg = () => new Promise((ok, no) => { const m = new Image(); m.onload = () => ok(m); m.onerror = no; m.src = GUIDE; });
   document.getElementById('mnGuideOpen').onclick = () => {
     const v = document.createElement('div'); v.className = 'mn-lb mn-lb-g'; v.setAttribute('role', 'dialog'); v.setAttribute('aria-modal', 'true'); v.setAttribute('aria-label', 'דף ההסבר');
