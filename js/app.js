@@ -264,7 +264,8 @@ pages.home = () => {
   /* באנרים מעוצבים בעמוד הבית: תמונה מלאה בכרטיס. מקשרים לכרטיס העסק אם הוא קיים באתר */
   const BANNERS = [{match:'נוגט', img:'img/ads/nuget-banner.webp', alt:'נוגט, המקום הייחודי למוצרי אפייה, אביזרים, קישוטים וציוד. מבצעים מיוחדים לכבוד חנוכה. שעות פתיחה: ימים א׳–ה׳ 11:00 עד 22:00, יום ו׳ 10:00 עד 13:00'}];
   const bannerAds = BANNERS.map(bn => { const sp = content('suppliers').find(x => String(x.name || '').includes(bn.match)); const inner = '<img src="' + bn.img + '" alt="' + esc(bn.alt) + '" loading="eager">'; return sp ? '<a class="ad-card ad-img" href="#/supplier/' + esc(sp.id) + '">' + inner + '</a>' : '<div class="ad-card ad-img">' + inner + '</div>'; });
-  const ads = bannerAds.concat(content('suppliers').filter(b=>b.homeAd).map(b=>`<a class="ad-card" href="#/supplier/${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.text)}</span><em>${esc(b.cat)} · ${esc(b.region)} ←</em></a>`))
+  const hasBanner = b => BANNERS.some(bn => String(b.name || '').includes(bn.match));
+  const ads = bannerAds.concat(content('suppliers').filter(b=>b.homeAd && !hasBanner(b)).map(b=>`<a class="ad-card" href="#/supplier/${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.text)}</span><em>${esc(b.cat)} · ${esc(b.region)} ←</em></a>`))
     .concat(['<a class="ad-card ad-cta" href="#/advertise"><b>ראית את זה?</b><span>ראו את זה עוד אלפי אנשים, מוזמן לפרסם באחת התכניות השוות!</span><em>לכל התכניות וטופס יצירת קשר ←</em></a>']);
   return `
   <section class="hero" id="hero">
