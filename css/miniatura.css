@@ -96,3 +96,13 @@ html[data-pal] body .mn-gd-t h2{font-size:clamp(1.25rem,2.1vw,1.65rem)!important
 @keyframes mnBob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-5px) rotate(5deg)}}
 @media (prefers-reduced-motion:reduce){.mn-more-ico{animation:none}}
 @media print{.mn-more,.mn-sis{display:none}}
+
+/* קישור לאתר של מיניאטורה */
+.mn-link{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:640px;margin:10px 0 0;padding:11px 16px;border-radius:16px;background:#fff3d6;border:2px dashed #ff9a2e;color:#5a2f08;text-decoration:none;font:500 1rem/1.5 'Heebo',sans-serif;transition:transform .2s,background .2s}
+.mn-link b{font-weight:800;color:#d9531a;text-decoration:underline;text-underline-offset:3px}
+.mn-link i{flex:none;width:30px;height:30px;border-radius:50%;background:#d9531a;color:#fff;font-style:normal;display:grid;place-items:center;transition:transform .25s}
+.mn-link:hover{transform:translateY(-2px);background:#ffe9b0}.mn-link:hover i{transform:translateX(-4px)}
+.mn-link:focus-visible{outline:3px solid #0a2244;outline-offset:3px}
+.mn-link.end{margin:14px auto 0;justify-content:center;text-align:center;background:#fff}
+.mn-link.lb{margin:12px auto 0;max-width:min(92vw,520px);font-size:.92rem}
+@media print{.mn-link{display:none}}
