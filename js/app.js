@@ -1391,15 +1391,47 @@ pages.cards.after = () => {
 pages.advertise = () => pageHead('רוצים לפרסם?', 'בחרו אחת משלוש התכניות, ואחר כך צרו איתנו קשר.', 'פרסום') + `<div class="wrap"><a class="adv-video" href="promo/index.html" target="_blank" rel="noopener"><span aria-hidden="true">▶</span><b>צפו בסרטון: למה לפרסם במדליק</b><small>24 שניות · עם קריינות</small></a>${adBlock()}</div>`;
 pages.advertise.after = adBlockAfter;
 
-pages.submit = () => pageHead('שליחת רעיון', 'משחק, מתכון או רעיון לאתר. אם הוא יתאים, נוסיף אותו ונכתוב את שמך.', 'שליחת רעיון') + `
-  <div class="wrap"><div class="box"><form class="form" id="sbf">
-    <label>קטגוריה<select name="cat"><option>משחק</option><option>מתכון</option><option>עיצוב מיתוג</option><option>אחר</option></select></label>
-    <label>כותרת<input name="title" required></label>
-    <label>התוכן<textarea name="text" required placeholder="תארי את הרעיון, איך משחקים, המצרכים..."></textarea></label>
-    <div class="two-col"><label>שם<input name="name"></label><label>מייל<input name="email" type="email"></label></div>
-    <label class="check"><input type="checkbox" name="credit" checked> אשמח שיופיע קרדיט עם השם שלי</label>
-    <button class="btn btn-gold">שליחה</button></form></div></div>`;
-pages.submit.after = () => { const f = document.getElementById('sbf'); f.onsubmit = e => { e.preventDefault(); record('subs', Object.fromEntries(new FormData(f))); f.reset(); toast('תודה! הרעיון נשלח לאישור '); }; };
+pages.submit = () => `<div class="sb-page">
+  <section class="sb-hero" aria-labelledby="sbT"><div class="sb-float" aria-hidden="true"><i>🕯️</i><i>💡</i><i>🥞</i><i>🎲</i><i>✨</i><i>🎨</i></div>
+    <span class="sb-kick">שליחת רעיון</span>
+    <h1 id="sbT">יש לך רעיון? <em>נדליק אותו</em> ביחד</h1>
+    <p>משחק, מתכון או רעיון לאתר. אם הוא יתאים, נוסיף אותו ונכתוב את שמך.</p></section>
+  <div class="wrap sb-wrap">
+    <form class="sb-form" id="sbf" novalidate>
+      <fieldset class="sb-cats"><legend>על מה הרעיון?</legend>
+        <label class="sb-cat"><input type="radio" name="cat" value="משחק" checked><span><b aria-hidden="true">🎲</b>משחק</span></label>
+        <label class="sb-cat"><input type="radio" name="cat" value="מתכון"><span><b aria-hidden="true">🥞</b>מתכון</span></label>
+        <label class="sb-cat"><input type="radio" name="cat" value="עיצוב מיתוג"><span><b aria-hidden="true">🎨</b>עיצוב מיתוג</span></label>
+        <label class="sb-cat"><input type="radio" name="cat" value="אחר"><span><b aria-hidden="true">💡</b>אחר</span></label>
+      </fieldset>
+      <label class="sb-f"><span>כותרת</span><input name="title" required maxlength="120" placeholder="איך קוראים לרעיון?"></label>
+      <label class="sb-f"><span>התוכן</span><textarea name="text" id="sbText" rows="6" required placeholder="תארי את הרעיון: איך משחקים, כמה משתתפים, מה צריך..."></textarea></label>
+      <div class="sb-two"><label class="sb-f"><span>שם</span><input name="name" autocomplete="name" maxlength="80"></label><label class="sb-f"><span>מייל</span><input name="email" type="email" autocomplete="email" dir="ltr" maxlength="120"></label></div>
+      <label class="sb-chk"><input type="checkbox" name="credit" checked><span>אשמח שיופיע קרדיט עם השם שלי</span></label>
+      <p class="sb-err" role="alert" hidden></p>
+      <button type="submit" class="sb-go"><span>שליחת הרעיון</span><i aria-hidden="true">←</i></button>
+    </form>
+    <aside class="sb-side" aria-label="מה קורה אחרי השליחה"><h2>מה קורה אחרי שליחה?</h2>
+      <ol><li><b>1</b><div><strong>שולחים רעיון</strong><span>גם רעיון קטן יכול להפוך למשחק שכולם אוהבים.</span></div></li>
+        <li><b>2</b><div><strong>אנחנו קוראים ובודקים</strong><span>כל רעיון עובר אלינו, ואם צריך נחזור אלייך עם שאלות.</span></div></li>
+        <li><b>3</b><div><strong>הוא עולה לאתר</strong><span>עם השם שלך, אם סימנת שאת רוצה קרדיט.</span></div></li></ol>
+      <p class="sb-quote">"ערב לביבות טוב נבנה מרעיונות של משפחות."</p></aside>
+  </div></div>`;
+pages.submit.after = () => {
+  const f = document.getElementById('sbf'); if(!f) return; const err = f.querySelector('.sb-err');
+  const HINT = {'משחק':'תארי את הרעיון: איך משחקים, כמה משתתפים, מה צריך...', 'מתכון':'המצרכים, אופן ההכנה, לכמה סועדים...', 'עיצוב מיתוג':'איזה עיצוב או מוצר להדפסה היית רוצה לראות...', 'אחר':'ספרי לנו הכול, אנחנו מקשיבים...'};
+  f.addEventListener('change', e => { if(e.target.name === 'cat') f.elements.text.placeholder = HINT[e.target.value] || HINT['אחר']; });
+  f.onsubmit = e => {
+    e.preventDefault(); const v = Object.fromEntries(new FormData(f)); err.hidden = true;
+    const title = String(v.title || '').trim(), text = String(v.text || '').trim(), email = String(v.email || '').trim();
+    if(!title || !text){ err.textContent = 'חסרים כותרת ותוכן'; err.hidden = false; (title ? f.elements.text : f.elements.title).focus(); return; }
+    if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent = 'כתובת המייל לא נראית תקינה'; err.hidden = false; f.elements.email.focus(); return; }
+    record('subs', Object.assign({}, v, {title, text, email}));
+    const nm = String(v.name || '').trim();
+    f.outerHTML = '<div class="sb-thanks" role="status"><div class="sb-conf" aria-hidden="true">' + ['🎉','✨','🕯️','💡','🎊','⭐','🥞','🎲'].map((x, i) => '<i style="--i:' + i + '">' + x + '</i>').join('') + '</div><div class="sb-th-ico" aria-hidden="true">💌</div><h2>תודה' + (nm ? ', ' + esc(nm) : '') + '!</h2><p>הרעיון נשלח אלינו. נקרא אותו ונחזור אם יהיו שאלות.</p><button type="button" class="sb-go sb-again"><span>לשלוח רעיון נוסף</span><i aria-hidden="true">←</i></button></div>';
+    document.querySelector('.sb-again').onclick = () => { render(); };
+  };
+};
 
 /* אזור אישי */
 pages.me = () => {
