@@ -178,3 +178,13 @@ html[data-pal] body .promo-card h2{margin:0 0 10px!important;font:800 clamp(1.45
 .promo-small{margin:12px 0 0;font:400 .8rem/1.5 'Heebo',sans-serif;color:#7a6250}
 @media (prefers-reduced-motion:reduce){.promo-ov,.promo-card,.pa-chest,.pa-key,.pa-s{animation:none}}
 @media print{.promo-ov{display:none}}
+
+/* קישור הנחה לרוכשים דרך מדליק, מתחת לכרטיס העסק */
+.sup-promo{display:flex;align-items:center;gap:10px;min-height:46px;margin-top:2px;padding:6px 8px 6px 14px;border-radius:14px;background:linear-gradient(110deg,#fff3c9,#ffe08a);border:2px dashed #ff9a2e;color:#5a2f08;text-decoration:none;font:700 .95rem 'Rubik',sans-serif;transition:transform .2s;animation:supPromoGlow 2.8s ease-in-out infinite}
+.sup-promo b{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#d9531a;color:#fff;font:900 1rem 'Rubik',sans-serif}
+.sup-promo span{flex:1}
+.sup-promo i{font-style:normal;color:#d9531a}
+.sup-promo:hover{transform:translateY(-2px)}.sup-promo:focus-visible{outline:3px solid #d9531a;outline-offset:2px}
+aside .sup-promo{margin-top:14px}
+@keyframes supPromoGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,154,46,0)}50%{box-shadow:0 0 0 6px rgba(255,154,46,.22)}}
+@media (prefers-reduced-motion:reduce){.sup-promo{animation:none}}
