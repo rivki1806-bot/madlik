@@ -188,3 +188,23 @@ html[data-pal] body .promo-card h2{margin:0 0 10px!important;font:800 clamp(1.45
 aside .sup-promo{margin-top:14px}
 @keyframes supPromoGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,154,46,0)}50%{box-shadow:0 0 0 6px rgba(255,154,46,.22)}}
 @media (prefers-reduced-motion:reduce){.sup-promo{animation:none}}
+
+/* תמונת האווירה בפופאפ: תיבת האוצר במרתף */
+.promo-card{padding-top:0}
+.promo-hero{position:relative;margin:0 -24px 14px;height:200px;overflow:hidden;border-radius:25px 25px 0 0;background:#1b120a}
+.promo-hero img{display:block;width:100%;height:100%;object-fit:cover;object-position:60% 55%;transform-origin:62% 60%;animation:phZoom 14s ease-in-out infinite alternate}
+.promo-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(27,18,10,0) 45%,rgba(255,246,220,.55) 82%,#fff6dc 100%);pointer-events:none}
+.ph-glow{position:absolute;left:52%;top:52%;width:240px;height:160px;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(255,190,90,.55),rgba(255,140,30,0));mix-blend-mode:screen;animation:phFlicker 2.2s ease-in-out infinite;pointer-events:none}
+.ph-dust{position:absolute;width:4px;height:4px;border-radius:50%;background:#ffd98a;box-shadow:0 0 6px #ffb84d;opacity:0;animation:phDust 5s linear infinite;pointer-events:none}
+.ph-dust.d1{left:40%;bottom:30%}.ph-dust.d2{left:58%;bottom:26%;animation-delay:1.7s}.ph-dust.d3{left:66%;bottom:34%;animation-delay:3.2s}
+.ph-badge{position:absolute;top:14px;inset-inline-end:16px;z-index:2;display:grid;place-items:center;width:66px;height:66px;border-radius:50%;background:linear-gradient(140deg,#ff6a00,#ffc42d);color:#3d2412;font:900 1.25rem/1 'Rubik',sans-serif;box-shadow:0 10px 20px -8px rgba(0,0,0,.6);transform:rotate(-10deg);animation:phBadge 3s ease-in-out infinite}
+.ph-badge small{display:block;font:700 .7rem 'Rubik',sans-serif;margin-top:-10px}
+@keyframes phZoom{from{transform:scale(1)}to{transform:scale(1.12)}}
+@keyframes phFlicker{0%,100%{opacity:.75}35%{opacity:1}55%{opacity:.6}75%{opacity:.95}}
+@keyframes phDust{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-110px) translateX(12px);opacity:0}}
+@keyframes phBadge{0%,100%{transform:rotate(-10deg) scale(1)}50%{transform:rotate(-4deg) scale(1.06)}}
+.promo-card .promo-x{z-index:3;background:rgba(255,255,255,.85)}
+@media (max-width:480px){.promo-hero{height:160px;margin:0 -24px 10px}}
+@media (prefers-reduced-motion:reduce){.promo-hero img,.ph-glow,.ph-dust,.ph-badge{animation:none}}
+.promo-hero{height:175px}
+@media (max-height:720px){.promo-hero{height:130px}.promo-card{padding-bottom:14px}.promo-txt{margin-bottom:8px}.promo-facts{margin-bottom:10px}.promo-price{margin-bottom:10px}}

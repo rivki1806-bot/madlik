@@ -215,7 +215,7 @@ const safeImg = p => /^(img\/[\w\-\/.%]+|https:\/\/[^\s"'<>]+|data:image\/(?:jpe
 const safeUrl = u => { u = String(u || '').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); return /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : ''; };
 const supPic = s => safeImg(s.img) ? `<img class="biz-img" src="${esc(safeImg(s.img))}" alt="${esc(s.name)}" loading="lazy">` : '';
 /* קישורי הנחה לרוכשים דרך מדליק, לפי עסק */
-const SUP_PROMOS = {bmwb6fpdl:{url:'https://mrng.to/CZMZtxp0Ju', label:'הקישור להנחה לרוכשים דרך מדליק'}};
+const SUP_PROMOS = {bmwb6fpdl:{url:'https://mrng.to/CZMZtxp0Ju', label:'חדר תיבת האוצר ב־10% הנחה, רק לרוכשים דרך אתר מדליק בקישור הזה'}};
 const supPromo = s => { const p = SUP_PROMOS[s.id]; return p ? `<a class="sup-promo" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer sponsored" data-web="${esc(s.id)}"><b aria-hidden="true">%</b><span>${esc(p.label)}</span><i aria-hidden="true">←</i></a>` : ''; };
 const supCard = (s,i=0) => { const id = esc(s.id), site = safeUrl(s.site);
   const go = site ? `<a class="sup-go" href="${esc(site)}" target="_blank" rel="noopener noreferrer sponsored" data-web="${id}">לאתר שלנו <i>←</i></a>` : `<a class="sup-go" href="#/supplier/${id}">לטופס פנייה <i>←</i></a>`;
@@ -1928,8 +1928,8 @@ loadRemote();
     if(busy()){ if(tries++ < 20) setTimeout(show, 4000); return; }
     const ov = document.createElement('div'); ov.className = 'promo-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'prT');
     ov.innerHTML = '<div class="promo-card"><button type="button" class="promo-x" aria-label="סגירה">×</button>' +
-      '<div class="promo-art" aria-hidden="true"><span class="pa-chest">💰</span><span class="pa-key">🗝️</span><i class="pa-s s1">✨</i><i class="pa-s s2">✨</i><i class="pa-s s3">🕯️</i></div>' +
-      '<p class="promo-kick">מבצע לערב לביבות · 10% הנחה</p>' +
+      '<div class="promo-hero"><img src="img/promo/otzar-treasure.webp" alt="תיבת אוצר עתיקה במרתף מואר נרות" width="920" height="513"><i class="ph-glow" aria-hidden="true"></i><i class="ph-dust d1" aria-hidden="true"></i><i class="ph-dust d2" aria-hidden="true"></i><i class="ph-dust d3" aria-hidden="true"></i><span class="ph-badge" aria-hidden="true">10%<small>הנחה</small></span></div>' +
+      '<p class="promo-kick">מבצע לערב לביבות</p>' +
       '<h2 id="prT">רק למגיעים דרך אתר מדליק</h2>' +
       '<p class="promo-txt">השנה, ערב הלביבות שלכם נגמר בצעקות של <b>"מצאנו!"</b><br><b>תיבת האוצר המשפחתית</b> היא חדר בריחה דיגיטלי שבנוי כולו מהמשפחה שלכם: השמות, התאריכים, התמונות והסיפורים שלכם הופכים לחידות. מי שלא מהמשפחה, לא יפתור.</p>' +
       '<ul class="promo-facts"><li>14 תחנות</li><li>מהדפדפן, בלי התקנה</li><li>לכל המשפחה</li></ul>' +
