@@ -82,3 +82,7 @@ html[data-pal] body .mn-gd-t h2{font-size:clamp(1.25rem,2.1vw,1.65rem)!important
 .mn-gd-t p{font-size:.95rem;line-height:1.6;margin-bottom:12px}
 .mn-gd .mn-btn{min-width:140px;min-height:48px;padding:4px 16px;border-radius:16px}.mn-gd .mn-btn b{font-size:.92rem}
 @media (max-width:760px){.mn-gd{grid-template-columns:1fr}.mn-gd-thumb{width:min(60%,150px)}}
+
+.mn-sub{display:block;font-style:normal;font-weight:400;font-size:.62em;color:#d9531a;margin-top:4px;letter-spacing:0}
+.mn-txt p{max-width:46ch}
+.gp-wrap .mn-feat-wrap{padding-inline:0;margin-top:clamp(26px,4vw,44px)}

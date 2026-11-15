@@ -170,9 +170,9 @@ const findIn = (k,id) => content(k).find(x=>x.id===id);
 
 /* ---------- קלפים טיפוליים מבית מיניאטורה (יהודית לרנר) ---------- */
 const MINI = Array.from({length:20}, (_, i) => { const n = String(i + 1).padStart(2, '0'); return {n, full:'img/miniatura/card-' + n + '.webp', thumb:'img/miniatura/t-' + n + '.webp'}; });
-const miniFeature = () => '<div class="wrap mn-feat-wrap"><a class="mn-feat" href="#/cards" aria-label="קלפים טיפוליים מבית מיניאטורה, יהודית לרנר. לצפייה, הורדה והדפסה">' +
+const miniFeature = () => '<div class="wrap mn-feat-wrap"><a class="mn-feat" href="#/cards" aria-label="משחק מיוחד מבית מיניאטורה – עולם קטן, רגש גדול. אהבת את המשחק? הכירי את ערכת מיניאטורה">' +
   '<span class="mn-fan" aria-hidden="true">' + [[2, -17, -150, 34], [7, -8, -75, 10], [11, 0, 0, 0], [15, 8, 75, 10], [19, 17, 150, 34]].map(([k, r, x, y], i) => '<i style="--r:' + r + ';--x:' + x + ';--y:' + y + ';--d:' + (i * .12).toFixed(2) + 's;--z:' + (i === 2 ? 5 : 3 - Math.abs(i - 2)) + '"><img src="' + MINI[k].thumb + '" alt="" loading="lazy"></i>').join('') + '</span>' +
-  '<span class="mn-txt"><span class="mn-tag"><b></b>חדש להורדה ולהדפסה</span><h2>קלפים טיפוליים</h2><p>מבית <b>מיניאטורה</b> · יהודית לרנר</p><span class="mn-cta">לצפייה, הורדה והדפסה <i>←</i></span></span>' +
+  '<span class="mn-txt"><span class="mn-tag"><b></b>חדש להורדה ולהדפסה</span><h2>משחק מיוחד מבית מיניאטורה <em class="mn-sub">– עולם קטן, רגש גדול</em></h2><p>אהבת את המשחק? זו רק טעימה קטנה מעולם שלם של מילים, רגשות ושיח. <b>הכירי את ערכת מיניאטורה.</b></p><span class="mn-cta">לצפייה, הורדה והדפסה <i>←</i></span></span>' +
   '<s class="mn-sp s1"></s><s class="mn-sp s2"></s><s class="mn-sp s3"></s><s class="mn-sp s4"></s></a></div>';
 const miniDownload = c => {
   countDoc('dl', 'card:' + c.n);
@@ -326,6 +326,7 @@ pages.games = () => {
     <section class="gq-cta" aria-label="בקשת משחק חדש"><span class="gq-ico" aria-hidden="true">🎲</span><div class="gq-t"><h2>רוצים שנבנה לכם משחק חדש למשפחה שלכם?</h2><p>מספרים לנו על הרעיון, ואנחנו חוזרים אליכם.</p></div><button type="button" class="gq-go" id="gqOpen"><span>לבקשת משחק</span><i aria-hidden="true">←</i></button></section>
     <div class="cards gp-tools">${window.FamBingo ? FamBingo.card() : ''}${tools.map(creatorCard).join('')}</div>
     <div class="cards gp-list" id="gl"></div>
+    ${miniFeature()}
   </div></div>`;
 };
 pages.games.after = () => {
@@ -1340,14 +1341,14 @@ const miniPdf = async btn => {
   btn.disabled = false;
 };
 pages.cards = () => `<div class="mn-page"><div class="wrap mn-wrap">
-  <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/create">פעילויות להדפסה</a> › קלפים טיפוליים</div>
+  <div class="breadcrumb"><a href="#/">ראשי</a> › <a href="#/create">פעילויות להדפסה</a> › משחק מיוחד מבית מיניאטורה</div>
   <section class="mn-gd" aria-label="דף הסבר לערכה"><button type="button" class="mn-gd-thumb" id="mnGuideOpen" aria-label="לצפייה בדף ההסבר בגדול"><img src="img/miniatura/guide-t.webp" alt="דף הסבר לערכת הקלפים: החושך המתוק הזה" width="520" height="736"><span>לצפייה בגדול</span></button>
     <div class="mn-gd-t"><span class="mn-k">דף הסבר לערכה · להדפסה</span><h2>החושך המתוק הזה</h2><p>דף ההסבר המלא של הערכה, בעיצוב המקורי: הוראות הדפסה והכנה לכבוד חנוכה, ואפשרויות למשחק ולשיח קבוצתי או משפחתי.</p>
       <div class="mn-acts"><button type="button" class="mn-btn gold" id="mnGuidePrint"><b>הדפסת דף ההסבר</b><small>דף A4 מלא</small></button><button type="button" class="mn-btn" id="mnGuidePdf"><b>הורדה</b><small>קובץ PDF</small></button></div></div></section>
-  <header class="mn-head"><div><span class="mn-k">מבית מיניאטורה · יהודית לרנר</span><h1>קלפים טיפוליים</h1><p>${MINI.length} קלפים להורדה ולהדפסה. לוחצים על קלף כדי להגדיל אותו.</p></div>
+  <header class="mn-head"><div><span class="mn-k">מבית מיניאטורה · יהודית לרנר</span><h1>משחק מיוחד מבית מיניאטורה <span class="mn-sub">– עולם קטן, רגש גדול</span></h1><p>${MINI.length} קלפים להורדה ולהדפסה. לוחצים על קלף כדי להגדיל אותו.</p></div>
     <div class="mn-acts"><button type="button" class="mn-btn gold" id="mnPdf"><b>הורדת כל הקלפים</b><small>קובץ PDF להדפסה</small></button><button type="button" class="mn-btn" id="mnPrintAll"><b>הדפסת כל הקלפים</b><small>8 קלפים בדף</small></button></div></header>
   <div class="mn-grid" id="mnGrid">${MINI.map((c, i) => `<button type="button" class="mn-card" data-i="${i}" style="--i:${i}" aria-label="קלף ${i + 1} מתוך ${MINI.length}"><img src="${c.thumb}" alt="קלף טיפולי ${i + 1}" loading="lazy"><span class="mn-num">${i + 1}</span></button>`).join('')}</div>
-  <p class="mn-credit">קלפים טיפוליים מבית מיניאטורה · יהודית לרנר · כל הזכויות שמורות</p>
+  <p class="mn-credit">משחק מיוחד מבית מיניאטורה · יהודית לרנר · כל הזכויות שמורות</p>
 </div></div>`;
 pages.cards.after = () => {
   let cur = 0, lb = null;
@@ -1947,7 +1948,7 @@ loadRemote();
 })();
 (function feedbackBubble(){
   if(ADMIN_PAGE) return;
-  const FB_AREAS = ['משחקים', 'מתכונים', 'סטודיו מיתוג', 'פעילויות להדפסה', 'קלפים טיפוליים', 'נותני שירות'];
+  const FB_AREAS = ['משחקים', 'מתכונים', 'סטודיו מיתוג', 'פעילויות להדפסה', 'משחק מיניאטורה', 'נותני שירות'];
   let hideUntil = 0; try{ hideUntil = +sessionStorage.getItem('madlik_fb_hide') || 0; }catch(e){}
   const doneAt = store.get('fb_done', 0); if(doneAt && Date.now() - doneAt < 7 * 864e5) return;
   if(hideUntil) return;
