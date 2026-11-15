@@ -1345,9 +1345,10 @@ pages.cards = () => `<div class="mn-page"><div class="wrap mn-wrap">
   <section class="mn-gd" aria-label="דף הסבר לערכה"><button type="button" class="mn-gd-thumb" id="mnGuideOpen" aria-label="לצפייה בדף ההסבר בגדול"><img src="img/miniatura/guide-2-t.webp" alt="דף הסבר לערכת הקלפים: החושך המתוק הזה" width="520" height="736"><span>לצפייה בגדול</span></button>
     <div class="mn-gd-t"><span class="mn-k">דף הסבר לערכה · להדפסה</span><h2>החושך המתוק הזה</h2><p>דף ההסבר המלא של הערכה, בעיצוב המקורי: הוראות הדפסה והכנה לכבוד חנוכה, ואפשרויות למשחק ולשיח קבוצתי או משפחתי.</p>
       <div class="mn-acts"><button type="button" class="mn-btn gold" id="mnGuidePrint"><b>הדפסת דף ההסבר</b><small>דף A4 מלא</small></button><button type="button" class="mn-btn" id="mnGuidePdf"><b>הורדה</b><small>קובץ PDF</small></button></div></div></section>
-  <header class="mn-head"><div><span class="mn-k">מבית מיניאטורה · יהודית לרנר</span><h1>משחק מיוחד מבית מיניאטורה <span class="mn-sub">– עולם קטן, רגש גדול</span></h1><p>${MINI.length} קלפים להורדה ולהדפסה. לוחצים על קלף כדי להגדיל אותו.</p></div>
+  <header class="mn-head"><div><span class="mn-k">מבית מיניאטורה · יהודית לרנר</span><h1>משחק מיוחד מבית מיניאטורה <span class="mn-sub">– עולם קטן, רגש גדול</span></h1><p class="mn-sis"><span aria-hidden="true">🐑</span> זו <b>אחות קטנה</b> של קלפי מיניאטורה.</p><p>${MINI.length} קלפים להורדה ולהדפסה. לוחצים על קלף כדי להגדיל אותו.</p></div>
     <div class="mn-acts"><button type="button" class="mn-btn gold" id="mnPdf"><b>הורדת כל הקלפים</b><small>קובץ PDF להדפסה</small></button><button type="button" class="mn-btn" id="mnPrintAll"><b>הדפסת כל הקלפים</b><small>8 קלפים בדף</small></button></div></header>
   <div class="mn-grid" id="mnGrid">${MINI.map((c, i) => `<button type="button" class="mn-card" data-i="${i}" style="--i:${i}" aria-label="קלף ${i + 1} מתוך ${MINI.length}"><img src="${c.thumb}" alt="קלף טיפולי ${i + 1}" loading="lazy"><span class="mn-num">${i + 1}</span></button>`).join('')}</div>
+  <aside class="mn-more" aria-label="הכירי את ערכת מיניאטורה"><span class="mn-more-ico" aria-hidden="true">🐑</span><p>אהבת את המשחק? זו רק טעימה קטנה מעולם שלם של מילים, רגשות ושיח. <b>הכירי את ערכת מיניאטורה.</b></p></aside>
   <p class="mn-credit">משחק מיוחד מבית מיניאטורה · יהודית לרנר · כל הזכויות שמורות</p>
 </div></div>`;
 pages.cards.after = () => {
