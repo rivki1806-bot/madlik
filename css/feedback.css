@@ -247,3 +247,6 @@ html[data-pal] .ad-card.ad-img{background:#f9bccf}
 @media (prefers-reduced-motion:reduce){.sup-card.sup-focus{animation:none;outline:4px solid #ff9a2e}}
 /* בלי לוגו מדליק מעל הבאנר המעוצב */
 .ad-rail:has(.ad-card.ad-img.on) .ad-logo{opacity:0;visibility:hidden;transition:none}
+/* בלי לוגו מדליק מעל כרטיסי המודעות בעמוד הבית; התוכן עולה למעלה */
+html[data-pal=logo] .ad-card:not(.ad-img){padding-top:40px!important}
+.ad-logo{display:none!important}
