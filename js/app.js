@@ -219,7 +219,7 @@ const SUP_PROMOS = {bmwb6fpdl:{url:'https://mrng.to/CZMZtxp0Ju', label:'חדר �
 const supPromo = s => { const p = SUP_PROMOS[s.id]; return p ? `<a class="sup-promo" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer sponsored" data-web="${esc(s.id)}"><b aria-hidden="true">%</b><span>${esc(p.label)}</span><i aria-hidden="true">←</i></a>` : ''; };
 const supCard = (s,i=0) => { const id = esc(s.id), site = safeUrl(s.site);
   const go = site ? `<a class="sup-go" href="${esc(site)}" target="_blank" rel="noopener noreferrer sponsored" data-web="${id}">לאתר שלנו <i>←</i></a>` : `<a class="sup-go" href="#/supplier/${id}">לטופס פנייה <i>←</i></a>`;
-  return `<article class="card sup-card">${s.featured?'<span class="badge-featured">מומלץ</span>':''}${favBtn('suppliers',s.id)}<a class="card-top" href="#/supplier/${id}" style="--bg:${bgs[(i+3)%5]}" aria-label="${esc(s.name)}">${supPic(s) || (window.MadlikBizArt && MadlikBizArt.get(s)) || art(s)}</a><div class="card-body"><a class="sup-name" href="#/supplier/${id}"><h3>${esc(s.name)}</h3></a><p>${esc(s.text)}</p><div class="tags"><span class="tag">${esc(s.cat)}</span><span class="tag"> ${esc(s.region)}</span><span class="tag">${esc(s.price)}</span></div></div><div class="sup-actions">${s.phone ? `<button type="button" class="sup-tel" data-tel="${id}">הטלפון שלנו</button>` : ''}${go}</div>${site ? `<a class="sup-form" href="#/supplier/${id}">פנייה דרך הטופס <i aria-hidden="true">✉</i></a>` : ''}${supPromo(s)}</article>`; };
+  return `<article class="card sup-card" id="sup-${id}">${s.featured?'<span class="badge-featured">מומלץ</span>':''}${favBtn('suppliers',s.id)}<a class="card-top" href="#/supplier/${id}" style="--bg:${bgs[(i+3)%5]}" aria-label="${esc(s.name)}">${supPic(s) || (window.MadlikBizArt && MadlikBizArt.get(s)) || art(s)}</a><div class="card-body"><a class="sup-name" href="#/supplier/${id}"><h3>${esc(s.name)}</h3></a><p>${esc(s.text)}</p><div class="tags"><span class="tag">${esc(s.cat)}</span><span class="tag"> ${esc(s.region)}</span><span class="tag">${esc(s.price)}</span></div></div><div class="sup-actions">${s.phone ? `<button type="button" class="sup-tel" data-tel="${id}">הטלפון שלנו</button>` : ''}${go}</div>${site ? `<a class="sup-form" href="#/supplier/${id}">פנייה דרך הטופס <i aria-hidden="true">✉</i></a>` : ''}${supPromo(s)}</article>`; };
 const tplCard = t => `<a class="card" href="#/studio/${esc(t.id)}" data-tpl="${esc(t.id)}"><div class="card-top tpl-top" style="--bg:#f3e9da">${art(t)}</div><div class="card-body"><h3>${esc(t.title)}</h3><p>${t.w}×${t.h} מ״מ</p></div></a>`;
 const creatorCard = c => `<a class="card" href="#/create/${esc(c.id)}">${customRib}<div class="card-top" style="--bg:#fff3d6">${gameArt(c)}</div><div class="card-body"><h3>${esc(c.title)}</h3><p>${esc(c.text)}</p><div class="tags">${c.isNew?'<span class="tag tag-new">חדש!</span>':''}<span class="tag tag-gold">חינם</span></div></div></a>`;
 const gameArt = x => (window.MadlikArt && MadlikArt.get(x)) || art(x);
@@ -263,7 +263,7 @@ pages.home = () => {
   const p2 = n => String(n).padStart(2,'0');
   /* באנרים מעוצבים בעמוד הבית: תמונה מלאה בכרטיס. מקשרים לכרטיס העסק אם הוא קיים באתר */
   const BANNERS = [{match:'נוגט', img:'img/ads/nuget-banner.webp', alt:'נוגט, המקום הייחודי למוצרי אפייה, אביזרים, קישוטים וציוד. מבצעים מיוחדים לכבוד חנוכה. שעות פתיחה: ימים א׳–ה׳ 11:00 עד 22:00, יום ו׳ 10:00 עד 13:00'}];
-  const bannerAds = BANNERS.map(bn => { const sp = content('suppliers').find(x => String(x.name || '').includes(bn.match)); const inner = '<img src="' + bn.img + '" alt="' + esc(bn.alt) + '" loading="eager">'; return sp ? '<a class="ad-card ad-img" href="#/supplier/' + esc(sp.id) + '">' + inner + '</a>' : '<div class="ad-card ad-img">' + inner + '</div>'; });
+  const bannerAds = BANNERS.map(bn => { const sp = addedContent('suppliers').find(x => String(x.name || '').includes(bn.match)) || content('suppliers').find(x => String(x.name || '').includes(bn.match)); const inner = '<img src="' + bn.img + '" alt="' + esc(bn.alt) + '" loading="eager">'; return sp ? '<a class="ad-card ad-img" href="#/suppliers?focus=' + esc(sp.id) + '">' + inner + '</a>' : '<div class="ad-card ad-img">' + inner + '</div>'; });
   const hasBanner = b => BANNERS.some(bn => String(b.name || '').includes(bn.match));
   const ads = bannerAds.concat(content('suppliers').filter(b=>b.homeAd && !hasBanner(b)).map(b=>`<a class="ad-card" href="#/supplier/${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.text)}</span><em>${esc(b.cat)} · ${esc(b.region)} ←</em></a>`))
     .concat(['<a class="ad-card ad-cta" href="#/advertise"><b>ראית את זה?</b><span>ראו את זה עוד אלפי אנשים, מוזמן לפרסם באחת התכניות השוות!</span><em>לכל התכניות וטופס יצירת קשר ←</em></a>']);
@@ -1294,11 +1294,13 @@ pages.suppliers = () => {
     ${adBlock()}
   </div>`;
 };
-pages.suppliers.after = () => {
+pages.suppliers.after = (p, q) => {
   showBizNotice();
   const l = document.getElementById('sl');
   const run = () => { const v = {}; const res = content('suppliers').filter(s=>(!v.q||JSON.stringify(s).includes(v.q))&&(!v.cat||s.cat===v.cat)&&(!v.region||s.region===v.region||s.region==='כל הארץ')&&(!v.price||s.price===v.price)).sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)); l.innerHTML = res.length ? res.map(supCard).join('') : '<div class="empty">אין עדיין עסקים שמתאימים. נסו אזור אחר.</div>'; };
   run();
+  /* הגעה מבאנר בעמוד הבית: גוללים אל המודעה של העסק ומדגישים אותה */
+  if(q && q.focus){ let tries = 0; const go = () => { const el = document.getElementById('sup-' + q.focus); if(el){ window.scrollTo({top: Math.max(0, el.getBoundingClientRect().top + scrollY - 110), behavior:'smooth'}); el.classList.add('sup-focus'); setTimeout(() => el.classList.remove('sup-focus'), 4500); } else if(tries++ < 12) setTimeout(go, 400); }; setTimeout(go, 450); }
   const st = document.querySelector('[data-scroll]'); if(st) st.onclick = e => { e.preventDefault(); document.getElementById('adBlock').scrollIntoView({behavior:'smooth', block:'start'}); };
   adBlockAfter();
 };
