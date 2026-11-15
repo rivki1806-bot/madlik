@@ -22,42 +22,52 @@ const hitSheet_ = () => tab_('כניסות', ['תאריך', 'סוג', 'מזהה'
 // סיכום הכניסות: סה"כ, היום, 7 ימים, ומבקרות שונות – לכל מדור ולכל בעל עסק
 function stats_() {
   const rows = hitSheet_().getDataRange().getValues(), now = Date.now(), DAY = 864e5;
+  const dayMemo = {}, dayKey = ms => { const h = Math.floor(ms / 36e5); return dayMemo[h] || (dayMemo[h] = Utilities.formatDate(new Date(ms), 'Asia/Jerusalem', 'yyyy-MM-dd')); }; // תאריך לכל שעה פעם אחת בלבד: מהיר פי כמה
   const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
   const out = { sec: {}, sup: {}, tel: {}, web: {}, game: {}, doc: {}, rec: {}, all: { total: 0, today: 0, week: 0, uniq: 0 }, days: {} }, seen = {}, seenAll = {};
   for (let i = 1; i < rows.length; i++) {
     const d = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]), type = rows[i][1], id = String(rows[i][2]), v = String(rows[i][3]);
     if (type === 'sup' && /^(tel|web):/.test(id)) { // לחיצות על "הטלפון שלנו" ועל האתר של העסק
       const kind = id.slice(0, 3), tid = id.slice(4), grp = out[kind], t = grp[tid] = grp[tid] || { total: 0, today: 0, week: 0 };
-      t.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) t.today++; if (now - d.getTime() < 7 * DAY) t.week++;
+      t.total++; if (dayKey(d.getTime()) === today) t.today++; if (now - d.getTime() < 7 * DAY) t.week++;
       continue;
     }
     if (type === 'doc' || type === 'rec') { // הדפסות והורדות של מסמכים, וכניסות לכל מתכון
       const o = out[type][id] = out[type][id] || { total: 0, today: 0, week: 0, uniq: 0 };
-      o.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++; if (now - d.getTime() < 7 * DAY) o.week++;
+      o.total++; if (dayKey(d.getTime()) === today) o.today++; if (now - d.getTime() < 7 * DAY) o.week++;
       const dk2 = type + '|' + id + '|' + v; if (v && !seen[dk2]) { seen[dk2] = 1; o.uniq++; }
       continue;
     }
     if (type === 'game' || type === 'gtime') { // כניסות וזמן שהייה לכל משחק
       const o = out.game[id] = out.game[id] || { total: 0, today: 0, week: 0, uniq: 0, secs: 0, timed: 0 };
       if (type === 'gtime') { const sec = Number(rows[i][4]) || 0; if (sec > 0) { o.secs += sec; o.timed++; } continue; }
-      o.total++; if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++; if (now - d.getTime() < 7 * DAY) o.week++;
+      o.total++; if (dayKey(d.getTime()) === today) o.today++; if (now - d.getTime() < 7 * DAY) o.week++;
       const gk = 'game|' + id + '|' + v; if (v && !seen[gk]) { seen[gk] = 1; o.uniq++; }
       continue;
     }
     if (type !== 'sec' && type !== 'sup') continue;
     if (type === 'sec') {
-      const A = out.all, dk = Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd');
+      const A = out.all, dk = dayKey(d.getTime());
       A.total++; if (dk === today) A.today++; if (now - d.getTime() < 7 * DAY) A.week++;
       if (v && !seenAll[v]) { seenAll[v] = 1; A.uniq++; }
       out.days[dk] = (out.days[dk] || 0) + 1;
     }
     const o = out[type][id] = out[type][id] || { total: 0, today: 0, week: 0, uniq: 0 };
     o.total++;
-    if (Utilities.formatDate(d, 'Asia/Jerusalem', 'yyyy-MM-dd') === today) o.today++;
+    if (dayKey(d.getTime()) === today) o.today++;
     if (now - d.getTime() < 7 * DAY) o.week++;
     const k = type + '|' + id + '|' + v; if (v && !seen[k]) { seen[k] = 1; o.uniq++; }
   }
   return out;
+}
+
+// הכניסות נשמרות 2 דקות בזיכרון, כדי שהמסך בניהול ייטען מיד. כפתור "רענון" מחשב מחדש
+function statsCached_(fresh) {
+  const cache = CacheService.getScriptCache();
+  if (!fresh) { try { const c = cache.get('stats_v2'); if (c) return JSON.parse(c); } catch (err) {} }
+  const st = stats_();
+  try { const j = JSON.stringify(st); if (j.length < 90000) cache.put('stats_v2', j, 120); } catch (err) {}
+  return st;
 }
 
 function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
@@ -114,7 +124,7 @@ function doPost(e) {
     // --- מכאן רק עם מפתח הניהול ---
     if (d.key !== SECRET) return json_({ ok: false, error: 'מפתח שגוי' });
 
-    if (d.action === 'stats') return json_({ ok: true, stats: stats_() });
+    if (d.action === 'stats') return json_({ ok: true, stats: statsCached_(!!d.fresh) });
 
     if (d.action === 'list') {
       const rows = subsSheet_().getDataRange().getValues(), out = [];

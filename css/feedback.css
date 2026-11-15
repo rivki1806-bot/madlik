@@ -250,3 +250,6 @@ html[data-pal] .ad-card.ad-img{background:#f9bccf}
 /* בלי לוגו מדליק מעל כרטיסי המודעות בעמוד הבית; התוכן עולה למעלה */
 html[data-pal=logo] .ad-card:not(.ad-img){padding-top:40px!important}
 .ad-logo{display:none!important}
+
+/* סרגל עדכון בלשונית הכניסות */
+.st-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:8px 14px;border-radius:14px;background:#fff3d6;border:1px solid #ffd27a}
