@@ -67,10 +67,28 @@ D.recipes.forEach(r => {
 /* תבניות הסטודיו */
 D.templates.forEach(t => page({ url: `/studio/${t.id}/`, route: `studio/${t.id}`, title: `${t.title} להדפסה | סטודיו מיתוג לערב לביבות | מדליק`, desc: `${t.title} בעיצוב מקצועי להדפסה בגודל ${t.w}×${t.h} מ״מ. כותבים את המילים שלכם, מזיזים הכול איפה שרוצים, ומדפיסים.`.slice(0, 300), h1: t.title, body: `<p>${esc(t.title)} בעיצוב מקצועי להדפסה, בגודל ${t.w}×${t.h} מ״מ. עורכים את הטקסט, בוחרים שפה עיצובית ומדפיסים.</p><p><a href="/studio/">לכל התבניות</a></p>` }));
 
+(async () => {
+/* בעלי עסקים: נטענים מהשרת של גוגל (מה שהוספת בניהול). הטלפון לא נכתב בעמוד, כדי שהלחיצות עליו ימשיכו להיספר */
+try {
+  const cfg = fs.readFileSync(path.join(ROOT, 'js/config.js'), 'utf8'), api = (cfg.match(/MADLIK_API\s*=\s*'([^']+)'/) || [])[1];
+  if (api) {
+    const res = await fetch(api + '?action=content', { redirect: 'follow' }), j = await res.json();
+    const sups = ((j.items && j.items.suppliers) || []).filter(s => s && !s._chunk && s.id && s.name && s.active !== false);
+    sups.forEach(s => {
+      const ld = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: s.name, description: s.text || undefined, areaServed: s.region || undefined, url: HOST + `/supplier/${s.id}/` };
+      page({ url: `/supplier/${s.id}/`, route: `supplier/${s.id}`, title: `${s.name} | ${s.cat || 'נותני שירות'} לערב לביבות | מדליק`, desc: `${s.name}: ${s.text || ''} ${s.cat ? 'תחום: ' + s.cat + '.' : ''} ${s.region ? 'אזור: ' + s.region + '.' : ''} שליחת פנייה ישירה דרך מדליק.`.replace(/\s+/g, ' ').slice(0, 300), h1: s.name,
+        body: `<p>${esc(s.text || '')}</p><ul>${s.cat ? `<li>תחום: ${esc(s.cat)}</li>` : ''}${s.region ? `<li>אזור: ${esc(s.region)}</li>` : ''}${s.price ? `<li>מחיר: ${esc(s.price)}</li>` : ''}</ul><p>אפשר לשלוח פנייה ישירות לבעל העסק דרך מדליק.</p><p><a href="/suppliers/">לכל נותני השירות</a></p>`, ld });
+    });
+    page({ url: '/suppliers/', route: 'suppliers', title: 'נותני שירות לערב לביבות: אולמות, קייטרינג ומפעילים | מדליק', desc: 'נותני שירות שישדרגו לכם את האירוע: אולמות, קייטרינג, מפעילים, עיצוב וצילום. לפי אזור ולפי מחיר.', h1: 'נותני שירות שישדרגו לכם את האירוע', body: '<p>אולמות, קייטרינג, מפעילים, עיצוב ודקורציה, קינוחים וצילום. מחפשים לפי אזור ולפי מחיר, ושולחים פנייה ישירות לבעל העסק.</p>' + links(sups, '/supplier/', s => s.name) });
+    console.log('suppliers:', sups.map(s => s.id).join(', '));
+  }
+} catch (e) { console.log('suppliers skipped:', e.message); }
+
 /* 404: כל כתובת לא מוכרת מגיעה לעמוד הבית */
 fs.writeFileSync(path.join(ROOT, '404.html'), `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>מדליק</title><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=/"><script>location.replace('/');</script></head><body><p><a href="/">מעבר לעמוד הבית של מדליק</a></p></body></html>\n`);
 
 /* sitemap */
-const all = ['/'].concat(urls);
+const all = [...new Set(['/'].concat(urls))];
 fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + all.map(u => `  <url>\n    <loc>${HOST}${u}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>${u === '/' ? 'weekly' : 'monthly'}</changefreq>\n    <priority>${u === '/' ? '1.0' : /^\/(games|recipes|create|studio)\/$/.test(u) ? '0.8' : '0.6'}</priority>\n  </url>`).join('\n') + '\n</urlset>\n');
-console.log('pages:', urls.length);
+console.log('pages:', all.length - 1);
+})();
