@@ -221,3 +221,10 @@ aside .sup-promo{margin-top:14px}
 .pay-ico{font-size:4rem;margin-bottom:6px}
 html[data-pal] body .pay-card h1{margin:0 0 10px!important;font:900 clamp(1.6rem,4.6vw,2.3rem) 'Rubik',sans-serif!important;color:#3d2412!important;text-shadow:none!important}
 .pay-card p{margin:0 0 20px;font:400 1.08rem/1.6 'Heebo',sans-serif;color:#5a2f08}
+
+/* באנר מעוצב (תמונה מלאה) בכרטיס המודעות בעמוד הבית */
+html[data-pal] .ad-card.ad-img{padding:0!important;overflow:hidden;background:#fbd5df;display:block}
+.ad-card.ad-img img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+/* הכרטיס גבוה וצר: הפוסטר יושב בתחתית, והרקע ממשיך אותו בוורוד למעלה (הפוסטר מסתיים ברצועה לבנה) */
+html[data-pal] .ad-card.ad-img{background:#f9bccf}
+.ad-card.ad-img img{object-fit:contain;object-position:50% 100%;background:transparent}
