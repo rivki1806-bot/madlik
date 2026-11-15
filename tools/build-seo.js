@@ -11,7 +11,7 @@ const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g,
 const SITE = 'מדליק';
 const urls = [];
 
-function page({url, route, title, desc, h1, body, ld, img}) {
+function page({url, route, title, desc, h1, body, ld, img, noindex}) {
   let h = shell;
   const full = HOST + url;
   const sw = (re, to) => { if (!re.test(h)) throw new Error('shell anchor ' + re); h = h.replace(re, () => to); };
@@ -24,12 +24,13 @@ function page({url, route, title, desc, h1, body, ld, img}) {
   sw(/<meta name="twitter:title" content="[^"]*">/, `<meta name="twitter:title" content="${esc(title)}">`);
   sw(/<meta name="twitter:description" content="[^"]*">/, `<meta name="twitter:description" content="${esc(desc)}">`);
   if (img) { h = h.replace(/<meta property="og:image" content="[^"]*">/, () => `<meta property="og:image" content="${HOST}/${img}">`).replace(/<meta name="twitter:image" content="[^"]*">/, () => `<meta name="twitter:image" content="${HOST}/${img}">`); }
+  if (noindex) h = h.replace(/<meta name="robots" content="[^"]*">/, '<meta name="robots" content="noindex,nofollow">');
   sw(/<meta charset="utf-8">/, '<meta charset="utf-8">\n<base href="/">');
   const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: SITE, item: HOST + '/' }].concat(url === '/' ? [] : [{ '@type': 'ListItem', position: 2, name: h1, item: full }]) };
   const lds = [crumbs].concat(ld ? [ld] : []).map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n');
   sw(/<link rel="preconnect" href="https:\/\/fonts\.googleapis\.com">/, lds + '\n<link rel="preconnect" href="https://fonts.googleapis.com">');
   sw(/<main id="app" tabindex="-1"><\/main>/, `<main id="app" tabindex="-1"><div style="max-width:860px;margin:30px auto;padding:0 20px;line-height:1.7"><nav aria-label="נתיב"><a href="/">מדליק</a></nav><h1>${esc(h1)}</h1>${body}</div></main>`);
-  sw(/<script src="js\/data\.js/, `<script>history.replaceState(null,'','/#/${route}');</script>\n<script src="js/data.js`);
+  sw(/<script src="js\/data\.js/, `<script>history.replaceState(null,'','/#/${route}'+location.search);</script>\n<script src="js/data.js`);
   const dir = path.join(ROOT, url.replace(/^\//, ''));
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), h);
@@ -48,6 +49,8 @@ page({ url: '/studio/', route: 'studio', title: 'סטודיו מיתוג לער�
 page({ url: '/suppliers/', route: 'suppliers', title: 'נותני שירות לערב לביבות: אולמות, קייטרינג ומפעילים | מדליק', desc: 'נותני שירות שישדרגו לכם את האירוע: אולמות, קייטרינג, מפעילים, עיצוב וצילום. לפי אזור ולפי מחיר.', h1: 'נותני שירות שישדרגו לכם את האירוע', body: '<p>אולמות, קייטרינג, מפעילים, עיצוב ודקורציה, קינוחים וצילום. מחפשים לפי אזור ולפי מחיר, ושולחים פנייה ישירות לבעל העסק.</p>' });
 page({ url: '/advertise/', route: 'advertise', title: 'פרסום לעסקים במדליק | אולמות, קייטרינג ומפעילים', desc: 'רוצים לפרסם את העסק שלכם בפני משפחות שמארגנות ערב לביבות? שלוש תכניות פרסום, כרטיס מעוצב ודוח כניסות ופניות.', h1: 'רוצים לפרסם במדליק?', body: '<p>מודעה אישית בכרטיס מעוצב, פניות שמגיעות ישר אליכם, ודוח עם צפיות, לחיצות ופניות.</p>' });
 page({ url: '/cards/', route: 'cards', title: 'משחק מיוחד מבית מיניאטורה – עולם קטן, רגש גדול | מדליק', desc: 'משחק מיוחד מבית מיניאטורה, יהודית לרנר: עולם קטן, רגש גדול. קלפים לשיחה משפחתית חמה, לצפייה, הורדה והדפסה בערב חנוכה.', h1: 'משחק מיוחד מבית מיניאטורה – עולם קטן, רגש גדול', body: '<p>טעימה קטנה מעולם שלם של מילים, רגשות ושיח, מבית מיניאטורה, יהודית לרנר. אפשר לצפות, להוריד ולהדפיס.</p>' });
+
+page({ url: '/paid/', route: 'paid', title: 'אישור תשלום | מדליק', desc: 'אישור תשלום ופרסום באתר מדליק.', h1: 'אישור תשלום', body: '<p>מאמתים את התשלום...</p>', noindex: true });
 
 /* משחקים */
 D.games.forEach(g => {
@@ -88,7 +91,7 @@ try {
 fs.writeFileSync(path.join(ROOT, '404.html'), `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>מדליק</title><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=/"><script>location.replace('/');</script></head><body><p><a href="/">מעבר לעמוד הבית של מדליק</a></p></body></html>\n`);
 
 /* sitemap */
-const all = [...new Set(['/'].concat(urls))];
+const all = [...new Set(['/'].concat(urls))].filter(u => u !== '/paid/');
 fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + all.map(u => `  <url>\n    <loc>${HOST}${u}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>${u === '/' ? 'weekly' : 'monthly'}</changefreq>\n    <priority>${u === '/' ? '1.0' : /^\/(games|recipes|create|studio)\/$/.test(u) ? '0.8' : '0.6'}</priority>\n  </url>`).join('\n') + '\n</urlset>\n');
 console.log('pages:', all.length - 1);
 })();

@@ -3,3 +3,6 @@ window.MADLIK_API = 'https://script.google.com/macros/s/AKfycbwZ8n5j5DsDQZelcgbb
 
 // כתובת השרת הנוסף (העלאת תמונה, עריכה וספירת לחיצות על האתר). אפשר להשאיר ריק.
 window.MADLIK_API2 = '';
+
+// תשלום אוטומטי בעמוד הפרסום (סאמיט). מפעילים (true) רק אחרי שהקוד בגוגל עודכן והמפתחות הוגדרו.
+window.MADLIK_PAY = false;
