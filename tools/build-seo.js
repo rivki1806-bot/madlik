@@ -72,7 +72,7 @@ D.templates.forEach(t => page({ url: `/studio/${t.id}/`, route: `studio/${t.id}`
 try {
   const cfg = fs.readFileSync(path.join(ROOT, 'js/config.js'), 'utf8'), api = (cfg.match(/MADLIK_API\s*=\s*'([^']+)'/) || [])[1];
   if (api) {
-    const res = await fetch(api + '?action=content', { redirect: 'follow' }), j = await res.json();
+    const res = await fetch(api + '?action=content', { redirect: 'follow', signal: AbortSignal.timeout(20000) }), j = await res.json();
     const sups = ((j.items && j.items.suppliers) || []).filter(s => s && !s._chunk && s.id && s.name && s.active !== false);
     sups.forEach(s => {
       const ld = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: s.name, description: s.text || undefined, areaServed: s.region || undefined, url: HOST + `/supplier/${s.id}/` };

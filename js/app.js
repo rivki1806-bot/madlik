@@ -1929,7 +1929,7 @@ loadRemote();
     const ov = document.createElement('div'); ov.className = 'promo-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'prT');
     ov.innerHTML = '<div class="promo-card"><button type="button" class="promo-x" aria-label="סגירה">×</button>' +
       '<div class="promo-hero"><img src="img/promo/otzar-treasure.webp" alt="תיבת אוצר עתיקה במרתף מואר נרות" width="920" height="513"><i class="ph-glow" aria-hidden="true"></i><i class="ph-dust d1" aria-hidden="true"></i><i class="ph-dust d2" aria-hidden="true"></i><i class="ph-dust d3" aria-hidden="true"></i><span class="ph-badge" aria-hidden="true">10%<small>הנחה</small></span></div>' +
-      '<p class="promo-kick">מבצע לערב לביבות</p>' +
+      '<p class="promo-kick">מבצע כסלו</p>' +
       '<h2 id="prT">רק למגיעים דרך אתר מדליק</h2>' +
       '<p class="promo-txt">השנה, ערב הלביבות שלכם נגמר בצעקות של <b>"מצאנו!"</b><br><b>תיבת האוצר המשפחתית</b> היא חדר בריחה דיגיטלי שבנוי כולו מהמשפחה שלכם: השמות, התאריכים, התמונות והסיפורים שלכם הופכים לחידות. מי שלא מהמשפחה, לא יפתור.</p>' +
       '<ul class="promo-facts"><li>14 תחנות</li><li>מהדפדפן, בלי התקנה</li><li>לכל המשפחה</li></ul>' +
