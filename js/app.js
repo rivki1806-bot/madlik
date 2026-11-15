@@ -163,7 +163,9 @@ window.addEventListener('afterprint', ()=>{ document.getElementById('printRoot')
 // תוכן = תוכן בסיס + מה שנוסף בניהול
 const content = k => {
   const base = D[k]||[], add = addedContent(k);
-  if(k === 'suppliers'){ const real = add.filter(x => x.active !== false && !(x.until && Date.now() > new Date(x.until + 'T23:59:59+02:00').getTime())); return real.length ? real : base; } // כשיש עסק אמיתי אחד לפחות, כרטיסי הדוגמה מוסתרים
+  if(k === 'suppliers'){ const live = x => x.active !== false && !(x.until && Date.now() > new Date(x.until + 'T23:59:59+02:00').getTime()); const real = add.filter(live), snap = (window.MADLIK_BIZ || []).filter(live);
+    if(API() && !remote) return snap.length ? snap : base; // השרת עוד לא ענה: מציגים את העסקים האמיתיים משמירה אחרונה, ולא דוגמאות
+    return real.length ? real : (API() && remote ? [] : base); } // כשיש עסק אמיתי אחד לפחות, כרטיסי הדוגמה מוסתרים
   return base.concat(add);
 };
 const findIn = (k,id) => content(k).find(x=>x.id===id);

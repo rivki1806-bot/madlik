@@ -83,6 +83,22 @@ try {
         body: `<p>${esc(s.text || '')}</p><ul>${s.cat ? `<li>תחום: ${esc(s.cat)}</li>` : ''}${s.region ? `<li>אזור: ${esc(s.region)}</li>` : ''}${s.price ? `<li>מחיר: ${esc(s.price)}</li>` : ''}</ul><p>אפשר לשלוח פנייה ישירות לבעל העסק דרך מדליק.</p><p><a href="/suppliers/">לכל נותני השירות</a></p>`, ld });
     });
     page({ url: '/suppliers/', route: 'suppliers', title: 'נותני שירות לערב לביבות: אולמות, קייטרינג ומפעילים | מדליק', desc: 'נותני שירות שישדרגו לכם את האירוע: אולמות, קייטרינג, מפעילים, עיצוב וצילום. לפי אזור ולפי מחיר.', h1: 'נותני שירות שישדרגו לכם את האירוע', body: '<p>אולמות, קייטרינג, מפעילים, עיצוב ודקורציה, קינוחים וצילום. מחפשים לפי אזור ולפי מחיר, ושולחים פנייה ישירות לבעל העסק.</p>' + links(sups, '/supplier/', s => s.name) });
+    /* תמונת מצב של העסקים: האתר מציג אותם מיד, גם בלי השרת של גוגל (למשל כשנטפרי חוסם אותו). התמונות נשמרות כקבצים */
+    const rows = (j.items && j.items.suppliers) || [], chunks = {};
+    rows.forEach(r => { if (r && r._chunk) (chunks[r._chunk] = chunks[r._chunk] || [])[r.i] = r.d; });
+    fs.mkdirSync(path.join(ROOT, 'img/biz'), { recursive: true });
+    const now = Date.now(), snap = [];
+    rows.filter(s => s && !s._chunk && s.id && s.name && s.active !== false && !(s.until && now > new Date(s.until + 'T23:59:59+02:00').getTime())).forEach(s => {
+      const it = Object.assign({}, s); delete it._imgId; delete it._imgN;
+      if (typeof it.img === 'string' && it.img.indexOf('chunk:') === 0) {
+        const parts = chunks[it.img.slice(6)] || [], ok = parts.length && Array.from(parts, x => x || '').every(Boolean);
+        delete it.img;
+        if (ok) { const m = /^data:image\/(jpeg|png|webp);base64,(.+)$/.exec(parts.join('')); if (m) { const file = 'img/biz/' + s.id + '.' + (m[1] === 'jpeg' ? 'jpg' : m[1]); fs.writeFileSync(path.join(ROOT, file), Buffer.from(m[2], 'base64')); it.img = file; } }
+      }
+      snap.push(it);
+    });
+    fs.writeFileSync(path.join(ROOT, 'js/biz-snapshot.js'), '// נוצר אוטומטית על ידי tools/build-seo.js. כך העסקים מופיעים מיד, בלי לחכות לשרת של גוגל\nwindow.MADLIK_BIZ = ' + JSON.stringify(snap) + ';\n');
+    console.log('snapshot:', snap.length, 'businesses');
     console.log('suppliers:', sups.map(s => s.id).join(', '));
   }
 } catch (e) { console.log('suppliers skipped:', e.message); }
