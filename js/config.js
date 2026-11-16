@@ -1,5 +1,5 @@
 // כתובת השרת הקטן של גוגל (רשימת תפוצה, טפסים וכניסות). ריק = הכול נשמר רק בדפדפן של כל גולש.
-window.MADLIK_API = 'https://script.google.com/macros/s/AKfycbwZ8n5j5DsDQZelcgbb8l9wIbR9HoMXcnOQFp2cm4vQDumAjpiRQsMSVoz501xk_ZsNDA/exec';
+window.MADLIK_API = 'https://script.google.com/macros/s/AKfycbxq0SS-N5F4Ow486iAF_duuKiNO9R1zPG7Xd32KQrJqXbd5YlrbezkarkHOkiWsP4eUaw/exec';
 
 // כתובת השרת הנוסף (העלאת תמונה, עריכה וספירת לחיצות על האתר). אפשר להשאיר ריק.
 window.MADLIK_API2 = '';
