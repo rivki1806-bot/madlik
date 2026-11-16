@@ -26,10 +26,12 @@ const ADMIN_PAGE = !!window.MADLIK_ADMIN_PAGE; // דף הניהול נפתח ר�
 const adminKey = () => { try{ return (sessionStorage.getItem('madlik_key')||'').trim(); }catch(e){ return ''; } };
 function record(kind, data){
   store.push(kind, Object.assign(kind==='subs' ? {status:'ממתין'} : {}, data));
-  if(kind==='leads' && data.sid && !/^(localhost|127.0.0.1|[::1])$/.test(location.hostname)){ // מייל לבעל העסק דרך FormSubmit (בלי קוד נוסף בגוגל). עותק תמיד אל officeautoclick
-    try{ const s = findIn('suppliers', data.sid) || {}, biz = /^[^@s]+@[^@s]+.[^@s]+$/.test(String(s.email||'')) ? String(s.email).trim() : '';
+  const okMail = v => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v||'').trim());
+  // מייל לבעל העסק נשלח מהשרת (Code.gs notifySupplier_) עם עותק ל-officeautoclick. FormSubmit רק גיבוי כשאין שרת, כדי שלא יגיעו כפולים
+  if(kind==='leads' && data.sid && !API() && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)){
+    try{ const s = findIn('suppliers', data.sid) || {}, biz = okMail(s.email) ? String(s.email).trim() : '';
       const body = {_subject:'מדליק – פנייה חדשה מ' + (data.name||'לקוח') + ' | הפרסום במדליק עובד', _template:'table', _captcha:'false', 'הודעה ממדליק':'הפרסום במדליק עובד! התקבלה פנייה חדשה מלקוח דרך האתר', 'עסק':data.supplier||'', 'שם':data.name||'', 'טלפון':data.phone||'', 'מייל':data.email||'', 'תאריך האירוע':data.date||'', 'משתתפים':data.count||'', 'פרטים':data.msg||''};
-      if(biz) body._cc = biz; if(/^[^@s]+@[^@s]+.[^@s]+$/.test(String(data.email||''))) body._replyto = data.email;
+      if(biz) body._cc = biz; if(okMail(data.email)) body._replyto = String(data.email).trim();
       fetch('https://formsubmit.co/ajax/officeautoclick@gmail.com', {method:'POST', headers:{'Content-Type':'application/json', 'Accept':'application/json'}, body:JSON.stringify(body)}).catch(()=>{}); }catch(e){}
   }
   if(!API()) return;
