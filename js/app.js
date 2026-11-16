@@ -1339,14 +1339,17 @@ pages.maalot = () => {
     <small class="mg-note">האישור נדרש פעם אחת בלבד.</small>
   </form></div>`;
 };
+const MAALOT_IN = 'מעלות|הגיעו לשער', MAALOT_OK = 'מעלות|אישרו ונכנסו';
+const sendHit = (type, id) => { if(!API() || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return; try{ fetch(API(), {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'hit', type, id, v:visitorId()})}).catch(()=>{}); }catch(e){} };
 pages.maalot.after = () => {
   const f = document.getElementById('mgForm'); if(!f) return;
+  sendHit('sec', MAALOT_IN);
   f.onsubmit = e => {
     e.preventDefault();
     const v = Object.fromEntries(new FormData(f)), email = String(v.email || '').trim();
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('כתבו כתובת מייל תקינה');
     if(!v.ok) return toast('צריך לאשר קבלת דיוור כדי להיכנס');
-    subscribe(email, 'סמינר מעלות - אישר דיוור מעלות', '');
+    subscribe(email, 'סמינר מעלות - אישר דיוור מעלות', ''); sendHit('sec', MAALOT_OK);
     store.set('maalot_ok', true); store.set('subscribedEmail', email);
     const nb = document.getElementById('newsBar'); if(nb) nb.classList.add('hidden');
     location.hash = '#/';
@@ -1559,7 +1562,7 @@ function statsHTML(st, leads, live){
     const nm = {howto:() => 'הוראות משחק: ' + D2('games', x), creator:() => 'פעילות להדפסה: ' + D2('games', x), design:() => 'סטודיו: ' + (((D.templates || []).find(z => z.id === x) || {}).title || x), recipe:() => 'מתכון: ' + D2('recipes', x), 'shop-list':() => 'רשימת קניות', 'family-bingo':() => 'בינגו תמונות משפחתיות', 'cards-all':() => 'כל הקלפים הטיפוליים (להדפסה)', 'cards-pdf':() => 'כל הקלפים הטיפוליים (PDF)', guide:() => 'מדריך הקלפים הטיפוליים', card:() => 'קלף טיפולי מספר ' + x};
     return {name:(nm[t] || (() => what))(), kind:kind === 'dl' ? 'הורדה' : 'הדפסה'}; };
   const legacy = id => (st.sec || {})[id];
-  const docAll = Object.assign({}, st.doc || {}); Object.keys(st.sec || {}).filter(id => /^(print|dl)|/.test(id)).forEach(id => { const o = st.sec[id], d = docAll[id] || {total:0, today:0, week:0, uniq:0}; docAll[id] = {total:d.total + o.total, today:d.today + o.today, week:d.week + o.week, uniq:(d.uniq || 0) + (o.uniq || 0)}; });
+  const docAll = Object.assign({}, st.doc || {}); Object.keys(st.sec || {}).filter(id => /^(print|dl)\|/.test(id)).forEach(id => { const o = st.sec[id], d = docAll[id] || {total:0, today:0, week:0, uniq:0}; docAll[id] = {total:d.total + o.total, today:d.today + o.today, week:d.week + o.week, uniq:(d.uniq || 0) + (o.uniq || 0)}; });
   const drows = Object.entries(docAll).map(([id, o]) => Object.assign(docName(id), {o})).sort((p, q) => q.o.total - p.o.total);
   const docsTable = drows.length ? '<div style="overflow:auto"><table class="table stats-t"><tr><th>מסמך</th><th>פעולה</th><th>סה"כ</th><th>היום</th><th>7 ימים</th>' + (live?'<th>מבקרים שונים</th>':'') + '</tr>' + drows.map(r => '<tr><td><b>' + esc(r.name) + '</b></td><td>' + r.kind + '</td><td><b>' + n(r.o.total) + '</b></td><td>' + n(r.o.today) + '</td><td>' + n(r.o.week) + '</td>' + (live?'<td>'+n(r.o.uniq)+'</td>':'') + '</tr>').join('') + '</table></div>' : '<p class="muted">עוד לא הודפס או הורד מסמך.</p>';
   const addO = (p, q) => !q ? p : {total:(p.total||0) + q.total, today:(p.today||0) + q.today, week:(p.week||0) + q.week, uniq:(p.uniq||0) + (q.uniq||0)};
@@ -1571,9 +1574,12 @@ function statsHTML(st, leads, live){
   const days = []; for(let i = 13; i >= 0; i--){ const d = new Date(Date.now() - i * 864e5), k = d.toISOString().slice(0, 10); days.push([k, (st.days && st.days[k]) || 0]); }
   const dmax = Math.max(1, ...days.map(x => x[1]));
   const chart = st.days ? `<div class="box" style="margin-bottom:20px"><h2>14 הימים האחרונים</h2><div class="st-chart">${days.map(([k, v]) => `<div title="${k}: ${v}"><i style="height:${Math.round(v / dmax * 100)}%"></i><em>${v || ''}</em><span>${k.slice(8)}</span></div>`).join('')}</div></div>` : '';
+  const mg = k => (st.sec || {})[k] || zero, mIn = mg(MAALOT_IN), mOk = mg(MAALOT_OK), mPct = (a, b) => a ? Math.round(b / a * 100) + '%' : '–';
+  const maalotBox = `<div class="box" style="margin-top:20px"><h2>קישור סמינר מעלות</h2><p class="muted">"הגיעו לשער" = פתחו את הקישור וראו את מסך האישור. "אישרו ונכנסו" = כתבו מייל וסימנו אישור דיוור. ההפרש = מי שהגיע ולא אישר. נספר מ־16.11.2026, לפני כן לא נספר.</p><div style="overflow:auto"><table class="table stats-t"><tr><th></th><th>הגיעו לשער</th><th>אישרו ונכנסו</th><th>לא אישרו</th><th>אחוז שאישרו</th></tr>` +
+    [['כניסות', 'total'], ['היום', 'today'], ['7 ימים', 'week']].concat(live ? [['אנשים שונים', 'uniq']] : []).map(([lbl, k]) => `<tr><td><b>${lbl}</b></td><td><b>${n(mIn[k])}</b></td><td>${n(mOk[k])}</td><td><b>${n(Math.max(0, (mIn[k] || 0) - (mOk[k] || 0)))}</b></td><td>${mPct(mIn[k], mOk[k])}</td></tr>`).join('') + '</table></div></div>';
   const oldSrv = live && !st.rec ? '<div class="notice" style="margin-bottom:16px;border-color:#ff6a00"><b>הקוד בגוגל עדיין בגרסה ישנה.</b> בגלל זה לא נספרות כאן לחיצות על הטלפון ועל האתר, וגם לא כניסות וזמן שהייה במשחקים. כדי לתקן: בלשונית "רשימת תפוצה" מעתיקים את הקוד, מדביקים אותו בסקריפט של גוגל, ובוחרים פריסה ← ניהול פריסות ← עריכה ← גרסה חדשה ← פריסה.</div>' : '';
   return `${oldSrv}${live?'':'<div class="notice" style="margin-bottom:16px">המספרים כאן הם רק מהדפדפן הזה. כשמחברים את השרת של גוגל (בלשונית "רשימת תפוצה"), כאן יופיעו הכניסות של כל הגולשים.</div>'}
-    <div class="st-tiles">${tile('כניסות בסך הכול', A.total)}${tile('היום', A.today)}${tile('7 ימים אחרונים', A.week)}${tile('גולשים שונים', A.uniq)}</div>${chart}<div class="box"><h2>כניסות לפי מדור</h2><p class="muted">סה"כ ${n(sum)} כניסות לעמודים באתר. כניסות שלך מהניהול לא נספרות.</p>${table(secs, 'מדור')}</div>
+    <div class="st-tiles">${tile('כניסות בסך הכול', A.total)}${tile('היום', A.today)}${tile('7 ימים אחרונים', A.week)}${tile('גולשים שונים', A.uniq)}</div>${chart}<div class="box"><h2>כניסות לפי מדור</h2><p class="muted">סה"כ ${n(sum)} כניסות לעמודים באתר. כניסות שלך מהניהול לא נספרות.</p>${table(secs, 'מדור')}</div>${maalotBox}
     <div class="box" style="margin-top:20px"><h2>כניסות לכל מתכון</h2><p class="muted">כמה פעמים נכנסו לעמוד של כל מתכון. כניסות שלך מהניהול לא נספרות.</p>${recTable}</div>
     <div class="box" style="margin-top:20px"><h2>הדפסות והורדות של מסמכים</h2><p class="muted">כמה פעמים לחצו על הדפסה או על הורדה בכל מסמך באתר. נספרת לחיצה על הכפתור, ולא ידוע אם ההדפסה הושלמה בפועל. לחיצות שלך מהניהול לא נספרות.</p>${docsTable}</div>
     <div class="box" style="margin-top:20px"><h2>כניסות וזמן שהייה בכל משחק</h2><p class="muted">כמה פעמים נכנסו לכל משחק, וכמה זמן שהו בו בממוצע ובסך הכול. הזמן נמדד רק כשהעמוד פתוח על המסך. כניסות שלך מהניהול לא נספרות.</p>${gamesTable}</div>
