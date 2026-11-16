@@ -67,7 +67,7 @@ function countHit(name, params, path){
   let sec = SECTIONS[name];
   if(name === 'creator') sec = (canPlay(params[0])||params[0]==='battle') ? 'משחקים על המסך שניתנים גם להדפסה' : 'פעילויות להדפסה';
   if(name === 'game'){ const g = findIn('games', params[0]); if(g && !isScreenGame(g)) sec = 'פעילויות להדפסה'; }
-  const hits = [['sec', sec]]; if(name === 'supplier' && params[0]) hits.push(['sup', params[0]]); if(name === 'game' && params[0]) hits.push(['game', params[0]]); if(name === 'recipe' && params[0]) hits.push(['rec', params[0]]);
+  const hits = [['sec', sec]]; if(name === 'supplier' && params[0]) hits.push(['sup', params[0]]); if(name === 'game' && params[0]) hits.push(['game', params[0]]); if(name === 'creator' && params[0] && (canPlay(params[0]) || params[0] === 'battle')) hits.push(['game', 'play-' + params[0]]); if(name === 'recipe' && params[0]) hits.push(['rec', params[0]]);
   const st = store.get('stats', {sec:{}, sup:{}}), today = new Date().toISOString().slice(0,10);
   hits.forEach(([type, id]) => {
     st[type] = st[type] || {};
@@ -1551,14 +1551,17 @@ function statsHTML(st, leads, live){
   const sum = secs.reduce((a,r)=>a+r.o.total, 0);
   const dur = x => { x = Math.round(x || 0); if(!x) return '–'; const m = Math.floor(x/60), s2 = x%60; return m >= 60 ? Math.floor(m/60) + ':' + String(m%60).padStart(2,'0') + ' שע׳' : m + ':' + String(s2).padStart(2,'0') + ' דק׳'; };
   const gz = {total:0, today:0, week:0, uniq:0, secs:0, timed:0}, gs = (st.game || {});
-  const grows = content('games').map(g => ({name:g.title, o:gs[g.id]||gz})).sort((a,b)=>b.o.total-a.o.total);
+  const grows = content('games').map(g => ({name:g.title, o:gs[g.id]||gz})).concat(D.creators.filter(c => canPlay(c.id) || c.id === 'battle').map(c => ({name:c.title + ' (משחק על המסך)', o:gs['play-' + c.id]||gz}))).sort((a,b)=>b.o.total-a.o.total);
   const gmax = Math.max(1, ...grows.map(r=>r.o.total));
   const docName = id => { const [kind, what] = id.split('|'), [t, x] = String(what || '').split(':'); const D2 = (k, i) => (findIn(k, i) || {}).title || i;
     const nm = {howto:() => 'הוראות משחק: ' + D2('games', x), creator:() => 'פעילות להדפסה: ' + D2('games', x), design:() => 'סטודיו: ' + (((D.templates || []).find(z => z.id === x) || {}).title || x), recipe:() => 'מתכון: ' + D2('recipes', x), 'shop-list':() => 'רשימת קניות', 'family-bingo':() => 'בינגו תמונות משפחתיות', 'cards-all':() => 'כל הקלפים הטיפוליים (להדפסה)', 'cards-pdf':() => 'כל הקלפים הטיפוליים (PDF)', guide:() => 'מדריך הקלפים הטיפוליים', card:() => 'קלף טיפולי מספר ' + x};
     return {name:(nm[t] || (() => what))(), kind:kind === 'dl' ? 'הורדה' : 'הדפסה'}; };
-  const drows = Object.entries(st.doc || {}).map(([id, o]) => Object.assign(docName(id), {o})).sort((p, q) => q.o.total - p.o.total);
+  const legacy = id => (st.sec || {})[id];
+  const docAll = Object.assign({}, st.doc || {}); Object.keys(st.sec || {}).filter(id => /^(print|dl)|/.test(id)).forEach(id => { const o = st.sec[id], d = docAll[id] || {total:0, today:0, week:0, uniq:0}; docAll[id] = {total:d.total + o.total, today:d.today + o.today, week:d.week + o.week, uniq:(d.uniq || 0) + (o.uniq || 0)}; });
+  const drows = Object.entries(docAll).map(([id, o]) => Object.assign(docName(id), {o})).sort((p, q) => q.o.total - p.o.total);
   const docsTable = drows.length ? '<div style="overflow:auto"><table class="table stats-t"><tr><th>מסמך</th><th>פעולה</th><th>סה"כ</th><th>היום</th><th>7 ימים</th>' + (live?'<th>מבקרים שונים</th>':'') + '</tr>' + drows.map(r => '<tr><td><b>' + esc(r.name) + '</b></td><td>' + r.kind + '</td><td><b>' + n(r.o.total) + '</b></td><td>' + n(r.o.today) + '</td><td>' + n(r.o.week) + '</td>' + (live?'<td>'+n(r.o.uniq)+'</td>':'') + '</tr>').join('') + '</table></div>' : '<p class="muted">עוד לא הודפס או הורד מסמך.</p>';
-  const rrows = content('recipes').map(x => ({name:x.title, o:(st.rec || {})[x.id] || gz})).sort((p, q) => q.o.total - p.o.total), rmax = Math.max(1, ...rrows.map(r => r.o.total));
+  const addO = (p, q) => !q ? p : {total:(p.total||0) + q.total, today:(p.today||0) + q.today, week:(p.week||0) + q.week, uniq:(p.uniq||0) + (q.uniq||0)};
+  const rrows = content('recipes').map(x => ({name:x.title, o:addO((st.rec || {})[x.id] || gz, legacy(x.id))})).sort((p, q) => q.o.total - p.o.total), rmax = Math.max(1, ...rrows.map(r => r.o.total));
   const recTable = '<div style="overflow:auto"><table class="table stats-t"><tr><th>מתכון</th><th>כניסות</th><th>היום</th><th>7 ימים</th>' + (live?'<th>מבקרים שונים</th>':'') + '</tr>' + rrows.map(r => '<tr><td><b>' + esc(r.name) + '</b><span class="st-bar" style="--w:' + Math.round(r.o.total/rmax*100) + '%"></span></td><td><b>' + n(r.o.total) + '</b></td><td>' + n(r.o.today) + '</td><td>' + n(r.o.week) + '</td>' + (live?'<td>'+n(r.o.uniq)+'</td>':'') + '</tr>').join('') + '</table></div>';
   const gamesTable = '<div style="overflow:auto"><table class="table stats-t"><tr><th>משחק</th><th>כניסות</th><th>היום</th><th>7 ימים</th>' + (live?'<th>מבקרים שונים</th>':'') + '<th>זמן שהייה ממוצע</th><th>סה"כ זמן</th></tr>' + grows.map(r => '<tr><td><b>' + esc(r.name) + '</b><span class="st-bar" style="--w:' + Math.round(r.o.total/gmax*100) + '%"></span></td><td><b>' + n(r.o.total) + '</b></td><td>' + n(r.o.today) + '</td><td>' + n(r.o.week) + '</td>' + (live?'<td>'+n(r.o.uniq)+'</td>':'') + '<td><b>' + dur(r.o.timed ? r.o.secs/r.o.timed : 0) + '</b></td><td>' + dur(r.o.secs) + '</td></tr>').join('') + '</table></div>';
   const A = st.all || {total:sum, today:null, week:null, uniq:null};
@@ -1887,7 +1890,7 @@ function render(){
   app.innerHTML = name ? pages[name](params, q) : notFound(true);
   if(name && pages[name].after) pages[name].after(params, q);
   let isAdmin = false; try{ isAdmin = !!sessionStorage.getItem('madlik_admin'); }catch(e){}
-  gameEnd(); if(name === 'game') gameStart(params[0]);
+  gameEnd(); if(name === 'game') gameStart(params[0]); else if(name === 'creator' && params[0] && (canPlay(params[0]) || params[0] === 'battle')) gameStart('play-' + params[0]);
   if(!isAdmin && !ADMIN_PAGE) countHit(name, params, path);
   if(!ADMIN_PAGE){ const T = {games:'משחקים על המסך שניתנים גם להדפסה', famBingo:'בינגו תמונות משפחתיות', game:'משחק לערב לביבות', create:'פעילויות להדפסה בהתאמה אישית', creator:'יצירת משחק אישי', recipes:'מתכונים לערב לביבות', recipe:'מתכון לביבות', suppliers:'נותני שירות לערב לביבות', supplier:'בעל עסק לערב לביבות', studio:'סטודיו מיתוג', design:'סטודיו מיתוג', edit:'סטודיו מיתוג', advertise:'רוצים לפרסם?', submit:'שליחת רעיון', me:'האזור שלי'}; document.title = T[name] ? T[name] + ' | מדליק' : 'מדליק – כל מה שצריך לערב לביבות | משחקים, מתכונים ומיתוג'; }
   if(!ADMIN_PAGE){ try{ const kind = {game:['games','משחק לערב לביבות'], recipe:['recipes','מתכון לערב לביבות'], supplier:['suppliers','בעל עסק לערב לביבות']}[name]; let it = kind ? findIn(kind[0], params[0]) : null, tail = kind ? kind[1] : '';
