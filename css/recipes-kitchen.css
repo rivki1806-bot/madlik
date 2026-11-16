@@ -147,3 +147,5 @@ html[data-pal] body .kg-plug-t h3{font:600 clamp(1.05rem,1.8vw,1.35rem)/1.3 'Rub
 .gk-two p.gk-soon{grid-column:1/-1;justify-self:center}
 @media (max-width:860px){.gk-credit.gk-two{grid-template-columns:1fr}}
 @media (max-width:640px){.gk-two .gk-auth{flex-direction:column;text-align:center}}
+
+.gk-two p.gk-excl{grid-column:1/-1;justify-self:center;text-align:center;font-size:clamp(1.05rem,1.8vw,1.35rem)}
