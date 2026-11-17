@@ -351,3 +351,10 @@
 #dv:not(.dragging) .design :is(.d-pre,.d-title,.d-sub,.d-body,.d-foot,.d-logo):hover{outline:.2mm dashed rgba(139,92,246,.9);outline-offset:.4mm}
 #dv[data-mode=bg] .design .d-logo:hover,#dv[data-mode=bg] .design :is(.d-pre,.d-title,.d-sub,.d-body,.d-foot):hover{outline:.2mm dashed rgba(139,92,246,.9)!important;cursor:move!important}
 @media (max-width:1100px){.builder{grid-template-columns:1fr!important}.tp-viewport .preview-area{padding:20px!important}}
+
+/* עיפרון לדגימת צבע מהתמונה */
+.ed-lite .tp-drop{display:inline-flex;align-items:center;gap:6px;margin:6px 0 4px;padding:7px 14px;border-radius:999px;border:1.5px dashed var(--tc,#8b5cf6);background:#fff;color:var(--ed-ink,#1c1a3a);font:700 .85rem 'Assistant','Heebo',sans-serif;cursor:pointer;transition:background .2s,transform .2s}
+.ed-lite .tp-drop:hover{transform:translateY(-1px);background:#faf7ff}
+.ed-lite .tp-drop[aria-pressed=true]{background:var(--tc,#8b5cf6);color:#fff;border-style:solid}
+.tp-dropping,.tp-dropping *{cursor:crosshair!important}
+.tp-dropping .design{outline:3px dashed #8b5cf6;outline-offset:4px}

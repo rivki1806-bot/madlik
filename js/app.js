@@ -1025,6 +1025,36 @@ pages.design.after = ([id], q) => {
   $('tpZin').onclick = () => setZoom(zoomK * 1.2); $('tpZout').onclick = () => setZoom(zoomK / 1.2); $('tpZfit').onclick = () => setZoom(1);
   $('tpAddLogo').onclick = () => $('logoIn').click();
 
+/* ---------- עיפרון: דגימת צבע מהתמונה ---------- */
+  const hx = n => ('0' + Math.max(0, Math.min(255, Math.round(n))).toString(16)).slice(-2);
+  const rgbHex = c => { const m = String(c || '').match(/rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)/); return m ? '#' + hx(+m[1]) + hx(+m[2]) + hx(+m[3]) : ''; };
+  let dropFor = '';
+  const dropSet = hex => { const i = $(dropFor); dropEnd(); if(!i || !/^#[0-9a-f]{6}$/i.test(hex)) return; i.value = hex.toLowerCase(); i.dispatchEvent(new Event('input', {bubbles:true})); toast('הצבע נבחר ' + hex.toLowerCase()); };
+  const dropEnd = () => { dropFor = ''; dv.classList.remove('tp-dropping'); f.querySelectorAll('.tp-drop').forEach(b => b.setAttribute('aria-pressed', 'false')); };
+  const imgCache = {};
+  const pixel = (src, x, y) => new Promise(ok => { const go = im => { try{ const c = document.createElement('canvas'); c.width = c.height = 1; const g = c.getContext('2d'); g.drawImage(im, Math.max(0, Math.min(im.naturalWidth - 1, x(im))), Math.max(0, Math.min(im.naturalHeight - 1, y(im))), 1, 1, 0, 0, 1, 1); const d = g.getImageData(0, 0, 1, 1).data; ok('#' + hx(d[0]) + hx(d[1]) + hx(d[2])); }catch(e){ ok(''); } };
+    const im = imgCache[src]; if(im && im.complete && im.naturalWidth) return go(im); const n = imgCache[src] = new Image(); n.onload = () => go(n); n.onerror = () => ok(''); n.src = src; });
+  f.querySelectorAll('.cpick input[type=color]').forEach(inp => { const lb = inp.closest('label'); if(!lb || (lb.nextElementSibling && lb.nextElementSibling.classList.contains('tp-drop'))) return;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tp-drop'; b.dataset.drop = inp.id; b.setAttribute('aria-pressed', 'false'); b.title = 'בוחרים צבע מתוך התמונה'; b.innerHTML = '<span aria-hidden="true">✏️</span> דגימת צבע מהתמונה'; lb.after(b); });
+  dv.addEventListener('pointerdown', async e => {
+    if(!dropFor) return; e.preventDefault(); e.stopPropagation();
+    const d = e.target.closest('.design'); if(!d){ dropEnd(); return; }
+    const lg = e.target.closest('.d-logo'), rc = (lg || d).getBoundingClientRect(), fx = (e.clientX - rc.left) / rc.width, fy = (e.clientY - rc.top) / rc.height;
+    if(lg) return dropSet(await pixel(lg.src, im => fx * im.naturalWidth, im => fy * im.naturalHeight));
+    if(e.target.closest(TXT)) return dropSet(rgbHex(getComputedStyle(e.target).color));
+    const st = tpStyle(s);
+    if(!st || !d.classList.contains('styled')) return dropSet(rgbHex(getComputedStyle(d).backgroundColor));
+    const g = bgInfo(t, s, st), byH = /^auto/.test(g.size), mx = fx * t.w, my = fy * t.h;
+    dropSet(await pixel(st.img, im => { const w = byH ? g.ih * im.naturalWidth / im.naturalHeight : g.iw; return (mx - (t.w - w) * g.px / 100) / w * im.naturalWidth; },
+      im => { const h = byH ? g.ih : g.iw * im.naturalHeight / im.naturalWidth; return (my - (t.h - h) * g.py / 100) / h * im.naturalHeight; }));
+  }, true);
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && dropFor) dropEnd(); });
+  async function dropStart(id, btn){
+    if(window.EyeDropper){ try{ const r = await new EyeDropper().open(); dropFor = id; dropSet(r.sRGBHex.length === 7 ? r.sRGBHex : rgbHex(r.sRGBHex)); }catch(e){} return; }
+    if(dropFor === id){ dropEnd(); return; }
+    dropFor = id; dv.classList.add('tp-dropping'); btn.setAttribute('aria-pressed', 'true'); toast('לוחצים על המקום בתמונה שממנו רוצים את הצבע');
+  }
+
 /* ---------- אירועי הטופס ---------- */
   f.oninput = e => {
     const el = e.target;
@@ -1038,6 +1068,7 @@ pages.design.after = ([id], q) => {
   f.onclick = e => {
     const b = e.target.closest('button'); if(!b) return;
     if(b.dataset.tab){ setTab(b.dataset.tab); return; }
+    if(b.dataset.drop){ dropStart(b.dataset.drop, b); return; }
     if(b.dataset.style !== undefined){ s.style = b.dataset.style; s.bx = ''; s.by = ''; s.bz = 100; if(s.style && !D.fonts.find(x => x.id === s.font) && !(F && F.BY[s.font])) s.font = 'suez'; syncUI(); draw(); push(); return; }
     if(b.dataset.theme){ s.theme = b.dataset.theme; s.bgc = ''; syncUI(); draw(); push(); return; }
     if(b.dataset.ct){ ctarget = b.dataset.ct; syncColor(); return; }
