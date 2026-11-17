@@ -792,7 +792,8 @@ pages.design = ([id], q) => {
         <div class="tp-grp"><h4>שפה עיצובית</h4><div class="st-pick" id="stPick">${styles.map(x=>`<button type="button" class="stp ${s.style===x.id?'on':''}" data-style="${esc(x.id)}" title="${esc(x.name)}"><img src="${esc(x.thumb||x.img)}" alt="${esc(x.name)}" loading="lazy"></button>`).join('')}<button type="button" class="stp stp-plain ${s.style?'':'on'}" data-style="" title="בלי תמונה">בלי</button></div></div>
         <div id="bgBox" class="tp-grp"><h4>מיקום ותמונה</h4>${rng('bz', 'זום הרקע', 100, 320, +s.bz || 100, '%', 'אפשר גם לגלול עם גלגל העכבר מעל התמונה')}${rng('bb', 'בהירות הרקע', -60, 60, +s.bb || 0, '', 'שלילי מכהה את התמונה, חיובי מבהיר אותה')}
           <div class="tp-bgrow"><span class="tp-tip">גוררים את התמונה בתצוגה כדי להזיז אותה בתוך המוצר</span><button type="button" class="tp-ib" id="tpBgReset">איפוס רקע</button></div></div>
-        <div id="themeBox" class="tp-grp"><h4>ערכת צבעים</h4><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div></div>
+        <div class="tp-grp"><h4>רקע בצבע חופשי</h4><label class="pc pc-c"><span>צבע הרקע</span><span class="cpick" style="--c:#ffffff"><input type="color" id="tpBgc" value="#ffffff" aria-label="צבע רקע חופשי"><code>#ffffff</code></span></label><span class="tp-tip">בוחרים כל צבע שרוצים. בחירת צבע מחליפה את התמונה ברקע חלק.</span></div>
+        <div id="themeBox" class="tp-grp"><h4>ערכות צבעים מוכנות</h4><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div></div>
 
       <div class="tp-pane" data-pane="view" style="--tc:${T.view.col}" hidden>${head(T.view)}
         <div class="tp-grp"><label><span class="fl">לוגו או תמונה<em>לא חובה, מופיע בראש הטקסט</em></span><input type="file" accept="image/*" id="logoIn"></label></div>
@@ -879,6 +880,7 @@ pages.design.after = ([id], q) => {
     f.querySelectorAll('.stp').forEach(b => b.classList.toggle('on', b.dataset.style === (s.style || '')));
     f.querySelectorAll('.swatch').forEach(b => b.classList.toggle('on', b.dataset.theme === s.theme));
     f.querySelectorAll('[data-pos]').forEach(b => b.setAttribute('aria-pressed', (s.pos || '') === b.dataset.pos));
+    { const th0 = D.themes.find(x => x.id === s.theme) || D.themes[0], bi = $('tpBgc'), bv = String(s.bgc || th0.bg || '#ffffff'); if(bi && /^#[0-9a-f]{6}$/i.test(bv)){ bi.value = bv; bi.parentNode.style.setProperty('--c', bv); bi.nextElementSibling.textContent = bv; } }
     syncFont(); syncColor(); syncPlate(); showBoxes();
   }
 
@@ -1028,6 +1030,7 @@ pages.design.after = ([id], q) => {
     const el = e.target;
     if(el.dataset.sk){ s[el.dataset.sk] = +el.value; setRange(el, +el.value); draw(); push(); return; }
     if(el.id === 'tpColor'){ s[ctarget] = el.value; syncColor(); draw(); push(); return; }
+    if(el.id === 'tpBgc'){ s.bgc = el.value; if(s.style){ s.style = ''; s.bx = ''; s.by = ''; s.bz = 100; } syncUI(); draw(); push(); return; }
     if(el.id === 'tpPcol'){ s.pcol = el.value; syncPlate(); draw(); push(); return; }
     if(el.id === 'zm' || el.id === 'logoIn') return;
     draw(); push();
@@ -1036,7 +1039,7 @@ pages.design.after = ([id], q) => {
     const b = e.target.closest('button'); if(!b) return;
     if(b.dataset.tab){ setTab(b.dataset.tab); return; }
     if(b.dataset.style !== undefined){ s.style = b.dataset.style; s.bx = ''; s.by = ''; s.bz = 100; if(s.style && !D.fonts.find(x => x.id === s.font) && !(F && F.BY[s.font])) s.font = 'suez'; syncUI(); draw(); push(); return; }
-    if(b.dataset.theme){ s.theme = b.dataset.theme; syncUI(); draw(); push(); return; }
+    if(b.dataset.theme){ s.theme = b.dataset.theme; s.bgc = ''; syncUI(); draw(); push(); return; }
     if(b.dataset.ct){ ctarget = b.dataset.ct; syncColor(); return; }
     if(b.dataset.sw){ s[ctarget] = b.dataset.sw; syncColor(); draw(); push(); return; }
     if(b.dataset.psw){ s.pcol = b.dataset.psw; syncPlate(); draw(); push(); return; }
@@ -1157,7 +1160,7 @@ function designHTML(t, s, logo){
       </div></div>`;
   } else {
     const th = D.themes.find(x=>x.id===s.theme)||D.themes[0], tc = s.tcol || th.title, ic = s.icol || th.ink;
-    one = `<div class="design${tshadow} ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${th.bg};--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || th.acc};--d-font:${fnt}${typo};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
+    one = `<div class="design${tshadow} ${t.round?'round':''}" style="width:${t.w}mm;height:${t.h}mm;font-size:${em}mm;--d-bg:${/^#[0-9a-f]{6}$/i.test(s.bgc || '') ? s.bgc : th.bg};--d-ink:${ic};--d-title:${tc};--d-acc:${s.icol || th.acc};--d-font:${fnt}${typo};--d-r:${t.round?'50%':'6px'}${t.css?';'+t.css:''}">
     ${t.nofr?'':'<div class="d-frame"></div>'}
     ${logoImg}<div class="d-txt d-tg" style="${tg}">
     ${s.pre?`<div class="d-pre">${esc(s.pre)}</div>`:''}
