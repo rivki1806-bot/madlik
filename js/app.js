@@ -110,7 +110,7 @@ document.addEventListener('click', e => {
   const map = {printHow:['print','howto:'+id], doPrint:['print','creator:'+id], dPrint:['print','design:'+id], dPng:['dl','design:'+id], rPrint:['print','recipe:'+id], shopPrint:['print','shop-list'], mnPrintAll:['print','cards-all'], mnPdf:['dl','cards-pdf'], mnGuidePrint:['print','guide'], mnGuidePdf:['dl','guide'], fbnPrint:['print','family-bingo']};
   const m = map[b.id]; if(m) countDoc(m[0], m[1]);
 }, true);
-let remote = store.get('remote_content', null);
+let remote = store.get('remote_content', null), remoteFresh = false; // remoteFresh: השרת ענה בגלישה הזו (בנטפרי חמור השרת חסום, ונשארת רק שמירה ישנה)
 /* תמונות מהניהול נשמרות בחתיכות בגיליון (בלי קוד נוסף של גוגל): כאן מחברים אותן חזרה לתמונה אחת */
 function assembleImgs(items){
   const sup = (items && items.suppliers) || [], ch = {}, keep = [];
@@ -120,7 +120,7 @@ function assembleImgs(items){
 }
 function refreshRemote(){
   if(!API()) return Promise.resolve();
-  return fetch(API()+'?action=content').then(r=>r.json()).then(r=>{ if(r.ok){ remote = assembleImgs(r.items); store.set('remote_content', remote); } });
+  return fetch(API()+'?action=content').then(r=>r.json()).then(r=>{ if(r.ok){ remote = assembleImgs(r.items); remoteFresh = true; store.set('remote_content', remote); } });
 }
 function loadRemote(){
   const before = JSON.stringify(remote);
@@ -167,6 +167,7 @@ const content = k => {
   const base = D[k]||[], add = addedContent(k);
   if(k === 'suppliers'){ const live = x => x.active !== false && !(x.until && Date.now() > new Date(x.until + 'T23:59:59+02:00').getTime()); const real = add.filter(live), snap = (window.MADLIK_BIZ || []).filter(live);
     if(API() && !remote) return snap.length ? snap : base; // השרת עוד לא ענה: מציגים את העסקים האמיתיים משמירה אחרונה, ולא דוגמאות
+    if(API() && !remoteFresh && snap.length){ const ids = new Set(snap.map(x => String(x.id))); return snap.concat(real.filter(x => !ids.has(String(x.id)))); } // שמירה ישנה + רשימה מעודכנת מהאתר, כדי שלא יחסרו עסקים
     return real.length ? real : (API() && remote ? [] : base); } // כשיש עסק אמיתי אחד לפחות, כרטיסי הדוגמה מוסתרים
   return base.concat(add);
 };
