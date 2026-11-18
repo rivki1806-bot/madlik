@@ -6,3 +6,9 @@ window.MADLIK_API2 = '';
 
 // תשלום אוטומטי בעמוד הפרסום (סאמיט). מפעילים (true) רק אחרי שהקוד בגוגל עודכן והמפתחות הוגדרו.
 window.MADLIK_PAY = false;
+
+// קישורים לדפי תשלום בסאמיט (בלי API). ריק = הכפתור לתכנית הזו לא פעיל עדיין.
+window.MADLIK_PAY_LINKS = {
+  Basic: 'https://pay.sumit.co.il/xjje4g/17eusia/17eusib/payment/',
+  Premium: 'https://pay.sumit.co.il/xjje4g/17eusm8/17eusm9/payment/'
+};

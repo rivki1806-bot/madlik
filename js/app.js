@@ -1283,12 +1283,14 @@ function adBlock(){
       <label>איזו תכנית מעניינת אתכם?<select name="pkg"><option>עוד לא יודעים</option>${PLANS.map(p=>`<option>${p.id}</option>`).join('')}</select></label>
       <label>על העסק<textarea name="msg"></textarea></label>
       <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-      ${window.MADLIK_PAY ? '<div class="ad-payrow"><button type="button" class="btn btn-gold ad-pay" id="adPay"><span>לתשלום מאובטח ופרסום מיידי</span><i aria-hidden="true">←</i></button><p class="ad-payhint" id="adPayHint">בוחרים תכנית Basic או Premium ומשלמים בכרטיס אשראי. אחרי התשלום העסק מתפרסם מיד, עד סוף חנוכה. המחירים כוללים מע"מ.</p></div>' : ''}
-      <button class="btn ${window.MADLIK_PAY ? 'btn-light' : 'btn-gold'}">${window.MADLIK_PAY ? 'אני מעדיף שתחזרו אליי (בלי תשלום עכשיו)' : 'שליחה'}</button>
+      ${payOn() ? '<div class="ad-payrow"><button type="button" class="btn btn-gold ad-pay" id="adPay"><span>לתשלום מאובטח</span><i aria-hidden="true">←</i></button><p class="ad-payhint" id="adPayHint">בוחרים תכנית Basic או Premium ומשלמים בכרטיס אשראי. ' + (window.MADLIK_PAY ? 'אחרי התשלום העסק מתפרסם מיד, עד סוף חנוכה.' : 'אחרי התשלום נעלה את העסק לאתר תוך יום עבודה, עד סוף חנוכה.') + ' המחירים כוללים מע"מ.</p></div>' : ''}
+      <button class="btn ${payOn() ? 'btn-light' : 'btn-gold'}">${payOn() ? 'אני מעדיף שתחזרו אליי (בלי תשלום עכשיו)' : 'שליחה'}</button>
       <p class="hint">ההודעה מגיעה ישירות אלינו, ונחזור אליכם בהקדם.</p>
     </form>
   </section>`;
 }
+const payLinks = () => window.MADLIK_PAY_LINKS || {};
+const payOn = () => !!window.MADLIK_PAY || Object.values(payLinks()).some(Boolean);
 function sendToOwner(d){
   const body = Object.assign({_subject:'בקשת פרסום חדשה במדליק: '+(d.biz||''), _template:'table', _captcha:'false'}, d);
   return fetch('https://formsubmit.co/ajax/'+ADS_EMAIL, {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(body)})
@@ -1298,7 +1300,7 @@ function adBlockAfter(){
   const f = document.getElementById('af'); if(!f) return;
   const payBtn = document.getElementById('adPay'), payHint = document.getElementById('adPayHint');
   const PAYABLE = {Basic:'300 ₪', Premium:'800 ₪'};
-  const syncPay = () => { const p = PAYABLE[f.pkg.value]; payBtn.querySelector('span').textContent = p ? 'לתשלום של ' + p + ' ופרסום מיידי' : 'לתשלום מאובטח ופרסום מיידי'; };
+  const syncPay = () => { const p = PAYABLE[f.pkg.value]; payBtn.querySelector('span').textContent = (p ? 'לתשלום מאובטח של ' + p : 'לתשלום מאובטח') + (window.MADLIK_PAY ? ' ופרסום מיידי' : ''); };
   if(payBtn){ f.pkg.addEventListener('change', syncPay); document.querySelectorAll('[data-plan]').forEach(b => b.addEventListener('click', () => setTimeout(syncPay, 0))); syncPay(); }
   if(payBtn) payBtn.onclick = () => {
     const v = Object.fromEntries(new FormData(f)); payHint.classList.remove('err');
@@ -1306,6 +1308,9 @@ function adBlockAfter(){
     if(!PAYABLE[v.pkg]) return bad('לתשלום באתר בוחרים תכנית Basic או Premium. לתכנית Pro פונים אלינו.');
     if(!String(v.biz || '').trim() || !String(v.name || '').trim() || !String(v.phone || '').trim()) return bad('חסרים שם העסק, איש קשר וטלפון');
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v.email || '').trim())) return bad('כתובת המייל לא תקינה');
+    if(!window.MADLIK_PAY){ const link = payLinks()[v.pkg]; if(!link) return bad('התשלום באתר לתכנית ' + v.pkg + ' יפתח בקרוב. בינתיים אפשר לשלוח לנו את הפרטים בכפתור למטה.');
+      const data = Object.assign({}, v); delete data._honey; data.pay = 'עבר לדף תשלום (' + v.pkg + ')'; record('ads', data); sendToOwner(Object.assign({}, data, {_subject:'עבר לתשלום במדליק: ' + (data.biz || '') + ' (' + v.pkg + ')'})).catch(() => {});
+      payBtn.disabled = true; payHint.textContent = 'מעבירים אותך לדף תשלום מאובטח...'; setTimeout(() => { location.href = link; }, 400); return; }
     if(!API()) return bad('התשלום עוד לא מחובר. אפשר לשלוח לנו את הפרטים בכפתור למטה.');
     payBtn.disabled = true; payHint.textContent = 'מעבירים אותך לדף תשלום מאובטח...';
     apiPost({action:'startPay', plan:v.pkg, biz:v.biz, name:v.name, phone:v.phone, email:v.email, cat:v.cat, region:v.region, msg:v.msg})
@@ -1463,6 +1468,7 @@ pages.paid.after = (p, q) => {
   const card = document.getElementById('payCard'); if(!card) return;
   const ad = q.ad, pid = q['OG-PaymentID'] || q.OG_PaymentID;
   const show = (ico, title, text, extra) => { card.innerHTML = '<div class="pay-ico" aria-hidden="true">' + ico + '</div><h1>' + title + '</h1><p>' + text + '</p>' + (extra || '<a class="btn btn-gold" href="#/">לעמוד הבית</a>'); };
+  if(!ad && !pid) return show('🎉', 'תודה! התשלום התקבל', 'נעלה את העסק לאתר מדליק תוך יום עבודה, ונשלח לך הודעה כשהוא באוויר. החשבונית נשלחת אליך במייל מסאמיט. רוצים להוסיף תמונה או קישור? פשוט כתבו לנו.', '<a class="btn btn-gold" href="mailto:' + ADS_EMAIL + '">כתבו לנו</a> <a class="btn btn-light" href="#/">לעמוד הבית</a>');
   if(!ad || !pid || !API()) return show('❓', 'לא מצאנו פרטי תשלום', 'אם שילמת ועדיין לא קיבלת אישור, כתבי לנו ונטפל בזה מיד.', '<a class="btn btn-gold" href="mailto:' + ADS_EMAIL + '">כתבו לנו</a>');
   apiPost({action:'confirmPay', ad, paymentId:pid}).then(r => {
     if(!r.ok) throw new Error(r.error || 'שגיאה');
