@@ -2057,7 +2057,7 @@ loadRemote();
 /* ---------- פופאפ מבצע: תיבת האוצר המשפחתית (Whoo-Aha), 10% הנחה למשפחות מדליק ---------- */
 (function promoOtzar(){
   const UNTIL = new Date('2026-12-14T00:00:00+02:00').getTime(); // עד סוף חנוכה
-  const LINK = 'https://mrng.to/CZMZtxp0Ju', SUP = 'bmwb6fpdl', KEY = 'promo_otzar_closed', AGAIN = 3 * 864e5;
+  const SUP = 'bmwi4bopc', KEY = 'promo_otzar_closed', AGAIN = 3 * 864e5;
   if(ADMIN_PAGE || Date.now() >= UNTIL) return;
   try{ if(sessionStorage.getItem('madlik_' + KEY)) return; }catch(e){} // מופיע בכל גלישה חדשה; מי שסגר לא רואה שוב באותה גלישה
   let tries = 0;
@@ -2065,15 +2065,13 @@ loadRemote();
   const show = () => {
     if(busy()){ if(tries++ < 20) setTimeout(show, 4000); return; }
     const ov = document.createElement('div'); ov.className = 'promo-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'prT');
-    ov.innerHTML = '<div class="promo-card"><button type="button" class="promo-x" aria-label="סגירה">×</button>' +
-      '<div class="promo-hero"><img src="img/promo/otzar-treasure.webp" alt="תיבת אוצר עתיקה במרתף מואר נרות" width="920" height="513"><i class="ph-glow" aria-hidden="true"></i><i class="ph-dust d1" aria-hidden="true"></i><i class="ph-dust d2" aria-hidden="true"></i><i class="ph-dust d3" aria-hidden="true"></i><span class="ph-badge" aria-hidden="true">10%<small>הנחה</small></span></div>' +
-      '<p class="promo-kick">מבצע כסלו</p>' +
-      '<h2 id="prT">רק למגיעים דרך אתר מדליק</h2>' +
-      '<p class="promo-txt">השנה, ערב הלביבות שלכם נגמר בצעקות של <b>"מצאנו!"</b><br><b>תיבת האוצר המשפחתית</b> היא חדר בריחה דיגיטלי שבנוי כולו מהמשפחה שלכם: השמות, התאריכים, התמונות והסיפורים שלכם הופכים לחידות. מי שלא מהמשפחה, לא יפתור.</p>' +
-      '<ul class="promo-facts"><li>14 תחנות</li><li>מהדפדפן, בלי התקנה</li><li>לכל המשפחה</li></ul>' +
-      '<div class="promo-price"><s>150 ₪</s><b>135 ₪</b><span>10% הנחה</span></div>' +
-      '<a class="promo-go" href="' + LINK + '" target="_blank" rel="noopener noreferrer sponsored"><span>אני רוצה את האוצר שלנו</span><i aria-hidden="true">←</i></a>' +
-      '<p class="promo-small">ההנחה רק למי שנכנס מכאן · המשחק מוכן תוך כמה דקות ממילוי הטופס · <bdi>Whoo-Aha</bdi> חדרי בריחה דיגיטליים</p></div>';
+    ov.innerHTML = '<div class="promo-card promo-nuget"><button type="button" class="promo-x" aria-label="סגירה">×</button>' +
+      '<div class="promo-hero"><img src="img/promo/nuget-hanukkah.webp" alt="משפחה סביב שולחן חנוכה עם סופגניות ומנות של נוגט" width="920" height="614"><span class="ph-badge" aria-hidden="true">10%<small>הנחה</small></span></div>' +
+      '<p class="promo-kick">מבצע חנוכה</p>' +
+      '<h2 id="prT">למגיעים דרך אתר מדליק</h2>' +
+      '<p class="promo-txt promo-big">בקנייה מעל <b>100 ₪</b> תקבלו <b>10% הנחה</b></p>' +
+      '<a class="promo-go" href="#/supplier/bmwi4bopc"><span>לחנות נוגט</span><i aria-hidden="true">←</i></a>' +
+      '<p class="promo-small">ההנחה למי שהגיע דרך אתר מדליק</p></div>';
     document.body.appendChild(ov); document.body.classList.add('bn-lock');
     const close = () => { try{ sessionStorage.setItem('madlik_' + KEY, '1'); }catch(e){} document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 260); };
     const key = e => { if(e.key === 'Escape') close(); };

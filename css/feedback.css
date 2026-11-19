@@ -253,3 +253,11 @@ html[data-pal=logo] .ad-card:not(.ad-img){padding-top:40px!important}
 
 /* סרגל עדכון בלשונית הכניסות */
 .st-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:8px 14px;border-radius:14px;background:#fff3d6;border:1px solid #ffd27a}
+/* פופאפ נוגט: התמונה מוצגת מלאה, בלי חיתוך */
+.promo-card.promo-nuget{width:min(100%,520px)}
+.promo-nuget .promo-hero{height:auto!important;aspect-ratio:3/2}
+.promo-nuget .promo-hero img{object-position:center;animation:none;transform:none}
+.promo-nuget .promo-hero::after{background:linear-gradient(180deg,rgba(255,246,220,0) 80%,#fff6dc 100%)}
+.promo-nuget .promo-big{font:600 clamp(1.25rem,4.4vw,1.6rem)/1.4 'Rubik',sans-serif;margin:0 0 16px}
+.promo-nuget .promo-big b{font-weight:900;font-size:1.15em}
+@media (max-height:720px){.promo-nuget .promo-hero{aspect-ratio:2/1}.promo-nuget .promo-hero img{object-fit:cover}}
