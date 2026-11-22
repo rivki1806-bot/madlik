@@ -89,7 +89,7 @@ function showRules(type, o){
     <div class="rules-grid">
       ${R.need ? `<section class="r-need"><h3><i>◆</i>מה צריך</h3><ul>${li(R.need)}</ul></section>` : ''}
       <section class="r-steps"><h3><i>➜</i>מהלך המשחק</h3><ol>${li(R.steps)}</ol></section>
-      ${R.ok ? `<section class="r-ok"><h3><i>✓</i>${type === 'cipher' ? 'סוגי צפנים' : 'מותר'}</h3><ul>${li(R.ok)}</ul></section>` : ''}
+      ${R.ok ? `<section class="r-ok"><h3><i>✓</i>${R.okTitle || (type === 'cipher' ? 'סוגי צפנים' : 'מותר')}</h3><ul>${li(R.ok)}</ul></section>` : ''}
       ${R.no ? `<section class="r-no"><h3><i>✕</i>אסור</h3><ul>${li(R.no)}</ul></section>` : ''}
       ${R.score ? `<section class="r-score"><h3><i>🏆</i>ניקוד וניצחון</h3><ul>${li(R.score)}</ul></section>` : ''}
     </div>
