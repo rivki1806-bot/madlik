@@ -443,3 +443,11 @@ body[data-world=create] .sec-h{color:#10264d!important}
 .card-art{width:auto;height:118px;max-width:88%;display:block;filter:drop-shadow(0 6px 0 rgba(16,38,77,.18));transition:transform .45s cubic-bezier(.2,1.4,.4,1)}
 .card:hover .card-art{transform:translateY(-5px) rotate(-2deg) scale(1.05)}
 @media (prefers-reduced-motion:reduce){.card:hover .card-art{transform:none}}
+/* קרב המילים: תיבה נפרדת לכל אתגר */
+.bt-mine{margin:12px 0;padding:14px 16px;border-radius:18px;background:#f5f7ff;border:2px dashed #c9d0f5}
+.bt-mine-h{margin:0 0 4px;font-weight:800;color:#1b2063;font-size:1.1rem}
+.bt-mine-h .hint{display:block;font-weight:500;font-style:normal;color:#5b6d8f;font-size:.95rem}
+.bt-mine .bt-ta{background:#fff;border-radius:14px;padding:10px 12px;margin:10px 0 0}
+.bt-mine .bt-ta .hint{font-style:normal}
+.bt-mine .gp-link{display:inline!important;margin:0!important}
+.bt-mine > .bt-cnt{margin:10px 0 0;text-align:center}

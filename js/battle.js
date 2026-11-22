@@ -32,9 +32,37 @@ const TYPES = {
   blitz:  {n:'אתגר בזק', d:'כמה שיותר דברים שמתאימים לקטגוריה. כל תשובה טובה שווה נקודה.'},
   memory: {n:'זיכרון', d:'מילים מופיעות לכמה שניות ונעלמות. כמה תזכרו?'}
 };
-const POOL_KEY = 'madlik_battle_pool';
-const loadPool = () => { try{ return localStorage.getItem(POOL_KEY) || ''; }catch(e){ return ''; } };
-const savePool = t => { try{ localStorage.setItem(POOL_KEY, t); return true; }catch(e){ return false; } };
+/* המאגר האישי נשמר בדפדפן: מילים, טאבו, שלישיות "מה הקשר" וקטגוריות לאתגר בזק */
+const POOL_KEY = 'madlik_battle_pool', POOL2_KEY = 'madlik_battle_pool2';
+const EMPTY_POOL = {words:'', taboo:'', links:'', cats:''};
+const loadPool = () => {
+  try{ const j = localStorage.getItem(POOL2_KEY); if(j) return Object.assign({}, EMPTY_POOL, JSON.parse(j)); }catch(e){}
+  try{ const w = localStorage.getItem(POOL_KEY) || ''; return w ? Object.assign({}, EMPTY_POOL, {words:w}) : null; }catch(e){ return null; }
+};
+const savePool = p => { try{ localStorage.setItem(POOL2_KEY, JSON.stringify(p)); localStorage.setItem(POOL_KEY, p.words || ''); return true; }catch(e){ return false; } };
+const hasPool = p => !!(p && (p.words || p.taboo || p.links || p.cats).trim());
+const lines = text => String(text || '').split(/\n/).map(l => l.trim()).filter(Boolean);
+const splitList = s => s.split(/[,،+\/]/).map(x => x.trim()).filter(Boolean);
+
+/* טאבו: "מילה: אסורה, אסורה". מקבלים גם מקף או קו מפריד במקום נקודתיים */
+function parseTaboo(text){
+  const out = [], seen = new Set();
+  lines(text).forEach(l => {
+    const m = l.match(/^(.+?)\s*(?::|\s[-–—]\s|\|)\s*(.*)$/);
+    const w = (m ? m[1] : l).trim(), t = m ? splitList(m[2]) : [];
+    if(w && !seen.has(w)){ seen.add(w); out.push({w, taboo:t, mine:true}); }
+  });
+  return out;
+}
+/* מה הקשר: "מילה, מילה, מילה = התשובה" (אפשר גם נקודתיים במקום =) */
+function parseLinks(text){
+  return lines(text).map(l => {
+    const i = l.search(/[=:]/), ws = splitList(i >= 0 ? l.slice(0, i) : l), a = i >= 0 ? l.slice(i + 1).trim() : '';
+    return ws.length >= 2 ? {ws, a} : null;
+  }).filter(Boolean);
+}
+/* אתגר בזק: קטגוריה בכל שורה, או עם פסיקים */
+const parseCats = text => [...new Set(lines(text).flatMap(l => l.split(/[,،]/).map(x => x.trim()).filter(Boolean)))];
 
 /* מילים אישיות: שורה אחת או פסיקים. לטאבו: "מילה: אסורה, אסורה" */
 function parseWords(text){
@@ -53,15 +81,23 @@ function tabooFor(x){
 
 /* ======================= המשחק ======================= */
 function play(initial){
-  const o = P.ov('gp-battle'), saved = loadPool();
-  const B = {src: (initial && initial.trim()) ? 'mix' : (saved ? 'mix' : 'bank'), text: (initial && initial.trim()) ? initial : saved, level:'medium', time:30, size:40, rounds:3,
-    types:new Set(Object.keys(TYPES)), n:2, names:P.TEAM_NAMES.slice(), teams:[], turn:0, roundNo:1, deck:[], all:[], last:null, log:[], pts:0};
+  const o = P.ov('gp-battle'), saved = loadPool(), hasInit = !!(initial && initial.trim());
+  const sv = hasPool(saved) ? saved : EMPTY_POOL;
+  const B = {src: (hasInit || hasPool(saved)) ? 'mix' : 'bank', text: hasInit ? initial : sv.words, tabooText: sv.taboo, linksText: sv.links, catsText: sv.cats, level:'medium', time:30, size:40, rounds:3,
+    types:new Set(Object.keys(TYPES)), n:2, names:P.TEAM_NAMES.slice(), teams:[], turn:0, roundNo:1, deck:[], all:[], tdeck:[], tall:[], ldeck:[], cdeck:[], last:null, log:[], pts:0};
   const bar = o.el.querySelector('.gp-bar');
   bar.insertAdjacentHTML('afterbegin', '<button class="gp-wordsbtn" hidden>המילים במשחק (<b>0</b>)</button>');
   const wordsBtn = bar.querySelector('.gp-wordsbtn');
   const mine = () => parseWords(B.text);
+  const myTaboo = () => parseTaboo(B.tabooText);
+  const myLinks = () => parseLinks(B.linksText);
+  const myCats = () => parseCats(B.catsText);
+  const curPool = () => ({words:B.text, taboo:B.tabooText, links:B.linksText, cats:B.catsText});
   const bankFor = () => BANK.filter(x => B.level === 'hard' || (B.level === 'medium' ? x.lvl !== 'hard' : x.lvl === 'easy'));
   const count = () => B.src === 'bank' ? bankFor().length : B.src === 'mine' ? mine().length : bankFor().length + mine().length;
+  /* מה ייכנס לכל אתגר, לפי המאגר שבחרו */
+  const linkPool = () => { const m = myLinks().map(l => ({w:l.ws, a:l.a})), b = LINKS.map(l => ({w:l.slice(0, 3), a:l[3]})); return B.src === 'bank' ? b : B.src === 'mine' ? m : b.concat(m); };
+  const catPool = () => { const m = myCats(); return B.src === 'bank' ? CATS.slice() : B.src === 'mine' ? (m.length ? m : CATS.slice()) : CATS.concat(m.filter(c => !CATS.includes(c))); };
   function updWords(){ wordsBtn.querySelector('b').textContent = B.all.length; }
 
   /* --- מסך ההגדרות --- */
@@ -69,9 +105,16 @@ function play(initial){
     const opt = (v, t, d) => `<button class="bt-src ${B.src === v ? 'on' : ''}" data-src="${v}" aria-pressed="${B.src === v}"><b>${t}</b><span>${d}</span></button>`;
     o.body.innerHTML = `<div class="gp-card gp-setup bt-setup"><p class="gp-kick">קרב המילים</p><h2>איך תרצו לשחק?</h2>
       <div class="bt-srcs">${opt('bank','מאגר מילים מוכן',`${bankFor().length} מילים לחנוכה, ברמה ${LEVEL[B.level]}`)}${opt('mine','מאגר מילים אישי','שמות, מקומות, בדיחות פנימיות. מה שתרצו')}${opt('mix','לערבב','המאגר המוכן ועוד המילים שלכם')}</div>
-      ${B.src !== 'bank' ? `<label class="bt-ta"><span>המילים שלכם <i class="hint">אפשר להדביק גם 100 מילים בבת אחת: שורה לכל מילה או עם פסיקים. לטאבו: מילה: אסורה, אסורה</i></span>
-        <textarea id="btText" rows="6" placeholder="שרה, הדודה רחל, הכינרת, הלביבה של סבתא...">${esc(B.text)}</textarea>
-        <span class="bt-cnt"><b id="btMine">${mine().length}</b> מילים שלכם · <button class="gp-link" data-go="save">שמירת המאגר לפעם הבאה</button>${loadPool() ? ' · <button class="gp-link" data-go="load">טעינת המאגר השמור</button>' : ''}</span></label>` : ''}
+      ${B.src !== 'bank' ? `<div class="bt-mine"><p class="bt-mine-h">המילים שלכם לכל אתגר <i class="hint">אפשר למלא רק חלק. אתגר בלי מילים שלכם ישתמש ${B.src === 'mine' ? 'במילים מהתיבה הראשונה או במאגר המוכן' : 'במאגר המוכן'}.</i></p>
+        <label class="bt-ta"><span>🗣️ הסבר במילים אחרות, פנטומימה וזיכרון <i class="hint">שורה לכל מילה, או עם פסיקים. אפשר להדביק גם 100 מילים בבת אחת.</i></span>
+          <textarea id="btText" rows="5" placeholder="שרה, הדודה רחל, הכינרת, הלביבה של סבתא...">${esc(B.text)}</textarea><span class="bt-cnt"><b id="btMine">${mine().length}</b> מילים</span></label>
+        <label class="bt-ta"><span>🚫 טאבו <i class="hint">שורה לכל מילה: קודם המילה, אחריה נקודתיים, ואז המילים שאסור להגיד עם פסיקים.</i></span>
+          <textarea id="btTaboo" rows="4" placeholder="סביבון: לסובב, משחק, אותיות&#10;סופגנייה: ריבה, בצק, לטגן">${esc(B.tabooText)}</textarea><span class="bt-cnt"><b id="btTabooN">${myTaboo().length}</b> מילים לטאבו</span></label>
+        <label class="bt-ta"><span>🔗 מה הקשר? <i class="hint">שורה לכל שלישייה: שלוש מילים עם פסיקים, אחריהן = ואז התשובה. התשובה מוסתרת, ונחשפת בלחיצה על "גילוי".</i></span>
+          <textarea id="btLinks" rows="4" placeholder="שמש, פתילה, גפרור = הדלקת נרות&#10;ריבה, אבקת סוכר, בצק = סופגנייה">${esc(B.linksText)}</textarea><span class="bt-cnt"><b id="btLinksN">${myLinks().length}</b> שלישיות</span></label>
+        <label class="bt-ta"><span>⚡ אתגר בזק <i class="hint">קטגוריה בכל שורה. הקבוצה אומרת כמה שיותר דברים מהקטגוריה.</i></span>
+          <textarea id="btCats" rows="4" placeholder="דברים שיש בבית של סבתא&#10;שמות של בני הדודים">${esc(B.catsText)}</textarea><span class="bt-cnt"><b id="btCatsN">${myCats().length}</b> קטגוריות</span></label>
+        <p class="bt-cnt"><button class="gp-link" data-go="save">שמירת כל המאגר לפעם הבאה</button>${hasPool(loadPool()) ? ' · <button class="gp-link" data-go="load">טעינת המאגר השמור</button>' : ''}</p></div>` : ''}
       ${P.seg('level', [['easy','קל'],['medium','בינוני'],['hard','מאתגר']], B.level, 'רמת קושי')}
       ${P.seg('time', [[30,'30 שניות'],[45,'45 שניות'],[60,'דקה']], B.time, 'משך כל סבב')}
       ${P.seg('size', [[20,'20'],[40,'40'],[60,'60'],[9999,'הכול']], B.size, 'כמה מילים במשחק')}
@@ -86,9 +129,17 @@ function play(initial){
   /* --- תור, גלגל אתגרים ואתגר --- */
   function build(){
     let pool = B.src === 'bank' ? bankFor() : B.src === 'mine' ? mine() : bankFor().concat(mine());
-    pool = shuffle(pool); B.all = pool.slice(0, Math.min(pool.length, B.size)); B.deck = shuffle(B.all); updWords();
+    pool = shuffle(pool); B.all = pool.slice(0, Math.min(pool.length, B.size));
+    /* טאבו: המילים שכתבו לטאבו (ובערבוב גם המאגר המוכן). בלי מילים לטאבו, משתמשים במילים הכלליות */
+    const mt = myTaboo(), tp = B.src === 'bank' ? [] : B.src === 'mine' ? mt : bankFor().concat(mt);
+    B.tall = tp.length ? shuffle(tp) : B.all.slice();
+    if(!B.all.length) B.all = B.tall.slice(0, Math.min(B.tall.length, B.size)); // מילאו רק טאבו: גם שאר האתגרים משתמשים בהן
+    if(!B.tall.length) B.tall = B.all.slice();
+    B.deck = shuffle(B.all); B.tdeck = shuffle(B.tall); B.ldeck = []; B.cdeck = []; updWords();
   }
   const nextWord = () => { if(!B.deck.length) B.deck = shuffle(B.all); return B.deck.pop(); };
+  const nextTaboo = () => { if(!B.tdeck.length) B.tdeck = shuffle(B.tall); return B.tdeck.pop(); };
+  const nextCard = () => B.type === 'taboo' ? nextTaboo() : nextWord();
   function ready(){
     wordsBtn.hidden = false; const t = B.teams[B.turn];
     o.body.innerHTML = `<div class="gp-card gp-ready" style="--tc:${t.col}"><p class="gp-kick">סבב ${B.roundNo} מתוך ${B.rounds}</p><h2>התור של <b>${esc(t.name)}</b></h2>
@@ -128,12 +179,12 @@ function play(initial){
   function go(){
     B.log = []; B.pts = 0; const t = B.teams[B.turn];
     if(B.type === 'explain' || B.type === 'mime' || B.type === 'taboo'){
-      B.word = nextWord();
+      B.word = nextCard();
       o.body.innerHTML = `<div class="gp-round" style="--tc:${t.col}">${top()}<div class="gp-word" id="gpWord">${cardHTML(B.word)}</div>
         <div class="gp-acts"><button class="gp-ok" data-go="ok">✓ ניחשו <kbd>רווח</kbd></button><button class="gp-skip" data-go="skip">דילוג <kbd>S</kbd></button></div></div>`;
       timer(B.time, sum);
     } else if(B.type === 'blitz'){
-      B.cat = CATS[Math.floor(Math.random()*CATS.length)];
+      if(!B.cdeck.length) B.cdeck = shuffle(catPool()); B.cat = B.cdeck.pop();
       o.body.innerHTML = `<div class="gp-round bt-blitz" style="--tc:${t.col}">${top()}<div class="gp-word"><span><small>הקטגוריה:</small>${esc(B.cat)}</span></div>
         <div class="gp-acts"><button class="gp-ok bt-plus" data-go="plus">+1 <kbd>רווח</kbd></button><button class="gp-skip" data-go="minus">−1</button></div></div>`;
       timer(B.time, sum);
@@ -161,15 +212,16 @@ function play(initial){
     return `<span>${esc(x.w)}</span>`;
   }
   function nextLink(){
-    const bankLinks = B.src !== 'mine' ? LINKS : [];
-    if(bankLinks.length && (B.src === 'bank' || Math.random() < .5)){ const l = bankLinks[Math.floor(Math.random()*bankLinks.length)]; B.link = {w:shuffle(l.slice(0, 3)), a:l[3]}; }
+    /* קודם השלישיות המוכנות (שלכם ו/או של המאגר), בלי חזרות עד שנגמרות. אין בכלל? 3 מילים אקראיות והקבוצה ממציאה קשר */
+    const lp = linkPool();
+    if(lp.length){ if(!B.ldeck.length) B.ldeck = shuffle(lp); const l = B.ldeck.pop(); B.link = {w:shuffle(l.w).slice(0, 3), a:l.a || 'לא נכתבה תשובה. המנחה מחליט אם הקשר משכנע.'}; }
     else { const w = shuffle(B.all).slice(0, 3).map(x => x.w); B.link = {w, a:'אין תשובה אחת נכונה! הקבוצה ממציאה קשר, והמנחה מחליט אם הוא משכנע.'}; }
   }
   const linkHTML = () => `<span class="bt-trio">${B.link.w.map(w => `<b>${esc(w)}</b>`).join('<i>+</i>')}</span><p class="bt-ans" hidden>${esc(B.link.a)}</p>`;
   function bump(n){ B.pts = Math.max(0, B.pts + n); const p = o.body.querySelector('#gpPts'); if(p){ p.textContent = B.pts; p.parentNode.classList.remove('pop'); void p.offsetWidth; p.parentNode.classList.add('pop'); } }
   function mark(ok){
     B.log.push({w:B.word.w, ok}); if(ok) bump(1); P.beep(ok ? 1046 : 330, .09, ok ? 'triangle' : 'square', .08);
-    B.word = nextWord(); const w = o.body.querySelector('#gpWord'); if(w){ w.innerHTML = cardHTML(B.word); w.firstElementChild.classList.add(ok ? 'from-ok' : 'from-skip'); }
+    B.word = nextCard(); const w = o.body.querySelector('#gpWord'); if(w){ w.innerHTML = cardHTML(B.word); w.firstElementChild.classList.add(ok ? 'from-ok' : 'from-skip'); }
   }
   function memMark(){
     clearInterval(B.iv);
@@ -225,11 +277,14 @@ function play(initial){
     if(b.dataset.log != null){ const x = B.log[+b.dataset.log]; x.ok = !x.ok; b.classList.toggle('ok', x.ok); b.classList.toggle('no', !x.ok); b.setAttribute('aria-pressed', x.ok); b.querySelector('i').textContent = x.ok ? '✓' : '✕'; B.pts = B.log.filter(y => y.ok).length; o.body.querySelector('#gpTot').textContent = B.pts; return; }
     if(b.dataset.mem != null){ const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); b.classList.toggle('ok', on); b.classList.toggle('no', !on); b.querySelector('i').textContent = on ? '✓' : '✕'; B.pts += on ? 1 : -1; o.body.querySelector('#gpTot').textContent = B.pts; return; }
     const g = b.dataset.go;
-    if(g === 'save'){ savePool(B.text) ? P.toast('המאגר האישי נשמר בדפדפן הזה') : P.toast('לא הצלחתי לשמור'); setup(); }
-    else if(g === 'load'){ B.text = loadPool(); setup(); }
+    if(g === 'save'){ savePool(curPool()) ? P.toast('המאגר האישי נשמר בדפדפן הזה') : P.toast('לא הצלחתי לשמור'); setup(); }
+    else if(g === 'load'){ const p = loadPool(); if(p){ B.text = p.words; B.tabooText = p.taboo; B.linksText = p.links; B.catsText = p.cats; } setup(); }
     else if(g === 'rules') window.GamesPro.showRules('battle');
     else if(g === 'start'){
-      build(); if(B.all.length < 4){ P.toast('צריך לפחות 4 מילים. הוסיפו מילים או בחרו את המאגר המוכן'); return; }
+      build();
+      const needWords = ['explain','mime','taboo','memory'].some(k => B.types.has(k)) || (B.types.has('link') && !linkPool().length);
+      if(needWords && B.all.length < 4){ P.toast('צריך לפחות 4 מילים. הוסיפו מילים או בחרו את המאגר המוכן'); return; }
+      if(B.src !== 'bank') savePool(curPool()); // שומרים אוטומטית, כדי שהמאגר יחכה בפעם הבאה
       B.teams = Array.from({length:B.n}, (_, i) => ({name:B.names[i] || P.TEAM_NAMES[i], col:P.TEAM_COLS[i], score:0})); B.turn = 0; B.roundNo = 1; ready(); }
     else if(g === 'spin') spin();
     else if(g === 'go') go();
@@ -246,7 +301,11 @@ function play(initial){
     else if(g === 'apply') apply();
   };
   o.body.oninput = e => {
-    if(e.target.id === 'btText'){ B.text = e.target.value; const m = o.body.querySelector('#btMine'), tt = o.body.querySelector('#btTotal'); if(m) m.textContent = mine().length; if(tt) tt.textContent = count(); }
+    const id = e.target.id, setN = (sel, n) => { const el = o.body.querySelector(sel); if(el) el.textContent = n; };
+    if(id === 'btText'){ B.text = e.target.value; setN('#btMine', mine().length); setN('#btTotal', count()); }
+    else if(id === 'btTaboo'){ B.tabooText = e.target.value; setN('#btTabooN', myTaboo().length); }
+    else if(id === 'btLinks'){ B.linksText = e.target.value; setN('#btLinksN', myLinks().length); }
+    else if(id === 'btCats'){ B.catsText = e.target.value; setN('#btCatsN', myCats().length); }
     const i = e.target.dataset.name; if(i != null) B.names[+i] = e.target.value;
   };
   o.el.onkey = e => {
@@ -265,7 +324,7 @@ G.RULES.battle = {title:'איך משחקים קרב המילים?', intro:'מש�
   steps:['בוחרים מאגר: המאגר המוכן, המילים שלכם, או שילוב של שניהם. אפשר להדביק גם 100 מילים בבת אחת.','בוחרים רמת קושי, משך סבב, כמה מילים וסוגי אתגרים.','בכל תור מסובבים את גלגל האתגרים, והוא בוחר את האתגר של הקבוצה.','כשהזמן נגמר, האתר מסכם את הנקודות, והתור עובר לקבוצה הבאה.','אפשר להוסיף ולהסיר מילים באמצע המשחק, בכפתור "המילים במשחק" למעלה.'],
   ok:['הסבר במילים אחרות: מסבירים בלי להגיד את המילה','פנטומימה: מציגים בלי דיבור','מה הקשר?: שלוש מילים, מוצאים מה מחבר ביניהן','טאבו: מסבירים בלי המילים האסורות','אתגר בזק: כמה שיותר דברים מהקטגוריה','זיכרון: זוכרים מילים שנעלמו מהמסך'],
   score:['כל ניחוש נכון, קשר שנמצא, תשובה בזק או מילה שנזכרה: נקודה','אחרי מספר הסבבים שבחרתם: פודיום המנצחים'],
-  tip:'המאגר האישי נשמר בדפדפן ומחכה לכם בפעם הבאה. לטאבו עם מילים אסורות משלכם, כותבים: מילה: אסורה, אסורה. בלי רשימה כזאת, האתר בונה כללים לבד.'};
+  tip:'בוחרים "מאגר מילים אישי" או "לערבב", ומקבלים תיבה נפרדת לכל אתגר: מילים להסבר ולפנטומימה, מילים לטאבו עם המילים האסורות, שלישיות ל"מה הקשר" עם התשובה, וקטגוריות לאתגר בזק. המאגר נשמר בדפדפן ומחכה לכם בפעם הבאה.'};
 G.NEW.unshift('battle'); G.PLAYABLE.push('battle');
 G.DEFAULTS.battle = {title:'קרב המילים', words:''};
 const f0 = G.fields; G.fields = (type, s) => type === 'battle' ? `<label>המילים שלכם (לא חובה) <span class="hint">שורה לכל מילה או עם פסיקים. אפשר גם 100 בבת אחת. בלי מילים, משחקים עם המאגר המוכן</span><textarea name="words" rows="10" placeholder="שרה, הדודה רחל, הכינרת...">${esc(s.words)}</textarea></label>` : f0(type, s);
