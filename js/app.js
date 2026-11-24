@@ -1832,7 +1832,7 @@ function initBiz(call, live, fail){
   const num = o => o ? o.total : 0;
   const day = (o, k) => o ? (o[k] || 0) : 0;
   const bizData = s => { const lds = L.filter(l => l.sid === s.id || l.supplier === s.name);
-    return {s, lds, rows:[['צפיות במודעה', num(S.sup[s.id]), day(S.sup[s.id], 'today'), day(S.sup[s.id], 'week')], ['מבקרות שונות', day(S.sup[s.id], 'uniq'), '', ''], ['לחיצות על הטלפון', num(S.tel[s.id]), day(S.tel[s.id], 'today'), day(S.tel[s.id], 'week')], ['לחיצות על האתר', num(S.web[s.id]), day(S.web[s.id], 'today'), day(S.web[s.id], 'week')], ['פניות שנשלחו בטופס', lds.length, '', '']]}; };
+    return {s, lds, rows:[['צפיות במודעה', num(S.sup[s.id]), day(S.sup[s.id], 'today'), day(S.sup[s.id], 'week')], ['מבקרות שונות', day(S.sup[s.id], 'uniq'), '', ''], ['לחיצות על הטלפון', num(S.tel[s.id]), day(S.tel[s.id], 'today'), day(S.tel[s.id], 'week')], [s.site ? 'לחיצות על האתר' : 'לחיצות בחלון המבצע (לפני 25.11)', num(S.web[s.id]), day(S.web[s.id], 'today'), day(S.web[s.id], 'week')], ['לחיצות בחלון המבצע', num(S.sup['pop:' + s.id]), day(S.sup['pop:' + s.id], 'today'), day(S.sup['pop:' + s.id], 'week')], ['פניות שנשלחו בטופס', lds.length, '', '']]}; };
   const csvCell = x => '"' + String(x == null ? '' : x).replace(/"/g, '""') + '"';
   const download = (name, txt) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + txt], {type:'text/csv;charset=utf-8'})); a.download = name; a.click(); };
   const bizCsv = items => {
@@ -1867,7 +1867,7 @@ function initBiz(call, live, fail){
     box.innerHTML = '<div class="bz-tools"><button class="btn btn-sm" data-bz="csvall|">ייצוא כל העסקים לאקסל</button></div><div class="bz-rows">' + items.map(s => {
       const leads = L.filter(l => l.sid === s.id || l.supplier === s.name).length, pic = safeImg(s.img) ? '<img src="' + esc(safeImg(s.img)) + '" alt="">' : '<span>' + esc((s.name || '?')[0]) + '</span>';
       return '<div class="bz-row' + (s.active === false ? ' off' : '') + '"><div class="bz-thumb">' + pic + '</div><div class="bz-info"><b>' + esc(s.name) + '</b> <em class="bz-plan">' + esc(s.plan || 'Basic') + '</em>' + (s.active === false ? ' <em class="bz-off">מוסתר</em>' : '') +
-        '<small>' + esc(s.cat) + ' · ' + esc(s.region) + ' · ' + esc(s.price) + '</small><small class="bz-nums">כניסות ' + num(S.sup[s.id]) + ' · לחיצות על הטלפון ' + num(S.tel[s.id]) + ' · לחיצות על האתר ' + num(S.web[s.id]) + ' · פניות ' + leads + '</small></div>' +
+        '<small>' + esc(s.cat) + ' · ' + esc(s.region) + ' · ' + esc(s.price) + '</small><small class="bz-nums">כניסות ' + num(S.sup[s.id]) + ' · לחיצות על הטלפון ' + num(S.tel[s.id]) + (s.site ? ' · לחיצות על האתר ' + num(S.web[s.id]) : '') + ' · לחיצות בחלון המבצע ' + (num(S.sup['pop:' + s.id]) + (s.site ? 0 : num(S.web[s.id]))) + ' · פניות ' + leads + '</small></div>' +
         '<div class="bz-btns"><button class="btn btn-sm" data-bz="edit|' + esc(s.id) + '">עריכה</button><button class="btn btn-sm btn-light" data-bz="csv|' + esc(s.id) + '">אקסל</button><button class="btn btn-sm btn-light" data-bz="pdf|' + esc(s.id) + '">דוח PDF</button><button class="btn btn-sm btn-light" data-bz="toggle|' + esc(s.id) + '">' + (s.active === false ? 'הצגה' : 'הסתרה') + '</button><button class="btn btn-sm btn-light" data-bz="del|' + esc(s.id) + '">מחיקה</button></div></div>';
     }).join('') + '</div>';
   };
@@ -2212,7 +2212,7 @@ loadRemote();
     const close = () => { try{ sessionStorage.setItem('madlik_' + KEY, '1'); }catch(e){} document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 260); };
     const key = e => { if(e.key === 'Escape') close(); };
     document.addEventListener('keydown', key);
-    ov.addEventListener('click', e => { if(e.target === ov || e.target.closest('.promo-x')) return close(); if(e.target.closest('.promo-go')){ countClick('web', SUP); setTimeout(close, 150); } });
+    ov.addEventListener('click', e => { if(e.target === ov || e.target.closest('.promo-x')) return close(); if(e.target.closest('.promo-go')){ countClick('pop', SUP); setTimeout(close, 150); } });
     ov.querySelector('.promo-go').focus({preventScroll:true});
   };
   setTimeout(show, 3000);
