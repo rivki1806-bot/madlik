@@ -1,0 +1,71 @@
+/* דף הבית החדש (מוקאפ 1): לוגו במרכז, תפריט ממורכז, חמש דלתות, משחק השבוע והתקדמות אישית.
+   הכול תחת body.is-home או מחלקות nh- כדי לא לשנות שאר דפים */
+body.is-home{--nh-orange:#e8590c;--nh-orange-2:#ff8a3d;--nh-ink:#2b1b12;--nh-muted:#7a5a44;--nh-paper:#fff8f2;--nh-cream:#ffefe0;--nh-line:#f0d9c4;--nh-teal:#1f6f6a}
+html body.is-home,html body.is-home #app{background:var(--nh-paper)!important}
+body.is-home #scene,body.is-home .progress{display:none!important}
+
+/* הפס העליון בדף הבית: לבן, בלי הלוגו הקטן, התפריט באמצע */
+html body.is-home .site-header,html body.is-home .site-header.scrolled{display:grid!important;grid-template-columns:1fr auto 1fr;align-items:center;background:#ffffff!important;backdrop-filter:none!important;border-bottom:1px solid var(--nh-line)!important;box-shadow:none!important}
+html body.is-home .site-header .logo{visibility:hidden}
+html body.is-home .site-header .main-nav{grid-column:2;justify-content:center}
+html body.is-home .site-header .main-nav a{color:var(--nh-ink)!important;background:transparent!important;font-weight:500}
+html body.is-home .site-header .main-nav a:hover{color:var(--nh-orange)!important}
+html body.is-home .site-header .main-nav a.nav-me{background:var(--nh-ink)!important;color:#ffffff!important;border-radius:999px;padding-inline:1em}
+html body.is-home .site-header .menu-toggle{grid-column:3;justify-self:end;color:var(--nh-ink)!important}
+
+/* הראש: לוגו גדול, משפט ומעברים מהירים */
+.nh-hero{position:relative;padding:56px 16px 36px;color:var(--nh-ink);font-family:'Heebo',Arial,sans-serif}
+.nh-center{max-width:600px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.nh-h1{margin:0}
+.nh-logo{display:block;width:min(520px,86vw);height:auto;margin:0 auto}
+.nh-lead{margin:0;max-width:42ch;font-size:clamp(17px,1.6vw,21px);font-weight:300;line-height:1.7;color:var(--nh-muted)}
+.nh-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.nh-chips a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;background:#ffffff;border:1px solid var(--nh-line);color:var(--nh-ink);text-decoration:none;font-size:15px}
+.nh-chips a:hover{border-color:var(--nh-orange);color:var(--nh-orange)}
+
+/* חמש הדלתות */
+.nh-doors{max-width:1240px;margin:0 auto;padding:12px 16px 40px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;font-family:'Heebo',Arial,sans-serif}
+.nh-door{display:flex;flex-direction:column;gap:8px;min-height:170px;padding:22px;border-radius:24px;background:#ffffff;border:1px solid var(--nh-line);color:var(--nh-ink);text-decoration:none;transition:transform .2s,border-color .2s}
+.nh-door:hover{transform:translateY(-4px);border-color:var(--nh-orange)}
+.nh-door.on{background:var(--nh-orange);border-color:var(--nh-orange);color:#ffffff}
+.nh-door b{font-family:'Secular One','Heebo',sans-serif;font-weight:400;font-size:26px}
+.nh-door span{font-weight:300;font-size:16px;line-height:1.5}
+.nh-door small{margin-top:auto;font-weight:700;font-size:14px}
+
+/* משחק השבוע והתקדמות אישית */
+.nh-strip{max-width:1240px;margin:0 auto;padding:0 16px 48px;display:grid;grid-template-columns:1fr 1.2fr;gap:24px;font-family:'Heebo',Arial,sans-serif}
+.nh-feat{display:flex;flex-direction:column;justify-content:flex-end;gap:10px;min-height:280px;padding:30px;border-radius:30px;background:linear-gradient(160deg,var(--nh-orange-2),var(--nh-orange));color:#ffffff;text-decoration:none}
+.nh-feat b{font-family:'Secular One','Heebo',sans-serif;font-weight:400;font-size:clamp(38px,4vw,52px);line-height:1}
+.nh-feat span{font-size:18px;font-weight:300}
+.nh-feat .nh-pill{align-self:flex-start;padding:4px 12px;border-radius:999px;background:#ffffff;color:var(--nh-orange);font-weight:800;font-size:14px}
+.nh-path{display:flex;flex-direction:column;gap:14px;padding:26px;border-radius:30px;background:#ffffff;border:1px solid var(--nh-line);color:var(--nh-ink)}
+.nh-path h2{margin:0;font-size:22px;font-weight:700;color:var(--nh-ink)}
+.nh-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.nh-step{display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:18px;background:var(--nh-cream);color:var(--nh-ink);text-decoration:none}
+.nh-step i{font-style:normal;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--nh-orange);color:#ffffff;font-weight:800}
+.nh-step.done i{background:var(--nh-teal)}
+.nh-step b{font-size:17px}
+.nh-step span{font-size:14px;color:var(--nh-muted)}
+.nh-me{align-self:flex-start;font-weight:700;color:var(--nh-orange);text-decoration:none}
+.nh-credit{max-width:1240px;margin:0 auto;padding:0 16px 48px}
+
+a.nh-door:focus-visible,a.nh-feat:focus-visible,a.nh-step:focus-visible,.nh-chips a:focus-visible{outline:3px solid var(--nh-ink);outline-offset:3px}
+
+/* במסך צר הפרסומת יורדת מתחת ללוגו, כדי לא לכסות את הכפתורים */
+@media (max-width:1199px){
+  .nh-hero{display:flex;flex-direction:column}
+  html body .nh-hero .ad-rail{order:2;align-self:center;position:relative!important;left:auto!important;right:auto!important;top:auto!important;width:min(340px,100%)!important;margin:28px auto 0!important}
+}
+@media (max-width:980px){
+  .nh-doors{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nh-doors .nh-door:first-child{grid-column:1 / -1}
+  .nh-strip{grid-template-columns:1fr}
+  .nh-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body.is-home .site-header{grid-template-columns:auto 1fr auto}
+}
+@media (max-width:760px){
+  html body.is-home .site-header .main-nav{grid-column:1 / -1}
+  html body.is-home .site-header .main-nav,html body.is-home .site-header .main-nav.open{background:#ffffff!important}
+  .nh-hero{padding-top:28px}
+}
+@media (prefers-reduced-motion:reduce){.nh-door{transition:none}.nh-door:hover{transform:none}}

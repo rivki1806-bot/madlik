@@ -274,31 +274,43 @@ pages.home = () => {
   const hasBanner = b => BANNERS.some(bn => String(b.name || '').includes(bn.match));
   const ads = bannerAds.concat(content('suppliers').filter(b=>b.homeAd && !hasBanner(b)).map(b=>`<a class="ad-card" href="#/supplier/${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.text)}</span><em>${esc(b.cat)} · ${esc(b.region)} ←</em></a>`))
     .concat(['<a class="ad-card ad-cta" href="#/advertise"><b>ראית את זה?</b><span>ראו את זה עוד אלפי אנשים, מוזמן לפרסם באחת התכניות השוות!</span><em>לכל התכניות וטופס יצירת קשר ←</em></a>']);
+  /* דף הבית החדש (מוקאפ 1): לוגו במרכז, חמש דלתות, משחק השבוע והתקדמות אישית */
+  const fv = favs(), sv = store.get('saved', []);
+  const step = (ok, t, d, href) => '<a class="nh-step' + (ok ? ' done' : '') + '" href="' + href + '"><i>' + (ok ? '✓' : '') + '</i><b>' + t + '</b><span>' + (ok ? d : 'עוד לא נבחר') + '</span></a>';
+  const steps = [
+    step(sv.some(x => x.kind === 'עיצוב'), 'מיתוג', 'נשמר עיצוב', '#/studio'),
+    step((fv.recipes || []).length > 0, 'מתכון', 'יש מתכון במועדפים', '#/recipes'),
+    step(sv.some(x => x.kind === 'משחק') || (fv.games || []).length > 0, 'משחק', 'נבחר משחק', '#/games'),
+    step((fv.suppliers || []).length > 0, 'נותני שירות', 'נשמר עסק', '#/suppliers')
+  ];
+  steps.forEach((x, i) => { steps[i] = x.replace('<i></i>', '<i>' + (i + 1) + '</i>'); });
+  const door = (on, t, d, href) => '<a class="nh-door' + (on ? ' on' : '') + '" href="' + href + '"><b>' + t + '</b><span>' + d + '</span><small>לכניסה ←</small></a>';
   return `
-  <section class="hero" id="hero">
-    <h1 class="hero-word"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ונותני שירות</span><img class="hero-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
-        <aside class="ad-rail" aria-label="מודעות">
+  <section class="nh-hero" id="hero">
+    <aside class="ad-rail" aria-label="מודעות">
       <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button>
       ${Date.now() < BIZ_NOTICE_UNTIL ? '<div class="ad-open" role="note" aria-label="פתיחת פרסום ביום שלישי 10.11.26"><b>פתיחת פרסום</b><span>ביום שלישי</span><i>10.11.26</i></div>' : ''}
       <div class="ad-stack">${ads.join('')}</div>
       ${ads.length>1?`<div class="ad-dots">${ads.map(()=>'<i></i>').join('')}</div>`:''}
     </aside>
-    <div class="hero-copy">
-      <p class="tagline">כל מה שצריך לערב לביבות<br><em>שמדליק שמחה בלבבות</em></p>
+    <div class="nh-center">
+      <h1 class="nh-h1"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ונותני שירות</span><img class="nh-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
+      <p class="nh-lead">משחקים, עיצובים ומתכונים לערב לביבות שכולם זוכרים. בוחרים, מתאימים לשמות שלכם, ומתחילים.</p>
+      <nav class="nh-chips" aria-label="מעברים מהירים"><a href="#/games">משחק לכל המשפחה</a><a href="#/suppliers">ערב נשים</a><a href="#/create">מוכן ב־10 דקות</a><a href="#/recipes">מתכון חלבי</a></nav>
     </div>
-    <div class="mk-strip" role="note" aria-label="מי מאחורי מדליק"><p class="mks-t"><span class="mks-by">פיתוח, אפיון ועיצוב: <b>רבקי יוגב</b></span><span class="mks-dot" aria-hidden="true">✦</span><span class="mks-prod">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi></span></p><div class="mks-acts"><a class="mks-tel" href="tel:0556771806" dir="ltr">055-677-1806</a><button type="button" class="mks-go" data-open-contact><span>דברו איתי</span><i aria-hidden="true">←</i></button></div></div>
   </section>
-  <div class="statement"><p>${stm}</p></div>
-  ${wshow('games','משחקים על המסך שניתנים גם להדפסה','משחקים דיגיטליים אטרקטיביים על המסך','קרב המילים, אליאס, זיכרון, חידון חנוכה ועוד. מקרינים על המסך ומשחקים, עם צלילים וניקוד.','#/games','לכל המשחקים על המסך',D.creators.filter(c=>canPlay(c.id)||c.id==='battle').slice(0,3).map(creatorCard).join(''))}
-  ${wshow('create','פעילויות להדפסה','פעילויות להדפסה בהתאמה אישית','בינגו, רביעיות, תפזורת ועוד. מכניסים את המילים שלכם ומקבלים דף מעוצב להדפסה.','#/create','לכל הפעילויות להדפסה',D.creators.filter(c=>!canPlay(c.id)&&c.id!=='battle').slice(0,3).map(creatorCard).join(''))}
-  ${wshow('studio','סטודיו מיתוג','המיתוג של הערב','בוחרים שפה עיצובית, כותבים את המילים שלכם, ומזיזים הכול איפה שרוצים.','#/studio','לסטודיו',(D.styles||[]).slice(0,3).map(styleCard).concat(D.templates.filter(t=>t.repeat).slice(0,3)).slice(0,3).map(x=>typeof x==='string'?x:tplCard(x)).join(''))}
-  ${wshow('recipes','מתכונים','טעימות לערב','לביבות, סופגניות ומגשי אירוח. הכמויות מתחשבות לבד.','#/recipes','לכל המתכונים',content('recipes').slice(0,3).map(recipeCard).join(''))}
-  ${wshow('biz','נותני שירות','נותני שירות שישדרגו לכם את האירוע','אולמות, קייטרינג, מפעילים ועוד. לפי אזור ולפי מחיר.','#/suppliers','לעסקים',content('suppliers').slice(0,3).map(supCard).join(''))}
-  <section class="final">
-    <a class="big-link" href="#/games">מתחילים לשחק <i>←</i></a>
-    <a class="big-link" href="#/submit">יש לך רעיון? <i>←</i></a>
-    <a class="big-link" href="#/advertise">יש לך עסק? <i>←</i></a>
-  </section>`;
+  <section class="nh-doors" aria-label="המדורים">
+    ${door(true, 'משחקים', 'על המסך, עם קבוצות וניקוד', '#/games')}
+    ${door(false, 'להדפסה', 'בינגו, רביעיות ותפזורת', '#/create')}
+    ${door(false, 'מיתוג', 'הזמנה, שלט ומדבקות', '#/studio')}
+    ${door(false, 'מתכונים', 'הכמויות מתחשבות לבד', '#/recipes')}
+    ${door(false, 'נותני שירות', 'מפעילות, הפקה ואפייה', '#/suppliers')}
+  </section>
+  <section class="nh-strip">
+    <a class="nh-feat" href="#/create/battle"><span class="nh-pill">חדש השבוע</span><b>קרב המילים</b><span>6 אתגרים במשחק אחד, עם המילים של המשפחה.</span></a>
+    <div class="nh-path"><h2>הערב שלך, צעד אחר צעד</h2><div class="nh-steps">${steps.join('')}</div><a class="nh-me" href="#/me">לאזור האישי ←</a></div>
+  </section>
+  <div class="nh-credit"><div class="mk-strip" role="note" aria-label="מי מאחורי מדליק"><p class="mks-t"><span class="mks-by">פיתוח, אפיון ועיצוב: <b>רבקי יוגב</b></span><span class="mks-dot" aria-hidden="true">✦</span><span class="mks-prod">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi></span></p><div class="mks-acts"><a class="mks-tel" href="tel:0556771806" dir="ltr">055-677-1806</a><button type="button" class="mks-go" data-open-contact><span>דברו איתי</span><i aria-hidden="true">←</i></button></div></div></div>`;
 };
 pages.home.after = () => {
   /* החלון הקופץ של נותני שירות: גם כשמגיעים למדור נותני השירות בעמוד הבית */
@@ -2057,6 +2069,7 @@ function render(){
   let name = null, params = [];
   for(const [re,n] of routes){ const m = path.match(re); if(m){ name = n; params = m.slice(1).map(decodeURIComponent); break; } }
   app.onclick = null; app.onchange = null;
+  document.body.classList.toggle('is-home', name === 'home');
   app.innerHTML = name ? pages[name](params, q) : notFound(true);
   if(name && pages[name].after) pages[name].after(params, q);
   let isAdmin = false; try{ isAdmin = !!sessionStorage.getItem('madlik_admin'); }catch(e){}
