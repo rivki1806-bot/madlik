@@ -90,3 +90,6 @@ a.nh-door:focus-visible,a.nh-feat:focus-visible,a.nh-step:focus-visible,.nh-chip
   html body .nh-hero .ad-rail{width:230px!important;top:16px!important}
   .nh-hero:has(.ad-rail) ~ .nh-doors{max-width:none;padding-left:calc(max(24px,2vw) + 254px);padding-right:max(24px,2vw)}
 }
+
+/* המסך הראשון: הלוגו והריבועים בלבד. "הערב שלך" מתחיל רק אחרי גלילה */
+.nh-first{min-height:100vh;min-height:100svh}

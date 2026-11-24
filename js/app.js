@@ -286,6 +286,7 @@ pages.home = () => {
   steps.forEach((x, i) => { steps[i] = x.replace('<i></i>', '<i>' + (i + 1) + '</i>'); });
   const door = (on, t, d, href) => '<a class="nh-door' + (on ? ' on' : '') + '" href="' + href + '"><b>' + t + '</b><span>' + d + '</span><small>לכניסה ←</small></a>';
   return `
+  <div class="nh-first">
   <section class="nh-hero" id="hero">
     <aside class="ad-rail" aria-label="מודעות">
       <button type="button" class="ad-x" aria-label="סגירת הבאנר">×</button>
@@ -305,6 +306,7 @@ pages.home = () => {
     ${door(false, 'מתכונים', 'הכמויות מתחשבות לבד', '#/recipes')}
     ${door(false, 'נותני שירות', 'מפעילות, הפקה ואפייה', '#/suppliers')}
   </section>
+  </div>
   <section class="nh-strip">
     <div class="nh-path"><h2>הערב שלך, צעד אחר צעד</h2><div class="nh-steps">${steps.join('')}</div><a class="nh-me" href="#/me">לאזור האישי ←</a></div>
   </section>
