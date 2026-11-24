@@ -923,7 +923,8 @@ pages.design.after = ([id], q) => {
     return `<button type="button" data-fa="szm" title="הקטנת הטקסט">A−</button><button type="button" data-fa="szp" title="הגדלת הטקסט">A+</button><button type="button" data-fa="bold" aria-pressed="${(+s.fw || 0) >= 600}" title="מודגש"><b>ב</b></button><button type="button" data-fa="font" title="החלפת גופן">גופן</button><button type="button" data-fa="color" title="צבע הטקסט"><i class="fcol" style="background:${col}"></i></button><button type="button" data-fa="reset" title="איפוס מיקום">⟲</button>`;
   }
   function placeOverlay(){
-    const ov = $('tpOvl'); if(!sel || editing){ ov.hidden = true; return; }
+    const ov = $('tpOvl'); if(!ov) return; // יצאו מעמוד העורך
+    if(!sel || editing){ ov.hidden = true; return; }
     const r = objRect(); if(!r){ ov.hidden = true; return; }
     const v = $('tpOvl').parentElement.getBoundingClientRect(), box = $('tpSel'), fl = $('tpFloat');
     box.style.cssText = `left:${r.left - v.left}px;top:${r.top - v.top}px;width:${r.right - r.left}px;height:${r.bottom - r.top}px`;
