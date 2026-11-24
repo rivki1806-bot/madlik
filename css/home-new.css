@@ -1,17 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@500;600&display=swap");
 /* דף הבית החדש (מוקאפ 1): לוגו במרכז, תפריט ממורכז, חמש דלתות, משחק השבוע והתקדמות אישית.
    הכול תחת body.is-home או מחלקות nh- כדי לא לשנות שאר דפים */
 body.is-home{--nh-orange:#e8590c;--nh-orange-2:#ff8a3d;--nh-ink:#2b1b12;--nh-muted:#7a5a44;--nh-paper:#fff8f2;--nh-cream:#ffefe0;--nh-line:#f0d9c4;--nh-teal:#1f6f6a}
 html body.is-home,html body.is-home #app{background:var(--nh-paper)!important}
 body.is-home #scene,body.is-home .progress{display:none!important}
 
-/* הפס העליון בדף הבית: לבן, בלי הלוגו הקטן, התפריט באמצע */
-html body.is-home .site-header,html body.is-home .site-header.scrolled{display:grid!important;grid-template-columns:1fr auto 1fr;align-items:center;background:#ffffff!important;backdrop-filter:none!important;border-bottom:1px solid var(--nh-line)!important;box-shadow:none!important}
+/* הפס העליון בכל האתר: לבן ושקט, הטאבים במרכז וברורים.
+   טאב פעיל מסומן בקו כתום מתחת לטקסט, בלי כפתורים מעוגלים וצבעי מעבר. בדף הבית הלוגו הקטן מוסתר כי הלוגו הגדול נמצא מתחת */
+html body .site-header,html body .site-header.scrolled{display:grid!important;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:10px 28px!important;background:#ffffff!important;backdrop-filter:none!important;border-bottom:1px solid #f0d9c4!important;box-shadow:0 1px 0 rgba(43,27,18,.04)!important}
+html body .site-header .logo{grid-column:1;justify-self:start}
+html body .site-header .logo-img{height:48px!important}
 html body.is-home .site-header .logo{visibility:hidden}
-html body.is-home .site-header .main-nav{grid-column:2;justify-content:center}
-html body.is-home .site-header .main-nav a{color:var(--nh-ink)!important;background:transparent!important;font-weight:500}
-html body.is-home .site-header .main-nav a:hover{color:var(--nh-orange)!important}
-html body.is-home .site-header .main-nav a.nav-me{background:var(--nh-ink)!important;color:#ffffff!important;border-radius:999px;padding-inline:1em}
-html body.is-home .site-header .menu-toggle{grid-column:3;justify-self:end;color:var(--nh-ink)!important}
+html body .site-header .main-nav{grid-column:2;display:flex!important;align-items:center;justify-content:center;gap:4px!important;flex-wrap:nowrap}
+html body .site-header .main-nav a{position:relative;padding:14px 14px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#2b1b12!important;font:600 17px/1.2 'IBM Plex Sans Hebrew','Heebo',Arial,sans-serif!important;letter-spacing:0!important;text-decoration:none!important;white-space:nowrap;transition:color .2s}
+html body .site-header .main-nav a::after{content:"";position:absolute;right:14px;left:14px;bottom:6px;height:3px;border-radius:2px;background:#e8590c;transform:scaleX(0);transition:transform .25s ease}
+html body .site-header .main-nav a:hover{color:#e8590c!important}
+html body .site-header .main-nav a:hover::after,html body .site-header .main-nav a.active::after{transform:scaleX(1)}
+html body .site-header .main-nav a.active{color:#e8590c!important}
+html body .site-header .main-nav a.nav-me{margin-inline-start:14px;padding:10px 18px!important;border:1.5px solid #2b1b12!important;border-radius:10px!important;background:#2b1b12!important;color:#ffffff!important}
+html body .site-header .main-nav a.nav-me::after{display:none}
+html body .site-header .main-nav a.nav-me:hover{background:#e8590c!important;border-color:#e8590c!important}
+html body .site-header .main-nav a:focus-visible{outline:2px solid #e8590c;outline-offset:2px}
+html body .site-header .menu-toggle{grid-column:3;justify-self:end;color:#2b1b12!important;border-color:#2b1b12!important;background:#ffffff!important}
+@media (max-width:1280px){html body .site-header .main-nav a{font-size:15px!important;padding:14px 9px!important}html body .site-header .main-nav a::after{right:9px;left:9px}}
 
 /* הראש: לוגו גדול, משפט ומעברים מהירים */
 .nh-hero{position:relative;padding:56px 16px 36px;color:var(--nh-ink);font-family:'Heebo',Arial,sans-serif}
@@ -61,11 +72,12 @@ a.nh-door:focus-visible,a.nh-feat:focus-visible,a.nh-step:focus-visible,.nh-chip
   .nh-doors .nh-door:first-child{grid-column:1 / -1}
   .nh-strip{grid-template-columns:1fr}
   .nh-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
-  html body.is-home .site-header{grid-template-columns:auto 1fr auto}
+  html body .site-header{grid-template-columns:auto 1fr auto}
 }
 @media (max-width:760px){
-  html body.is-home .site-header .main-nav{grid-column:1 / -1}
-  html body.is-home .site-header .main-nav,html body.is-home .site-header .main-nav.open{background:#ffffff!important}
+  html body .site-header .main-nav{grid-column:1 / -1;flex-direction:column;align-items:stretch;flex-wrap:wrap}
+  html body .site-header .main-nav,html body .site-header .main-nav.open{background:#ffffff!important}
+  html body .site-header .main-nav a.nav-me{margin:8px 0 0}
   .nh-hero{padding-top:28px}
 }
 @media (prefers-reduced-motion:reduce){.nh-door{transition:none}.nh-door:hover{transform:none}}
