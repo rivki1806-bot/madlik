@@ -69,3 +69,7 @@ a.nh-door:focus-visible,a.nh-feat:focus-visible,a.nh-step:focus-visible,.nh-chip
   .nh-hero{padding-top:28px}
 }
 @media (prefers-reduced-motion:reduce){.nh-door{transition:none}.nh-door:hover{transform:none}}
+/* במסך רחב: הפרסומת בצד שמאל, כולה בתוך המסך ולא חתוכה */
+@media (min-width:1200px){
+  html body .nh-hero .ad-rail{left:max(24px,2vw)!important;right:auto!important;top:56px!important;transform:none!important}
+}

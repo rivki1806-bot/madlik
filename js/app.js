@@ -2221,7 +2221,7 @@ loadRemote();
   if(ADMIN_PAGE) return;
   const FB_AREAS = ['משחקים', 'מתכונים', 'סטודיו מיתוג', 'פעילויות להדפסה', 'משחק מיניאטורה', 'נותני שירות'];
   let hideUntil = 0; try{ hideUntil = +sessionStorage.getItem('madlik_fb_hide') || 0; }catch(e){}
-  const doneAt = store.get('fb_done', 0); if(doneAt && Date.now() - doneAt < 7 * 864e5) return;
+  // אפשר לשלוח כמה משובים שרוצים: העיגול לא נעלם אחרי שליחה
   if(hideUntil) return;
   const b = document.createElement('div'); b.className = 'fb-wrap';
   b.innerHTML = '<button type="button" class="fb-bubble" aria-label="נהניתם? הכנסו ושתפו אותנו!"><span class="fb-ring" aria-hidden="true"></span><span class="fb-ring r2" aria-hidden="true"></span><span class="fb-txt"><b>נהניתם?</b><span>הכנסו ושתפו אותנו!</span></span><i class="fb-h h1" aria-hidden="true">♥</i><i class="fb-h h2" aria-hidden="true">♥</i><i class="fb-h h3" aria-hidden="true">♥</i></button><button type="button" class="fb-hide" aria-label="הסתרת העיגול">×</button>';
@@ -2244,9 +2244,8 @@ loadRemote();
       e.preventDefault();
       const chips = [...f.querySelectorAll('.fb-chips [aria-pressed=true]')].map(x => x.textContent), msg = f.elements.msg.value.trim(), name = f.elements.name.value.trim();
       record('contact', {name, msg:'משוב: נהניתי' + (chips.length ? ' מ' + chips.join(', ') : '') + (msg ? ' · ' + msg : ''), page:location.hash || '#/'});
-      store.set('fb_done', Date.now());
       f.innerHTML = '<div class="fb-thanks"><div class="fb-ico big" aria-hidden="true">💛</div><h2>תודה רבה' + (name ? ', ' + esc(name) : '') + '!</h2><p>שמחים שנהניתם. נשמח לראות אתכם שוב.</p></div>';
-      b.remove(); setTimeout(close, 2600);
+      setTimeout(close, 2600);
     };
   };
 })();
