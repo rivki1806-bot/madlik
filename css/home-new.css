@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Varela+Round&display=swap");
 /* דף הבית החדש (מוקאפ 1): לוגו במרכז, תפריט ממורכז, חמש דלתות, משחק השבוע והתקדמות אישית.
    הכול תחת body.is-home או מחלקות nh- כדי לא לשנות שאר דפים */
 body.is-home{--nh-orange:#e8590c;--nh-orange-2:#ff8a3d;--nh-ink:#2b1b12;--nh-muted:#7a5a44;--nh-paper:#fff8f2;--nh-cream:#ffefe0;--nh-line:#f0d9c4;--nh-teal:#1f6f6a}
@@ -12,7 +12,7 @@ html body .site-header .logo{grid-column:1;justify-self:start}
 html body .site-header .logo-img{height:48px!important}
 html body.is-home .site-header .logo{visibility:hidden}
 html body .site-header .main-nav{grid-column:2;display:flex!important;align-items:center;justify-content:center;gap:4px!important;flex-wrap:nowrap}
-html body .site-header .main-nav a{position:relative;padding:14px 14px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#2b1b12!important;font:600 17px/1.2 'IBM Plex Sans Hebrew','Heebo',Arial,sans-serif!important;letter-spacing:0!important;text-decoration:none!important;white-space:nowrap;transition:color .2s}
+html body .site-header .main-nav a{position:relative;padding:14px 14px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#2b1b12!important;font:600 17px/1.2 'Varela Round','Heebo',Arial,sans-serif!important;letter-spacing:0!important;text-decoration:none!important;white-space:nowrap;transition:color .2s}
 html body .site-header .main-nav a::after{content:"";position:absolute;right:14px;left:14px;bottom:6px;height:3px;border-radius:2px;background:#e8590c;transform:scaleX(0);transition:transform .25s ease}
 html body .site-header .main-nav a:hover{color:#e8590c!important}
 html body .site-header .main-nav a:hover::after,html body .site-header .main-nav a.active::after{transform:scaleX(1)}
@@ -25,7 +25,7 @@ html body .site-header .menu-toggle{grid-column:3;justify-self:end;color:#2b1b12
 @media (max-width:1280px){html body .site-header .main-nav a{font-size:15px!important;padding:14px 9px!important}html body .site-header .main-nav a::after{right:9px;left:9px}}
 
 /* הראש: לוגו גדול, משפט ומעברים מהירים */
-.nh-hero{position:relative;padding:22px 16px 18px;color:var(--nh-ink);font-family:'Heebo',Arial,sans-serif}
+.nh-hero{position:relative;padding:22px 16px 18px;color:var(--nh-ink);font-family:'Varela Round','Heebo',Arial,sans-serif}
 .nh-center{max-width:600px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 .nh-h1{margin:0}
 .nh-logo{display:block;width:min(400px,80vw);height:auto;margin:0 auto}
@@ -35,18 +35,18 @@ html body .site-header .menu-toggle{grid-column:3;justify-self:end;color:#2b1b12
 .nh-chips a:hover{border-color:var(--nh-orange);color:var(--nh-orange)}
 
 /* חמש הדלתות */
-.nh-doors{max-width:1240px;margin:0 auto;padding:8px 16px 40px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;font-family:'Heebo',Arial,sans-serif}
+.nh-doors{max-width:1240px;margin:0 auto;padding:8px 16px 40px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;font-family:'Varela Round','Heebo',Arial,sans-serif}
 .nh-door{display:flex;flex-direction:column;gap:6px;min-height:150px;padding:20px 22px;border-radius:24px;background:#ffffff;border:1px solid var(--nh-line);color:var(--nh-ink);text-decoration:none;transition:transform .2s,border-color .2s}
 .nh-door:hover{transform:translateY(-4px);border-color:var(--nh-orange)}
 .nh-door.on{background:var(--nh-orange);border-color:var(--nh-orange);color:#ffffff}
-.nh-door b{font-family:'Secular One','Heebo',sans-serif;font-weight:400;font-size:26px}
+.nh-door b{font-family:'Fredoka','Heebo',sans-serif;font-weight:400;font-size:26px}
 .nh-door span{font-weight:300;font-size:16px;line-height:1.5}
 .nh-door small{margin-top:auto;font-weight:700;font-size:14px}
 
 /* משחק השבוע והתקדמות אישית */
-.nh-strip{max-width:1240px;margin:0 auto;padding:0 16px 48px;display:grid;grid-template-columns:1fr;gap:24px;font-family:'Heebo',Arial,sans-serif}
+.nh-strip{max-width:1240px;margin:0 auto;padding:0 16px 48px;display:grid;grid-template-columns:1fr;gap:24px;font-family:'Varela Round','Heebo',Arial,sans-serif}
 .nh-feat{display:flex;flex-direction:column;justify-content:flex-end;gap:10px;min-height:280px;padding:30px;border-radius:30px;background:linear-gradient(160deg,var(--nh-orange-2),var(--nh-orange));color:#ffffff;text-decoration:none}
-.nh-feat b{font-family:'Secular One','Heebo',sans-serif;font-weight:400;font-size:clamp(38px,4vw,52px);line-height:1}
+.nh-feat b{font-family:'Fredoka','Heebo',sans-serif;font-weight:400;font-size:clamp(38px,4vw,52px);line-height:1}
 .nh-feat span{font-size:18px;font-weight:300}
 .nh-feat .nh-pill{align-self:flex-start;padding:4px 12px;border-radius:999px;background:#ffffff;color:var(--nh-orange);font-weight:800;font-size:14px}
 .nh-path{display:flex;flex-direction:column;gap:14px;padding:26px;border-radius:30px;background:#ffffff;border:1px solid var(--nh-line);color:var(--nh-ink)}
@@ -96,3 +96,11 @@ a.nh-door:focus-visible,a.nh-feat:focus-visible,a.nh-step:focus-visible,.nh-chip
 /* העיגול "נהניתם?" תמיד בצד שמאל למטה, מעל כפתור "לדף הבית" */
 html body .fb-wrap{left:14px!important;right:auto!important;bottom:84px!important}
 @media (max-width:640px){html body .fb-wrap{left:10px!important;right:auto!important;bottom:76px!important}}
+
+/* גופני האתר: "עגול וחמים". Fredoka לכותרות, Varela Round לטקסט.
+   לא נוגעים בגופנים שבתוך עיצובים, דפי הדפסה ומשחקים (הם מגדירים גופן משלהם) */
+html body,html body *{--f-body:'Varela Round','Heebo',sans-serif!important;--f-display:'Fredoka','Heebo',sans-serif!important;--f-title:'Fredoka','Heebo',sans-serif!important}
+html body{font-family:'Varela Round','Heebo',Arial,sans-serif!important}
+html body :is(.page-head h1,.sec-h,.section > h2,.box > h2,.wshow h2,.empty b,.card h3,.card b.title,.nh-door b,.nh-path h2){font-family:'Fredoka','Heebo',sans-serif!important;font-weight:600!important}
+html body :is(.page-head p,.breadcrumb,.btn,.form label,.form input,.form textarea,.form select,.site-footer,.nh-lead,.nh-door span,.nh-step,.mk-strip){font-family:'Varela Round','Heebo',Arial,sans-serif!important}
+html body .site-header .main-nav a{font-weight:400!important}
