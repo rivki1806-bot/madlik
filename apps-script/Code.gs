@@ -118,6 +118,7 @@ function doPost(e) {
       return json_({ ok: true });
     }
 
+    if (/^me(Start|Code|Verify|Load|Save)$/.test(String(d.action))) return me_(d); // אזור אישי בענן (Me.gs)
     if (d.action === 'startPay') return startPay_(d);
     if (d.action === 'confirmPay') return confirmPay_(d);
 
