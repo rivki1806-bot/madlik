@@ -296,7 +296,6 @@ pages.home = () => {
     <div class="nh-center">
       <h1 class="nh-h1"><span class="sr-only">מדליק – האתר לערב לביבות: משחקים, מתכונים, מיתוג ונותני שירות</span><img class="nh-logo" src="img/logo-mark.png" alt="מדליק – כל מה שצריך לערב לביבות"></h1>
       <p class="nh-lead">משחקים, עיצובים ומתכונים לערב לביבות שכולם זוכרים. בוחרים, מתאימים לשמות שלכם, ומתחילים.</p>
-      <nav class="nh-chips" aria-label="מעברים מהירים"><a href="#/games">משחק לכל המשפחה</a><a href="#/suppliers">ערב נשים</a><a href="#/create">מוכן ב־10 דקות</a><a href="#/recipes">מתכון חלבי</a></nav>
     </div>
   </section>
   <section class="nh-doors" aria-label="המדורים">
@@ -307,7 +306,6 @@ pages.home = () => {
     ${door(false, 'נותני שירות', 'מפעילות, הפקה ואפייה', '#/suppliers')}
   </section>
   <section class="nh-strip">
-    <a class="nh-feat" href="#/create/battle"><b>קרב המילים</b><span>6 אתגרים במשחק אחד, עם המילים של המשפחה.</span></a>
     <div class="nh-path"><h2>הערב שלך, צעד אחר צעד</h2><div class="nh-steps">${steps.join('')}</div><a class="nh-me" href="#/me">לאזור האישי ←</a></div>
   </section>
   <div class="nh-credit"><div class="mk-strip" role="note" aria-label="מי מאחורי מדליק"><p class="mks-t"><span class="mks-by">פיתוח, אפיון ועיצוב: <b>רבקי יוגב</b></span><span class="mks-dot" aria-hidden="true">✦</span><span class="mks-prod">מדליק – עוד מוצר טוב מבית <bdi>autoclick</bdi></span></p><div class="mks-acts"><a class="mks-tel" href="tel:0556771806" dir="ltr">055-677-1806</a><button type="button" class="mks-go" data-open-contact><span>דברו איתי</span><i aria-hidden="true">←</i></button></div></div></div>`;
