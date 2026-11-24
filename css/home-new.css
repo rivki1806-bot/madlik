@@ -104,3 +104,5 @@ html body{font-family:'Varela Round','Heebo',Arial,sans-serif!important}
 html body :is(.page-head h1,.sec-h,.section > h2,.box > h2,.wshow h2,.empty b,.card h3,.card b.title,.nh-door b,.nh-path h2){font-family:'Fredoka','Heebo',sans-serif!important;font-weight:600!important}
 html body :is(.page-head p,.breadcrumb,.btn,.form label,.form input,.form textarea,.form select,.site-footer,.nh-lead,.nh-door span,.nh-step,.mk-strip){font-family:'Varela Round','Heebo',Arial,sans-serif!important}
 html body .site-header .main-nav a{font-weight:400!important}
+/* סטודיו: מסגרת כשגוררים תמונה מעל התצוגה */
+.tp-viewport.tp-dropzone{outline:3px dashed #e8590c;outline-offset:-6px;background:rgba(232,89,12,.06)}

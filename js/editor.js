@@ -297,7 +297,7 @@ function mount(host, opts){
       const url = file.type === 'image/png' || file.type === 'image/webp' ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', .9);
       const aid = 'a' + Math.random().toString(36).slice(2,7); S.assets[aid] = url;
       const w = Math.min(420, c.width); add({id:uid(), type:'image', src:aid, x:W/2, y:H*.45, w, rot:0, op:1, r:0, flip:false, lock:false}); say('התמונה נוספה');
-    }; im.src = rd.result; }; rd.readAsDataURL(file);
+    }; im.onerror = () => say('הקובץ לא נפתח. אפשר להעלות תמונה מסוג JPG או PNG (תמונות אייפון בפורמט HEIC צריך קודם לשמור כ־JPG)'); im.src = rd.result; }; rd.onerror = () => say('לא הצלחתי לקרוא את הקובץ'); rd.readAsDataURL(file);
   }
 
   /* --- ממשק עליון --- */

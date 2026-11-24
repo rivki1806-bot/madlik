@@ -208,6 +208,7 @@ function replaceImage(c, l, file){
     cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
     const aid = 'a' + Math.random().toString(36).slice(2,7); c.S.assets[aid] = file.type === 'image/png' ? cv.toDataURL('image/png') : cv.toDataURL('image/jpeg', .9);
     l.src = aid; c.paint(l); c.drawSel(); c.push(); };
+    im.onerror = () => { const t = document.getElementById('toast'); if(t){ t.textContent = 'הקובץ לא נפתח. אפשר להעלות תמונה מסוג JPG או PNG (תמונות אייפון בפורמט HEIC צריך קודם לשמור כ־JPG)'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 4000); } };
     im.src = rd.result; };
   rd.readAsDataURL(file);
 }

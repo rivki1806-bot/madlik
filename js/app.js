@@ -804,12 +804,12 @@ pages.design = ([id], q) => {
       <div class="tp-pane" data-pane="bg" style="--tc:${T.bg.col}" hidden>${head(T.bg)}
         <div class="tp-grp"><h4>שפה עיצובית</h4><div class="st-pick" id="stPick">${styles.map(x=>`<button type="button" class="stp ${s.style===x.id?'on':''}" data-style="${esc(x.id)}" title="${esc(x.name)}"><img src="${esc(x.thumb||x.img)}" alt="${esc(x.name)}" loading="lazy"></button>`).join('')}<button type="button" class="stp stp-plain ${s.style?'':'on'}" data-style="" title="בלי תמונה">בלי</button></div></div>
         <div id="bgBox" class="tp-grp"><h4>מיקום ותמונה</h4>${rng('bz', 'זום הרקע', 100, 320, +s.bz || 100, '%', 'אפשר גם לגלול עם גלגל העכבר מעל התמונה')}${rng('bb', 'בהירות הרקע', -60, 60, +s.bb || 0, '', 'שלילי מכהה את התמונה, חיובי מבהיר אותה')}
-          <div class="tp-bgrow"><span class="tp-tip">גוררים את התמונה בתצוגה כדי להזיז אותה בתוך המוצר</span><button type="button" class="tp-ib" id="tpBgReset">איפוס רקע</button></div></div>
+          <div class="tp-bgrow"><span class="tp-tip">בלשונית הזו גוררים את התמונה לכל כיוון, גם מעל הטקסט. חיצים במקלדת מזיזים בעדינות. גלגל העכבר מגדיל ומקטין</span><button type="button" class="tp-ib" id="tpBgReset">איפוס רקע</button></div></div>
         <div class="tp-grp"><h4>רקע בצבע חופשי</h4><label class="pc pc-c"><span>צבע הרקע</span><span class="cpick" style="--c:#ffffff"><input type="color" id="tpBgc" value="#ffffff" aria-label="צבע רקע חופשי"><code>#ffffff</code></span></label><span class="tp-tip">בוחרים כל צבע שרוצים. בחירת צבע מחליפה את התמונה ברקע חלק.</span></div>
         <div id="themeBox" class="tp-grp"><h4>ערכות צבעים מוכנות</h4><div class="swatches">${D.themes.map(th=>`<button type="button" class="swatch ${s.theme===th.id?'on':''}" data-theme="${th.id}" title="${th.name}" style="background:linear-gradient(135deg,${th.bg} 55%,${th.acc} 55%)"></button>`).join('')}</div></div></div>
 
       <div class="tp-pane" data-pane="view" style="--tc:${T.view.col}" hidden>${head(T.view)}
-        <div class="tp-grp"><label><span class="fl">לוגו או תמונה<em>לא חובה, מופיע בראש הטקסט</em></span><input type="file" accept="image/*" id="logoIn"></label></div>
+        <div class="tp-grp"><label><span class="fl">לוגו או תמונה<em>JPG או PNG. אפשר גם לגרור תמונה לתצוגה או להדביק (Ctrl+V)</em></span><input type="file" accept="image/*" id="logoIn"></label></div>
         <div class="tp-grp"><label class="pc"><span>גודל התצוגה</span><input type="range" id="zm" min="40" max="260" value="100" aria-label="גודל התצוגה"><output id="zmO">100%</output></label></div>
         <ul class="tp-keys"><li><kbd>Ctrl</kbd>+<kbd>Z</kbd> ביטול</li><li><kbd>Ctrl</kbd>+<kbd>Y</kbd> שחזור</li><li>גלגל העכבר על התמונה (בלשונית רקע): זום</li></ul></div>
 
@@ -833,8 +833,9 @@ pages.design.after = ([id], q) => {
   const t = D.templates.find(x=>x.id===id); if(!t) return;
   const f = document.getElementById('df'), dv = document.getElementById('dv'), F = window.MadlikFonts;
   const s = Object.assign(tpDefault(q), t.fields, q.d ? dec(q.d) : {});
+  let logo = typeof s.logo === 'string' && /^data:image\//.test(s.logo) ? s.logo : ''; delete s.logo; // תמונה שנשמרה עם העיצוב
   const init = JSON.stringify(s);
-  let logo = '', zoomK = 1, ctarget = 'tcol', tab = 'text';
+  let zoomK = 1, ctarget = 'tcol', tab = 'text';
   const $ = x => document.getElementById(x);
   const pctv = (v, a, b) => Math.max(0, Math.min(100, (v - a) / (b - a) * 100)).toFixed(1) + '%';
   const read = () => Object.assign(s, Object.fromEntries(new FormData(f)));
@@ -947,7 +948,8 @@ pages.design.after = ([id], q) => {
     const d = e.target.closest('.design'); if(!d) return;
     const idx = designs().indexOf(d), pxmm = d.getBoundingClientRect().width / t.w;
     let kind = null;
-    if(e.target.closest('.d-logo')) kind = 'logo';
+    if(tab === 'bg' && tpStyle(s) && d.classList.contains('styled')) kind = 'bg'; // בלשונית רקע: כל גרירה מזיזה את הרקע
+    else if(e.target.closest('.d-logo')) kind = 'logo';
     else if(e.target.closest(TXT + ',.d-plate')) kind = 'text';
     else if(tpStyle(s) && d.classList.contains('styled')) kind = 'bg';
     if(!kind){ sel = null; placeOverlay(); return; }
@@ -962,9 +964,15 @@ pages.design.after = ([id], q) => {
     if(!drag.moved){ drag.moved = true; dv.classList.add('dragging'); if(drag.kind !== 'bg') select(drag.kind, drag.idx); }
     const dxm = dx / drag.pxmm, dym = dy / drag.pxmm;
     if(drag.kind === 'bg'){
-      const i = drag.info;
-      const nx = (t.w - i.iw) < -.01 ? Math.max(0, Math.min(100, drag.px + dxm / (t.w - i.iw) * 100)) : drag.px;
-      const ny = (t.h - i.ih) < -.01 ? Math.max(0, Math.min(100, drag.py + dym / (t.h - i.ih) * 100)) : drag.py;
+      let i = drag.info;
+      const lockX = Math.abs(t.w - i.iw) < .5 && Math.abs(dx) > 12, lockY = Math.abs(t.h - i.ih) < .5 && Math.abs(dy) > 12;
+      if((lockX || lockY) && !drag.bumped){ // התמונה בדיוק בגודל המוצר בכיוון הזה: מגדילים מעט כדי שאפשר יהיה להזיז
+        drag.bumped = true; s.bz = Math.max(+s.bz || 100, 118); setRange(f.querySelector('[data-sk=bz]'), s.bz); draw();
+        i = drag.info = bgInfo(t, s, tpStyle(s)); drag.px = i.px; drag.py = i.py; drag.x = e.clientX; drag.y = e.clientY; drag.pxmm = (designs()[drag.idx] || designs()[0]).getBoundingClientRect().width / t.w;
+        toast('הגדלתי מעט את הרקע, כדי שאפשר יהיה להזיז אותו לכל כיוון'); return;
+      }
+      const nx = Math.abs(t.w - i.iw) > .01 ? Math.max(0, Math.min(100, drag.px + dxm / (t.w - i.iw) * 100)) : drag.px;
+      const ny = Math.abs(t.h - i.ih) > .01 ? Math.max(0, Math.min(100, drag.py + dym / (t.h - i.ih) * 100)) : drag.py;
       s.bx = Math.round(nx * 10) / 10; s.by = Math.round(ny * 10) / 10;
       dv.querySelectorAll('.design.styled').forEach(el => { el.style.backgroundPosition = s.bx + '% ' + s.by + '%'; });
     } else if(drag.kind === 'text'){
@@ -1100,10 +1108,22 @@ pages.design.after = ([id], q) => {
     onPick: n => { s.font = n; syncFont(); draw(); F.ensure(n).then(draw); push(); }, onBold: on => { s.fw = on ? 700 : 400; syncFont(); draw(); push(); }}); };
   $('tpBold').onclick = () => { s.fw = (+s.fw || 0) >= 600 ? 400 : 700; syncFont(); draw(); push(); };
   $('zm').oninput = e => setZoom(e.target.value / 100);
-  $('logoIn').onchange = e => { const file = e.target.files[0]; if(!file) return; if(file.size > 5e6) return toast('הקובץ גדול מדי (עד 5MB)'); const r = new FileReader(); r.onload = () => { logo = r.result; s.lx = 0; s.ly = 0; sel = 'logo'; selIdx = 0; draw(); push(); }; r.readAsDataURL(file); };
+  const useImage = file => { if(!file) return; if(!/^image\//.test(file.type || '') && !/\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name || '')) return toast('אפשר להעלות רק תמונה'); toast('מכינה את התמונה...');
+    prepImage(file).then(url => { logo = url; s.lx = 0; s.ly = 0; s.lz = 100; sel = 'logo'; selIdx = 0; draw(); push(); toast('התמונה נוספה. גוררים אותה למקום, ומגדילים בפינה'); }, msg => toast(msg)); };
+  $('logoIn').onchange = e => { useImage(e.target.files[0]); e.target.value = ''; };
+  const vp = dv.parentElement;
+  ['dragenter', 'dragover'].forEach(n => vp.addEventListener(n, e => { if(e.dataTransfer && [...e.dataTransfer.types].includes('Files')){ e.preventDefault(); vp.classList.add('tp-dropzone'); } }));
+  ['dragleave', 'drop'].forEach(n => vp.addEventListener(n, () => vp.classList.remove('tp-dropzone')));
+  vp.addEventListener('drop', e => { if(e.dataTransfer && e.dataTransfer.files.length){ e.preventDefault(); useImage(e.dataTransfer.files[0]); } });
+  const onPaste = e => { if(!document.body.contains(f)){ document.removeEventListener('paste', onPaste); return; } const it = [...((e.clipboardData && e.clipboardData.items) || [])].find(x => x.kind === 'file' && /^image\//.test(x.type)); if(it){ e.preventDefault(); useImage(it.getAsFile()); } };
+  document.addEventListener('paste', onPaste);
   const onKey = e => {
     if(!document.body.contains(f)){ document.removeEventListener('keydown', onKey); return; }
     const tg = e.target, typing = tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT'), mod = e.ctrlKey || e.metaKey;
+    if(!typing && !editing && !sel && !mod && tab === 'bg' && tpStyle(s)){
+      const st = e.shiftKey ? 5 : 1, ar = {ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st]}[e.key];
+      if(ar){ e.preventDefault(); const g = bgInfo(t, s, tpStyle(s)); s.bx = Math.max(0, Math.min(100, g.px - ar[0])); s.by = Math.max(0, Math.min(100, g.py - ar[1])); dv.querySelectorAll('.design.styled').forEach(el => { el.style.backgroundPosition = s.bx + '% ' + s.by + '%'; }); push(); return; }
+    }
     if(!typing && !editing && sel && !mod){
       const st = e.shiftKey ? 5 : 1, ar = {ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st]}[e.key];
       if(ar){ e.preventDefault(); if(sel === 'logo'){ s.lx = (+s.lx || 0) + ar[0]; s.ly = (+s.ly || 0) + ar[1]; applyLogo(); } else { s.tx = (+s.tx || 0) + ar[0]; s.ty = (+s.ty || 0) + ar[1]; applyTextOff(); } placeOverlay(); push(); return; }
@@ -1121,8 +1141,8 @@ pages.design.after = ([id], q) => {
   syncUI(); setTab('text'); draw(); histBtns(); startTourSoon('design');
 
   $('dPrint').onclick = () => { read(); const go = () => { const sh = sheetHTML(t, s, logo); printHTML(sh.html, {credit:false, page:sh.page, margin:0}); }; (F && F.BY[s.font] ? F.ensure(s.font) : Promise.resolve()).then(go); };
-  $('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); };
-  $('dSave').onclick = () => { read(); toast(store.push('saved', {kind:'עיצוב', title:t.title+' – '+s.title, link:`#/studio/${t.id}?d=${enc(s)}`}) ? 'נשמר באזור האישי ♡' : 'לא הצלחתי לשמור: אין מקום בדפדפן'); };
+  $('dShare').onclick = () => { read(); copyLink(`#/studio/${t.id}?d=${enc(s)}`); if(logo) setTimeout(() => toast('הקישור הועתק. התמונה שהעלית לא נכנסת לקישור, אבל נשמרת כשלוחצים שמירה'), 2700); };
+  $('dSave').onclick = () => { read(); const ok = store.push('saved', {kind:'עיצוב', title:t.title+' – '+s.title, link:`#/studio/${t.id}?d=${enc(logo ? Object.assign({}, s, {logo}) : s)}`}); toast(ok ? 'נשמר באזור האישי ♡' + (logo ? ' (כולל התמונה)' : '') : 'לא הצלחתי לשמור: אין מקום בדפדפן'); };
   $('dPng').onclick = () => {
     const go = () => { const d = dv.firstElementChild; const z = d.style.zoom; d.style.zoom = 1;
       window.html2canvas(d, {scale:2, backgroundColor:'#ffffff'}).then(cv=>{ d.style.zoom = z; const a = document.createElement('a'); a.download = 'madlik-'+t.id+'.png'; a.href = cv.toDataURL('image/png'); a.click(); }); };
@@ -1131,6 +1151,25 @@ pages.design.after = ([id], q) => {
     const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; sc.onload = go; sc.onerror = () => toast('לא הצלחתי לטעון – נסה הדפסה ל-PDF'); document.head.appendChild(sc);
   };
 };
+
+/* הכנת תמונה שמעלים: מקטינים לגודל סביר (עד 1600 פיקסלים), שומרים שקיפות ב־PNG, ומחזירים הודעה ברורה כשהקובץ לא נתמך */
+function prepImage(file){
+  return new Promise((ok, no) => {
+    if(file.size > 25e6) return no('התמונה גדולה מדי (עד 25MB)');
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { try{
+      const max = 1600, k = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+      const alpha = /png|webp|gif|svg/.test(file.type || '');
+      let url = alpha ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', .88);
+      if(alpha && url.length > 1.6e6){ const w = c.toDataURL('image/webp', .9); if(/^data:image\/webp/.test(w) && w.length < url.length) url = w; }
+      ok(url);
+    }catch(e){ URL.revokeObjectURL(u); no('לא הצלחתי לעבד את התמונה. נסו תמונה אחרת'); } };
+    im.onerror = () => { URL.revokeObjectURL(u); no('הקובץ לא נפתח. אפשר להעלות תמונה מסוג JPG או PNG (תמונות אייפון בפורמט HEIC צריך קודם לשמור כ־JPG)'); };
+    im.src = u;
+  });
+}
 
 /* דף מלא כפי שיודפס: מדבקות רבות על דף A4, או פריט בודד במרכז הדף */
 function sheetHTML(t, s, logo){
