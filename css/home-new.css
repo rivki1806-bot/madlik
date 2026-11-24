@@ -93,3 +93,6 @@ a.nh-door:focus-visible,a.nh-feat:focus-visible,a.nh-step:focus-visible,.nh-chip
 
 /* המסך הראשון: הלוגו והריבועים בלבד. "הערב שלך" מתחיל רק אחרי גלילה */
 .nh-first{min-height:100vh;min-height:100svh}
+/* העיגול "נהניתם?" תמיד בצד שמאל למטה, מעל כפתור "לדף הבית" */
+html body .fb-wrap{left:14px!important;right:auto!important;bottom:84px!important}
+@media (max-width:640px){html body .fb-wrap{left:10px!important;right:auto!important;bottom:76px!important}}
