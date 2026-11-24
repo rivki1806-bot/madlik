@@ -300,7 +300,7 @@ pages.home = () => {
     </div>
   </section>
   <section class="nh-doors" aria-label="המדורים">
-    ${door(true, 'משחקים', 'על המסך, עם קבוצות וניקוד', '#/games')}
+    ${door(false, 'משחקים', 'על המסך, עם קבוצות וניקוד', '#/games')}
     ${door(false, 'להדפסה', 'בינגו, רביעיות ותפזורת', '#/create')}
     ${door(false, 'מיתוג', 'הזמנה, שלט ומדבקות', '#/studio')}
     ${door(false, 'מתכונים', 'הכמויות מתחשבות לבד', '#/recipes')}
