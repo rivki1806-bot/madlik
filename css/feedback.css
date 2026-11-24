@@ -261,3 +261,14 @@ html[data-pal=logo] .ad-card:not(.ad-img){padding-top:40px!important}
 .promo-nuget .promo-big{font:600 clamp(1.25rem,4.4vw,1.6rem)/1.4 'Rubik',sans-serif;margin:0 0 16px}
 .promo-nuget .promo-big b{font-weight:900;font-size:1.15em}
 @media (max-height:720px){.promo-nuget .promo-hero{aspect-ratio:2/1}.promo-nuget .promo-hero img{object-fit:cover}}
+/* אזור אישי בענן: כניסה עם קוד במייל */
+.me-have{margin:12px 0 0;text-align:center;color:#4b5399}
+.me-have .gp-link{display:inline;background:none;border:0;color:#d9531a;font:700 1rem inherit;text-decoration:underline;cursor:pointer;padding:0}
+.me-bar{display:grid;gap:6px;justify-items:start}
+.me-bar p{margin:0}
+#meCloud{font-weight:700;color:#2b8a3e}
+#meCloud[data-st=err],#meCloud[data-st=relogin]{color:#c92a2a}
+#meCloud[data-st=saving]{color:#868e96}
+.me-card .me-code{font:800 1.8rem/1.2 'Rubik',sans-serif;letter-spacing:.35em;text-align:center}
+.me-card .gp-link{display:block;margin:10px auto 0;background:none;border:0;color:#4b5399;text-decoration:underline;cursor:pointer;font:600 .95rem inherit}
+.me-card .fb-send.is-busy{opacity:.6;pointer-events:none}

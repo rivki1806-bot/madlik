@@ -10,7 +10,7 @@ const uid = () => 'l' + Math.random().toString(36).slice(2,8);
 const $ = (r,s) => r.querySelector(s);
 const $$ = (r,s) => [...r.querySelectorAll(s)];
 const lsGet = (k,d) => { try{ const v = localStorage.getItem('madlik_'+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } };
-const lsSet = (k,v) => { try{ localStorage.setItem('madlik_'+k, JSON.stringify(v)); return true; }catch(e){ return false; } };
+const lsSet = (k,v) => { try{ localStorage.setItem('madlik_'+k, JSON.stringify(v)); }catch(e){ return false; } try{ window.dispatchEvent(new CustomEvent('madlik:store', {detail:k})); }catch(e){} return true; }; // האירוע מעדכן את האזור האישי בענן
 
 /* ---------- גופנים ---------- */
 const FONTS = [
@@ -356,10 +356,14 @@ function mount(host, opts){
     const title = (S.layers.find(l => l.type === 'text') || {text:'עיצוב'}).text.split('\n')[0].slice(0,40);
     const entry = {id, title, date:new Date().toLocaleString('he-IL'), state:{style:S.style, fmt:S.fmt, bg:S.bg, layers:S.layers, assets:S.assets}};
     const i = list.findIndex(x => x.id === id); if(i >= 0) list[i] = entry; else list.unshift(entry);
-    if(!lsSet('designs', list.slice(0,12))){ entry.state.assets = {}; lsSet('designs', list.slice(0,6)); say('נשמר בלי התמונות (אין מקום בדפדפן)'); }
+    /* לא מוחקים עיצובים ישנים. אם אין מקום בדפדפן: מורידים קודם תמונות מהעיצובים הישנים, ורק בסוף מהעיצוב הנוכחי */
+    let ok = lsSet('designs', list), note = '';
+    for(let k = list.length - 1; !ok && k > 0; k--){ if(list[k].state && list[k].state.assets && Object.keys(list[k].state.assets).length){ list[k].state.assets = {}; ok = lsSet('designs', list); note = 'כדי לפנות מקום, הוסרו תמונות מעיצובים ישנים'; } }
+    if(!ok){ entry.state.assets = {}; ok = lsSet('designs', list); note = 'העיצוב נשמר בלי התמונות (אין מקום בדפדפן)'; }
+    if(!ok){ toast('לא הצלחתי לשמור: אין מקום בדפדפן. מחקי עיצובים ישנים באזור האישי ונסי שוב'); say('לא נשמר'); return; }
     const saved = lsGet('saved', []).filter(x => x.link !== '#/studio/edit?load='+id);
     saved.unshift({id:'s'+id, date:entry.date, kind:'עיצוב', title, link:'#/studio/edit?load='+id}); lsSet('saved', saved);
-    toast('העיצוב נשמר באזור האישי'); say('העיצוב נשמר');
+    toast(note || 'העיצוב נשמר באזור האישי'); say(note || 'העיצוב נשמר');
   }
   const encState = o => encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(o)))));
   function share(){
