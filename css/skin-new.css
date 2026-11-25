@@ -1,0 +1,85 @@
+/* ============================================================
+   מראה חדש למדליק (שילוב 1): הכתום של הלוגו, ורוד פודרה ופחם.
+   הקובץ הזה משנה רק עיצוב: צבעים, גופנים, צללים והנפשות של מעטפת האתר.
+   הוא לא נוגע בתוכן, בטפסים, בחלונות, בשלבי הסטודיו או בעיצובים שבתוך המשחקים והעורכים.
+   נטען אחרון, ולכן אפשר לבטל אותו פשוט על ידי הסרת השורה שטוענת אותו מ־index.html.
+   ============================================================ */
+:root{
+  --sk-bg:#FFFAF5; --sk-card:#FFFFFF; --sk-pink:#F7DDE2; --sk-pink-2:#FBEDEF;
+  --sk-ink:#2B2B2E; --sk-muted:#66606A; --sk-line:#EFE0E2;
+  --sk-orange:#F47A2E; --sk-amber:#F9A42A; --sk-gold:#FBC42C; --sk-orange-text:#B5480B;
+  --sk-r:12px;
+}
+
+/* ---------- רקע שקט: בלי עשן, ניצוצות ואור שעוקב אחרי העכבר ---------- */
+html body{background:var(--sk-bg)!important;background-image:none!important;color:var(--sk-ink)}
+html{background:var(--sk-bg)!important}
+html body::before{display:none!important}
+#embers,.cursor-light,#scene,.progress{display:none!important}
+
+/* ---------- כותרות וטקסט ---------- */
+html body :is(h1,h2,h3){color:var(--sk-ink);font-weight:600;letter-spacing:0}
+html body a{color:var(--sk-orange-text)}
+html body ::selection{background:var(--sk-amber);color:var(--sk-ink)}
+html body .breadcrumb,html body .breadcrumb a{color:var(--sk-muted)}
+
+/* ---------- ראש כל עמוד ---------- */
+html body .page-head{background:transparent!important;border:0!important;box-shadow:none!important;padding-block:48px 8px}
+html body .page-head h1{font-size:clamp(34px,4vw,48px);line-height:1.1;color:var(--sk-ink)!important;text-shadow:none!important}
+html body .page-head p{color:var(--sk-muted);font-size:19px}
+
+/* ---------- כרטיסים וקופסאות: לבן, קו דק, בלי צל ---------- */
+html body :is(.card,.box,.sup-card,.rcp-card,.g-card,.table){box-shadow:none!important;border-radius:var(--sk-r)}
+html body :is(.card,.box){background:var(--sk-card);border:1px solid var(--sk-line)!important}
+html body :is(.card,.box):hover{border-color:var(--sk-orange)!important;transform:none!important}
+html body .cust-rib{box-shadow:none!important;animation:none!important}
+
+/* ---------- כפתורים: סוג אחד, כתום הלוגו עם טקסט כהה ---------- */
+html body .btn{background:var(--sk-orange)!important;color:#1F1A17!important;border:0!important;border-radius:var(--sk-r)!important;box-shadow:none!important;text-shadow:none!important;background-image:none!important;font-weight:600}
+html body .btn:hover{background:#E86E24!important;transform:none!important}
+html body .btn-light,html body .btn.btn-light{background:transparent!important;color:var(--sk-ink)!important;border:1px solid var(--sk-line)!important}
+html body .btn-light:hover{border-color:var(--sk-orange)!important;background:var(--sk-pink-2)!important}
+html body :is(a,button,input,select,textarea):focus-visible{outline:3px solid var(--sk-ink);outline-offset:3px}
+
+/* ---------- שדות טפסים ---------- */
+html body :is(.form input,.form textarea,.form select){border:1px solid var(--sk-line);border-radius:var(--sk-r);background:#fff;color:var(--sk-ink);box-shadow:none}
+html body :is(.form input,.form textarea,.form select):focus{border-color:var(--sk-orange);box-shadow:none}
+
+/* ---------- פס העדכונים העליון: כתום שטוח במקום מעבר צבע ---------- */
+html body .newsletter-bar{background:var(--sk-amber)!important;background-image:none!important;box-shadow:none!important;border-bottom:1px solid #E08E1A}
+
+/* ---------- כפתורים צפים ---------- */
+html body :is(.to-top,.bk-btn){box-shadow:none!important;border:1px solid var(--sk-ink)}
+html body .toast{box-shadow:none!important;border-radius:var(--sk-r)}
+
+/* ---------- תחתית ---------- */
+html body .site-footer{background:transparent;border-top:1px solid var(--sk-line);color:var(--sk-muted)}
+
+/* ---------- הנפשות רקע של קישוטים: נעצרות. תוכן, טפסים ועיגול המשוב נשארים ---------- */
+html body :is(.mn-sp,.fb-h,.fb-ring,.gq-ico,.ph-dust,.ph-glow){animation:none!important}
+html body .fb-bubble{box-shadow:none!important}
+
+@media (prefers-reduced-motion:reduce){html body *{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+/* ---------- "עולמות" של המדורים: רקעים ועיטורים דקורטיביים שקטים. התוכן עצמו נשאר ---------- */
+html[data-pal] body[data-world]{background:var(--sk-bg)!important;background-image:none!important}
+html[data-pal] body[data-world] :is(.amb,.head-art){display:none!important}
+html[data-pal] body[data-world] .page-head{display:block!important}
+/* מתכונים: כרטיסי זכוכית על תמונת מטבח הופכים לכרטיסים לבנים רגילים */
+html[data-pal] body[data-world=recipes] :is(.kg-card,.kg-lh,.kg-filters,.kg-by){background:var(--sk-card)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:1px solid var(--sk-line)!important;box-shadow:none!important}
+html[data-pal] body[data-world=recipes] .kg-acts .btn{background:transparent!important;color:var(--sk-ink)!important;border:1px solid var(--sk-line)!important;border-radius:var(--sk-r)!important}
+html[data-pal] body[data-world=recipes] .kg-acts .btn:hover{background:var(--sk-pink-2)!important;color:var(--sk-ink)!important}
+html[data-pal] body[data-world=recipes] .kg-ghost{background:transparent;border:1px solid var(--sk-line);color:var(--sk-ink);border-radius:var(--sk-r)}
+html[data-pal] body[data-world=recipes] .kg-ghost:hover{background:var(--sk-pink-2);color:var(--sk-ink)}
+
+/* ---------- כותרת העמוד בכל המדורים: אותו גודל, אותו משקל, בלי קווי צבע וצל ---------- */
+html[data-pal] body[data-world] .page-head h1,html[data-pal] body .page-head h1{
+  font-family:'Fredoka','Heebo',sans-serif!important;font-weight:600!important;font-size:clamp(34px,4vw,48px)!important;line-height:1.1!important;
+  color:var(--sk-ink)!important;-webkit-text-fill-color:var(--sk-ink)!important;-webkit-text-stroke:0!important;text-shadow:none!important;background:none!important;letter-spacing:0!important;margin-bottom:12px!important}
+html[data-pal] body[data-world] .page-head h1::before,html[data-pal] body[data-world] .page-head h1::after,html[data-pal] body .page-head h1::after{display:none!important;content:none!important}
+html[data-pal] body[data-world] .page-head .wrap::after,html[data-pal] body[data-world] .page-head::after,html[data-pal] body[data-world] .page-head::before{display:none!important}
+html[data-pal] body[data-world] .page-head p{font-family:'Varela Round','Heebo',sans-serif!important;color:var(--sk-muted)!important;font-size:19px!important;text-shadow:none!important;-webkit-text-fill-color:var(--sk-muted)!important}
+html[data-pal] body[data-world] .page-head{box-shadow:none!important;border:0!important;background:transparent!important}
+html[data-pal] body[data-world] .page-head .wrap{box-shadow:none!important;background:transparent!important;border:0!important;padding-inline:0}
+html[data-pal] body[data-world] .page-head + * hr,html[data-pal] body[data-world] hr{border-color:var(--sk-line)!important;background:var(--sk-line)!important}
+html[data-pal] body :is(.box h2,.box h3,.section h2,.empty b,.st-h,.sec-h){color:var(--sk-ink)!important}
