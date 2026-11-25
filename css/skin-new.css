@@ -83,3 +83,7 @@ html[data-pal] body[data-world] .page-head{box-shadow:none!important;border:0!im
 html[data-pal] body[data-world] .page-head .wrap{box-shadow:none!important;background:transparent!important;border:0!important;padding-inline:0}
 html[data-pal] body[data-world] .page-head + * hr,html[data-pal] body[data-world] hr{border-color:var(--sk-line)!important;background:var(--sk-line)!important}
 html[data-pal] body :is(.box h2,.box h3,.section h2,.empty b,.st-h,.sec-h){color:var(--sk-ink)!important}
+/* דף הבית: ריבועי המדורים בוורוד פודרה, כמו בהמחשה */
+html body .nh-door{background:var(--sk-pink)!important;border:1px solid transparent!important}
+html body .nh-door:hover{border-color:var(--sk-orange)!important}
+html body .nh-step{background:var(--sk-pink-2)!important}
