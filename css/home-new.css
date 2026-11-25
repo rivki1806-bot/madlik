@@ -106,3 +106,6 @@ html body :is(.page-head p,.breadcrumb,.btn,.form label,.form input,.form textar
 html body .site-header .main-nav a{font-weight:400!important}
 /* סטודיו: מסגרת כשגוררים תמונה מעל התצוגה */
 .tp-viewport.tp-dropzone{outline:3px dashed #e8590c;outline-offset:-6px;background:rgba(232,89,12,.06)}
+
+/* החלון של המבצע מעל כל חלון אחר באתר */
+html body .promo-ov{z-index:20000!important}

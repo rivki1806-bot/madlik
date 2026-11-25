@@ -22,6 +22,16 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
+const APP_V = 216; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+(function versionCheck(){
+  const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
+    if(!j || !(+j.v > APP_V)) return;
+    const k = 'madlik_reload_' + j.v; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1');
+    const u = new URL(location.href); u.searchParams.set('v', j.v); location.replace(u.toString()); // כתובת חדשה = הדפדפן טוען הכול מחדש
+  }).catch(() => {}); }catch(e){} };
+  check(); let last = Date.now();
+  document.addEventListener('visibilitychange', () => { if(!document.hidden && Date.now() - last > 5 * 60e3){ last = Date.now(); check(); } });
+})();
 const ADMIN_PAGE = !!window.MADLIK_ADMIN_PAGE; // דף הניהול נפתח רק מהקובץ הייעודי, ולא מהאתר הציבורי
 const adminKey = () => { try{ return (sessionStorage.getItem('madlik_key')||'').trim(); }catch(e){ return ''; } };
 function record(kind, data){
@@ -2237,9 +2247,10 @@ loadRemote();
   if(ADMIN_PAGE || Date.now() >= UNTIL) return;
   try{ if(sessionStorage.getItem('madlik_' + KEY)) return; }catch(e){} // מופיע בכל גלישה חדשה; מי שסגר לא רואה שוב באותה גלישה
   let tries = 0;
-  const busy = () => document.querySelector('dialog[open],.fb-ov,.gp-ov,.overlay,.tour-ov,.biz-notice,.fbn-call,.promo-ov') || (document.getElementById('intro') && document.getElementById('intro').offsetParent !== null) || /^#\/(admin|maalot)/.test(location.hash);
+  // קופץ 3 שניות אחרי הכניסה לאתר, בכל דף שהגולשת נמצאת בו, גם מעל משחק, סיור או חלון אחר
   const show = () => {
-    if(busy()){ if(tries++ < 20) setTimeout(show, 4000); return; }
+    if(document.querySelector('.promo-ov')) return;
+    if(/^#\/admin/.test(location.hash)){ if(tries++ < 200) setTimeout(show, 3000); return; }
     const ov = document.createElement('div'); ov.className = 'promo-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'prT');
     ov.innerHTML = '<div class="promo-card promo-nuget"><button type="button" class="promo-x" aria-label="סגירה">×</button>' +
       '<div class="promo-hero"><img src="img/promo/nuget-hanukkah.webp" alt="משפחה סביב שולחן חנוכה עם סופגניות ומנות של נוגט" width="920" height="614"><span class="ph-badge" aria-hidden="true">10%<small>הנחה</small></span></div>' +
