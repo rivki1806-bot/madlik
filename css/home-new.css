@@ -117,3 +117,7 @@ html body .promo-ov{z-index:20000!important}
 .promo-spoken .promo-hero img{object-fit:cover}
 .promo-spoken .promo-hero{aspect-ratio:16/10!important}
 .promo-spoken .promo-hero img{object-position:center top}
+/* ספוקן ארט: המודעה רואים בשלמותה, בלי חיתוך, בלי שכבת דהייה ובלי תווית מעליה */
+html body .promo-spoken .promo-hero{aspect-ratio:1000/625!important;height:auto!important;background:#fffaf2}
+html body .promo-spoken .promo-hero img{object-fit:contain!important;animation:none!important;transform:none!important}
+html body .promo-spoken .promo-hero::after{display:none!important}

@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 217; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 218; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
@@ -2244,14 +2244,14 @@ loadRemote();
    כל חלון פעיל רק בין from ל־until (שעון ישראל). כשיש יותר מחלון פעיל אחד, בכל כניסה קופץ חלון אחר, לסירוגין, כדי ששני העסקים יקבלו חשיפה שווה.
    מי שסגרה חלון לא תראה חלון מבצע נוסף באותה גלישה */
 const PROMOS = [
-  {id:'nuget', sup:'bmwi4bopc', from:'2026-11-20T00:00:00+02:00', until:'2026-12-14T00:00:00+02:00',
+  {id:'nuget', sup:'bmwi4bopc', from:'2026-11-20T00:00:00+02:00', until:'2026-11-01T08:00:00+02:00', // ספוקן ארט מחליפה את נוגט מ־26.11 בשעה 8:00
    html:'<div class="promo-hero"><img src="img/promo/nuget-hanukkah.webp" alt="משפחה סביב שולחן חנוכה עם סופגניות ומנות של נוגט" width="920" height="614"><span class="ph-badge" aria-hidden="true">10%<small>הנחה</small></span></div>' +
      '<p class="promo-kick">מבצע חנוכה</p><h2 id="prT">למגיעים דרך אתר מדליק</h2>' +
      '<p class="promo-txt promo-big">בקנייה מעל <b>100 ₪</b> תקבלו <b>10% הנחה</b></p>' +
      '<a class="promo-go" href="#/supplier/bmwi4bopc"><span>לחנות נוגט</span><i aria-hidden="true">←</i></a>' +
      '<p class="promo-small">ההנחה למי שהגיע דרך אתר מדליק</p>'},
-  {id:'spoken', sup:'bmwi5ljp0', from:'2026-11-26T08:00:00+02:00', until:'2026-12-05T00:00:00+02:00', // עד סוף כ״ד בכסלו
-   html:'<div class="promo-hero"><img src="img/biz/bmwi5ljp0.jpg" alt="ספוקן ארט: סדנת אומנות מלווה בספוקן וורד, חנה איצ׳ר" width="1000" height="625"><span class="ph-badge" aria-hidden="true">2<small>מתנה</small></span></div>' +
+  {id:'spoken', sup:'bmwi5ljp0', from:'2026-11-01T08:00:00+02:00', until:'2026-12-05T00:00:00+02:00', // עד סוף כ״ד בכסלו
+   html:'<div class="promo-hero"><img src="img/biz/bmwi5ljp0.jpg" alt="ספוקן ארט: סדנת אומנות מלווה בספוקן וורד, חנה איצ׳ר" width="1000" height="625"></div>' +
      '<p class="promo-kick">ספוקן ארט · חנה איצ׳ר</p><h2 id="prT">סדנת יצירה + מופע ספוקן וורד</h2>' +
      '<p class="promo-txt promo-big">סדנה + ספוקן: <b>1,200 ₪</b> + ערכות</p>' +
      '<p class="promo-gift"><b>מבצע למגיעות דרך האתר, עד כ״ד בכסלו:</b> 2 ערכות סדנה מתנה</p>' +
