@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 219; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 220; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
