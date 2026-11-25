@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 216; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 217; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
@@ -2240,30 +2240,48 @@ document.getElementById('newsForm').onsubmit = e => {
 loadRemote();
 
 /* ---------- עיגול בצד בכל עמוד: "נהניתם? הכנסו ושתפו אותנו!" ---------- */
-/* ---------- פופאפ מבצע: תיבת האוצר המשפחתית (Whoo-Aha), 10% הנחה למשפחות מדליק ---------- */
-(function promoOtzar(){
-  const UNTIL = new Date('2026-12-14T00:00:00+02:00').getTime(); // עד סוף חנוכה
-  const SUP = 'bmwi4bopc', KEY = 'promo_otzar_closed', AGAIN = 3 * 864e5;
-  if(ADMIN_PAGE || Date.now() >= UNTIL) return;
-  try{ if(sessionStorage.getItem('madlik_' + KEY)) return; }catch(e){} // מופיע בכל גלישה חדשה; מי שסגר לא רואה שוב באותה גלישה
+/* ---------- חלונות מבצע של עסקים: קופצים 3 שניות אחרי הכניסה לאתר, בכל דף ----------
+   כל חלון פעיל רק בין from ל־until (שעון ישראל). כשיש יותר מחלון פעיל אחד, בכל כניסה קופץ חלון אחר, לסירוגין, כדי ששני העסקים יקבלו חשיפה שווה.
+   מי שסגרה חלון לא תראה חלון מבצע נוסף באותה גלישה */
+const PROMOS = [
+  {id:'nuget', sup:'bmwi4bopc', from:'2026-11-20T00:00:00+02:00', until:'2026-12-14T00:00:00+02:00',
+   html:'<div class="promo-hero"><img src="img/promo/nuget-hanukkah.webp" alt="משפחה סביב שולחן חנוכה עם סופגניות ומנות של נוגט" width="920" height="614"><span class="ph-badge" aria-hidden="true">10%<small>הנחה</small></span></div>' +
+     '<p class="promo-kick">מבצע חנוכה</p><h2 id="prT">למגיעים דרך אתר מדליק</h2>' +
+     '<p class="promo-txt promo-big">בקנייה מעל <b>100 ₪</b> תקבלו <b>10% הנחה</b></p>' +
+     '<a class="promo-go" href="#/supplier/bmwi4bopc"><span>לחנות נוגט</span><i aria-hidden="true">←</i></a>' +
+     '<p class="promo-small">ההנחה למי שהגיע דרך אתר מדליק</p>'},
+  {id:'spoken', sup:'bmwi5ljp0', from:'2026-11-26T08:00:00+02:00', until:'2026-12-05T00:00:00+02:00', // עד סוף כ״ד בכסלו
+   html:'<div class="promo-hero"><img src="img/biz/bmwi5ljp0.jpg" alt="ספוקן ארט: סדנת אומנות מלווה בספוקן וורד, חנה איצ׳ר" width="1000" height="625"><span class="ph-badge" aria-hidden="true">2<small>מתנה</small></span></div>' +
+     '<p class="promo-kick">ספוקן ארט · חנה איצ׳ר</p><h2 id="prT">סדנת יצירה + מופע ספוקן וורד</h2>' +
+     '<p class="promo-txt promo-big">סדנה + ספוקן: <b>1,200 ₪</b> + ערכות</p>' +
+     '<p class="promo-gift"><b>מבצע למגיעות דרך האתר, עד כ״ד בכסלו:</b> 2 ערכות סדנה מתנה</p>' +
+     '<a class="promo-go" href="#/supplier/bmwi5ljp0"><span>לפרטים ולהזמנה</span><i aria-hidden="true">←</i></a>' +
+     '<p class="promo-small"><a class="promo-rec" href="https://drive.google.com/file/d/1AEjskteI2pRSCD2bsyF7OizPbgw5S9_0/view" target="_blank" rel="noopener noreferrer">לקריאת ההמלצות ←</a></p>'}
+];
+(function promoPopups(){
+  const KEY = 'madlik_promo_closed';
+  if(ADMIN_PAGE) return;
+  try{ if(sessionStorage.getItem(KEY)) return; }catch(e){} // מי שסגרה חלון לא תראה עוד אחד באותה גלישה
+  const now = Date.now(), live = PROMOS.filter(p => now >= new Date(p.from).getTime() && now < new Date(p.until).getTime());
+  if(!live.length) return;
+  let turn = 0; try{ turn = +localStorage.getItem('madlik_promo_turn') || 0; localStorage.setItem('madlik_promo_turn', String(turn + 1)); }catch(e){}
+  const P = live[turn % live.length];
   let tries = 0;
   // קופץ 3 שניות אחרי הכניסה לאתר, בכל דף שהגולשת נמצאת בו, גם מעל משחק, סיור או חלון אחר
   const show = () => {
     if(document.querySelector('.promo-ov')) return;
     if(/^#\/admin/.test(location.hash)){ if(tries++ < 200) setTimeout(show, 3000); return; }
     const ov = document.createElement('div'); ov.className = 'promo-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'prT');
-    ov.innerHTML = '<div class="promo-card promo-nuget"><button type="button" class="promo-x" aria-label="סגירה">×</button>' +
-      '<div class="promo-hero"><img src="img/promo/nuget-hanukkah.webp" alt="משפחה סביב שולחן חנוכה עם סופגניות ומנות של נוגט" width="920" height="614"><span class="ph-badge" aria-hidden="true">10%<small>הנחה</small></span></div>' +
-      '<p class="promo-kick">מבצע חנוכה</p>' +
-      '<h2 id="prT">למגיעים דרך אתר מדליק</h2>' +
-      '<p class="promo-txt promo-big">בקנייה מעל <b>100 ₪</b> תקבלו <b>10% הנחה</b></p>' +
-      '<a class="promo-go" href="#/supplier/bmwi4bopc"><span>לחנות נוגט</span><i aria-hidden="true">←</i></a>' +
-      '<p class="promo-small">ההנחה למי שהגיע דרך אתר מדליק</p></div>';
+    ov.innerHTML = '<div class="promo-card promo-nuget promo-' + P.id + '"><button type="button" class="promo-x" aria-label="סגירה">×</button>' + P.html + '</div>';
     document.body.appendChild(ov); document.body.classList.add('bn-lock');
-    const close = () => { try{ sessionStorage.setItem('madlik_' + KEY, '1'); }catch(e){} document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 260); };
+    const close = () => { try{ sessionStorage.setItem(KEY, '1'); }catch(e){} document.removeEventListener('keydown', key); document.body.classList.remove('bn-lock'); ov.classList.add('out'); setTimeout(() => ov.remove(), 260); };
     const key = e => { if(e.key === 'Escape') close(); };
     document.addEventListener('keydown', key);
-    ov.addEventListener('click', e => { if(e.target === ov || e.target.closest('.promo-x')) return close(); if(e.target.closest('.promo-go')){ countClick('pop', SUP); setTimeout(close, 150); } });
+    ov.addEventListener('click', e => {
+      if(e.target === ov || e.target.closest('.promo-x')) return close();
+      if(e.target.closest('.promo-go')){ countClick('pop', P.sup); setTimeout(close, 150); }
+      else if(e.target.closest('.promo-rec')) countClick('pop', P.sup);
+    });
     ov.querySelector('.promo-go').focus({preventScroll:true});
   };
   setTimeout(show, 3000);

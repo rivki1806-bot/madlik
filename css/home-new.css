@@ -109,3 +109,11 @@ html body .site-header .main-nav a{font-weight:400!important}
 
 /* החלון של המבצע מעל כל חלון אחר באתר */
 html body .promo-ov{z-index:20000!important}
+
+/* חלון ספוקן ארט: שורת המתנה בולטת וקישור להמלצות */
+.promo-gift{margin:0 0 14px;padding:10px 14px;border-radius:14px;background:#fff1e4;border:1px dashed #e8590c;font-size:16px;line-height:1.6;color:#3d2412}
+.promo-gift b{color:#d9480f}
+.promo-rec{color:#d9480f;font-weight:700;text-decoration:underline}
+.promo-spoken .promo-hero img{object-fit:cover}
+.promo-spoken .promo-hero{aspect-ratio:16/10!important}
+.promo-spoken .promo-hero img{object-position:center top}
