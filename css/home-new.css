@@ -86,7 +86,7 @@ a.nh-door:focus-visible,a.nh-feat:focus-visible,a.nh-step:focus-visible,.nh-chip
   html body .nh-hero .ad-rail{left:max(24px,2vw)!important;right:auto!important;top:56px!important;transform:none!important}
 }
 /* רוחב הפרסומת בצד: גדולה יותר, ומתאימה את עצמה לרוחב המסך */
-:root{--nh-ad-w:clamp(300px,25vw,400px)}
+:root{--nh-ad-w:clamp(220px,min(25vw,calc((100svh - 300px) * .707)),400px)}
 /* כשיש פרסומת בצד: היא קטנה יותר, והריבועים זזים לידה ולא מתחתיה */
 @media (min-width:1200px){
   html body .nh-hero .ad-rail{width:var(--nh-ad-w)!important;top:16px!important}
