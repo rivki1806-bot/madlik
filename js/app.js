@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 223; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 224; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
@@ -1874,7 +1874,7 @@ function initBiz(call, live, fail){
     if(item._imgId && String(item.img || '').indexOf('data:') === 0) item.img = 'chunk:' + item._imgId;
     if(live){
       if(isNew) return call({action:'addContent', kind:'suppliers', item}).then(refreshRemote);
-      const old = () => call({action:'removeContent', id:item.id}).then(() => call({action:'addContent', kind:'suppliers', item})).then(refreshRemote); // בלי הקוד הנוסף: עריכה = מחיקה והוספה מחדש עם אותו מזהה
+      const old = () => call({action:'removeContent', id:item.id}).catch(e => { if(!/לא נמצא/.test(String(e && e.message))) throw e; }).then(() => call({action:'addContent', kind:'suppliers', item})).then(refreshRemote); // בלי הקוד הנוסף: עריכה = מחיקה והוספה מחדש עם אותו מזהה
       return API2() ? call2({action:'updateContent', id:item.id, item}).then(refreshRemote).catch(old) : old();
     }
     const ex = store.get('extra_suppliers', []), i = ex.findIndex(x => x.id === item.id); if(i >= 0) ex[i] = item; else ex.push(item); store.set('extra_suppliers', ex); return Promise.resolve();
