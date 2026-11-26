@@ -1,0 +1,31 @@
+# מעדכן את תמונת המצב של העסקים באתר (גם לגולשים בנטפרי) כל כמה דקות, בלי שאף אחד יצטרך להעלות ידנית
+name: עדכון עסקים
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: biz-snapshot
+  cancel-in-progress: false
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: בניית תמונת מצב
+        run: node tools/build-seo.js
+      - name: העלאה אם יש שינוי
+        run: |
+          if git status --porcelain js/biz-snapshot.js img/biz supplier suppliers sitemap.xml | grep -q .; then
+            node tools/bump.js js/biz-snapshot.js
+            git config user.name "madlik-bot"
+            git config user.email "noreply@example.com"
+            git add -A js img/biz supplier suppliers sitemap.xml version.json '*.html'
+            git commit -m "עדכון אוטומטי של העסקים באתר"
+            git push
+          fi
