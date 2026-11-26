@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 225; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 226; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
@@ -178,7 +178,7 @@ const content = k => {
   if(k === 'suppliers'){ const live = x => x.active !== false && !(x.until && Date.now() > new Date(x.until + 'T23:59:59+02:00').getTime()); const real = add.filter(live), snap = (window.MADLIK_BIZ || []).filter(live);
     if(API() && !remote) return snap.length ? snap : base; // השרת עוד לא ענה: מציגים את העסקים האמיתיים משמירה אחרונה, ולא דוגמאות
     if(API() && !remoteFresh && snap.length){ const ids = new Set(snap.map(x => String(x.id))); return snap.concat(real.filter(x => !ids.has(String(x.id)))); } // שמירה ישנה + רשימה מעודכנת מהאתר, כדי שלא יחסרו עסקים
-    const keep = snap.filter(x => x.id === 'bmwi5ljp0' && !real.some(r => r.id === x.id)); // ספוקן ארט נשמר בקובץ בלבד, ונשאר גם כשהשרת ענה
+    const keep = snap.filter(x => ['bmwi5ljp0','bzufi1'].includes(x.id) && !real.some(r => r.id === x.id)); // ספוקן ארט נשמר בקובץ בלבד, ונשאר גם כשהשרת ענה
     return real.length || keep.length ? real.concat(keep) : (API() && remote ? [] : base); } // כשיש עסק אמיתי אחד לפחות, כרטיסי הדוגמה מוסתרים
   return base.concat(add);
 };

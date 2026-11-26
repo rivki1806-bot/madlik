@@ -98,7 +98,7 @@ try {
       snap.push(it);
     });
     /* עסקים שנוספו ידנית לקובץ ואינם בטבלה של גוגל נשארים (ספוקן ארט) */
-    try { const old = JSON.parse(fs.readFileSync(path.join(ROOT, 'js/biz-snapshot.js'), 'utf8').match(/MADLIK_BIZ = (.*);/)[1]); old.filter(o => ['bmwi5ljp0'].includes(o.id) && !snap.some(x => x.id === o.id)).forEach(o => snap.push(o)); } catch (e) {}
+    try { const old = JSON.parse(fs.readFileSync(path.join(ROOT, 'js/biz-snapshot.js'), 'utf8').match(/MADLIK_BIZ = (.*);/)[1]); old.filter(o => ['bmwi5ljp0','bzufi1'].includes(o.id) && !snap.some(x => x.id === o.id)).forEach(o => snap.push(o)); } catch (e) {}
     fs.writeFileSync(path.join(ROOT, 'js/biz-snapshot.js'), '// נוצר אוטומטית על ידי tools/build-seo.js. כך העסקים מופיעים מיד, בלי לחכות לשרת של גוגל\nwindow.MADLIK_BIZ = ' + JSON.stringify(snap) + ';\n');
     console.log('snapshot:', snap.length, 'businesses');
     console.log('suppliers:', sups.map(s => s.id).join(', '));
