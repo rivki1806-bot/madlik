@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 227; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 228; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
@@ -1952,6 +1952,8 @@ function initBiz(call, live, fail){
       done.then(() => { toast('נמחק'); draw(); }).catch(fail);
     }
   };
+  /* סנכרון מלא: עסקים ששמורים רק בקובץ האתר (ספוקן ארט, צופי) נכנסים לטבלה של גוגל, כך שדף הניהול והאתר תמיד רואים אותם */
+  if(live){ refreshRemote().then(() => { const have = new Set(addedContent('suppliers').map(x => String(x.id))); const miss = (window.MADLIK_BIZ || []).filter(x => ['bmwi5ljp0', 'bzufi1'].includes(x.id) && !have.has(String(x.id))); if(!miss.length) return; return miss.reduce((p, it) => p.then(() => call({action:'addContent', kind:'suppliers', item:it})), Promise.resolve()).then(refreshRemote).then(() => { toast('סונכרנו עסקים חסרים לטבלה ✔'); draw(); }); }).catch(() => {}); }
   if(live){ Promise.all([call({action:'stats'}), call({action:'records', kind:'leads'}).catch(() => ({records:[]})), API2() ? call2({action:'webstats'}).catch(() => null) : Promise.resolve(null)]).then(([s, l, w]) => { S = Object.assign(S, s.stats); if(w && w.stats){ S.tel = Object.assign({}, S.tel, w.stats.tel); S.web = w.stats.web; } L = l.records; draw(); }).catch(() => {}); }
   else { S = localStats(); L = store.get('leads', []); draw(); }
 }
