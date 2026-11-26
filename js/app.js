@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 230; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 231; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
@@ -1611,9 +1611,9 @@ pages.submit.after = () => {
 // 'me' = {email, token, upd, dirty}. השרת: Me.gs בגוגל. בלי שרת, הכול נשאר בדפדפן כמו קודם
 function cloudMe(){ try{ return JSON.parse(localStorage.getItem('madlik_me') || 'null'); }catch(e){ return null; } }
 function cloudSetMe(m){ try{ m ? localStorage.setItem('madlik_me', JSON.stringify(m)) : localStorage.removeItem('madlik_me'); }catch(e){} }
-const CLOUD_KEYS = ['favs', 'saved', 'shop', 'designs', 'user'];
+const CLOUD_KEYS = ['favs', 'saved', 'shop', 'designs', 'user', 'custom_style'];
 function cloudCollect(){ const o = {}; CLOUD_KEYS.forEach(k => { try{ const v = localStorage.getItem('madlik_' + k); if(v != null) o[k] = v; }catch(e){} }); return JSON.stringify(o); }
-function cloudApply(json){ let o = {}; try{ o = JSON.parse(json || '{}') || {}; }catch(e){} CLOUD_KEYS.forEach(k => { try{ if(o[k] != null) localStorage.setItem('madlik_' + k, o[k]); else localStorage.removeItem('madlik_' + k); }catch(e){} }); }
+function cloudApply(json){ let o = {}; try{ o = JSON.parse(json || '{}') || {}; }catch(e){} CLOUD_KEYS.forEach(k => { try{ if(o[k] != null) localStorage.setItem('madlik_' + k, o[k]); else localStorage.removeItem('madlik_' + k); }catch(e){} });  try{ customStyleRegister(); }catch(e){} }
 /* מיזוג: מה שיש בדפדפן הזה + מה שנשמר בענן, בלי לאבד כלום */
 function cloudMerge(json){
   let o = {}; try{ o = JSON.parse(json || '{}') || {}; }catch(e){}
