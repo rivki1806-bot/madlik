@@ -175,3 +175,9 @@
 body[data-world=studio] .cards>.card .style-top::before,.wshow[data-w=studio] .cards>.card .style-top::before{display:none}
 .ribbon-btn{min-height:44px;border-radius:12px;border:2px dashed var(--acc);background:#fff7ef;font-weight:700;color:var(--uiink);cursor:pointer}
 .ribbon-btn:hover{background:#ffe9d6}
+
+/* שפה עיצובית משלך (סטודיו) */
+.st-up{font:inherit;text-align:inherit;border-style:dashed}
+.st-up .plain-img i{display:grid;place-items:center;font-style:normal;font-size:2.4rem;color:#cbbfa2;border-style:dashed}
+.st-thx{justify-self:start;font-style:normal;font-size:.82rem;font-weight:700;padding:3px 12px;border-radius:99px;background:#fde7d6;color:#b5480b}
+.st-re{font:inherit;font-size:inherit;background:none;border:0;padding:0;color:#b5480b;text-decoration:underline;cursor:pointer;position:relative;z-index:2}

@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 229; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 230; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
@@ -708,8 +708,25 @@ const mpCard = t => {
   const info = t.repeat ? 'דף A4 עם ' + cells + ' מדבקות' : 'דף ' + (Math.max(t.w, t.h) > 210 ? 'A4' : Math.max(t.w, t.h) > 148 ? 'A5' : 'קטן');
   return '<a class="mp-card" data-tpl="' + esc(t.id) + '" href="#/studio/' + esc(t.id) + '">' + page + '<b>' + esc(nm) + '</b><small>' + mm + ' · ' + info + '</small></a>';
 };
+/* ---------- שפה עיצובית שהגולשת מעלה בעצמה (רעיון של תמר) ---------- */
+const customStyleRegister = () => {
+  const c = store.get('custom_style', null); D.styles = (D.styles || []).filter(x => x.id !== 'mine'); if(!c || !c.img) return;
+  D.styles.push({id:'mine', name:'השפה שלי', desc:'התמונה שהעלית', img:c.img, thumb:c.img, landscape:!!c.land, palette:c.pal,
+    title:{color:c.title, fill:'solid', font:'Suez One'}, sub:{color:c.ink, font:'Assistant'}, plate:c.plate,
+    tpl:{ink:c.ink, title:c.title, acc:c.acc, pl:c.pl, plb:'', pos:'center', focus:[50,50], dark:c.dark ? 1 : 0}});
+};
+const customStyleBuild = url => new Promise((ok, no) => { const im = new Image(); im.onload = () => { try{
+  const w = 24, h = 24, c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(im, 0, 0, w, h); const d = g.getImageData(0, 0, w, h).data;
+  let r = 0, gg = 0, b = 0, n = 0, best = null, bs = -1;
+  for(let i = 0; i < d.length; i += 4){ r += d[i]; gg += d[i + 1]; b += d[i + 2]; n++; const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]), sat = mx - mn, lum = (mx + mn) / 2; if(lum > 40 && lum < 220 && sat > bs){ bs = sat; best = [d[i], d[i + 1], d[i + 2]]; } }
+  r /= n; gg /= n; b /= n; const lum = (.299 * r + .587 * gg + .114 * b) / 255, dark = lum < .5, hex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+  const acc = best || [244, 122, 46], mix = (a, t, k) => a.map((v, i) => v + (t[i] - v) * k);
+  const title = hex(dark ? mix(acc, [255, 255, 255], .45) : mix(acc, [0, 0, 0], .45)), ink = dark ? '#ffffff' : '#2b2b2e', bg = hex([r, gg, b]);
+  ok({img:url, land:im.naturalWidth > im.naturalHeight, dark, ink, title, acc:hex(acc), plate:dark ? '#1c1c1f' : '#ffffff', pl:dark ? 'rgba(0,0,0,.55)' : 'rgba(255,255,255,.88)', pal:[ink, title, '#ffffff', hex(acc), bg, '#222222', title, ink]});
+}catch(e){ no(); } }; im.onerror = () => no(); im.src = url; });
+customStyleRegister();
 pages.studio = () => {
-  const styles = (D.styles || []).filter(s => !s.legacy), fmts = window.MadlikEditor.FORMATS, mine = store.get('designs', []);
+  const styles = (D.styles || []).filter(s => !s.legacy && s.id !== 'mine'), fmts = window.MadlikEditor.FORMATS, mine = store.get('designs', []);
   const T = D.templates, by = ids => ids.map(i => T.find(t => t.id === i)).filter(Boolean), used = new Set();
   const grp = (h, p, ids) => { const l = by(ids); l.forEach(x => used.add(x.id)); return l.length ? `<div class="st-grp"><h3 class="st-h3">${h}</h3>${p ? `<p class="muted" style="margin:0 0 14px">${p}</p>` : ''}<div class="cards">${l.map(tplCard).join('')}</div></div>` : ''; };
   const products = grp('מדבקות עגולות, 3 גדלים', 'מקבלים דף שלם של מדבקות, מוכנות לגזירה.', ['sticker-s','sticker','sticker-l'])
@@ -726,7 +743,10 @@ pages.studio = () => {
     <section class="st-sec"><h2 class="st-h"><i>1</i>איזו שפה עיצובית מדברת אליך?</h2>
       <div class="st-styles" role="radiogroup" aria-label="שפה עיצובית">
         ${styles.map((s,i)=>`<label class="st-card"><input type="radio" name="stl" value="${esc(s.id)}" ${i===0?'checked':''}><span class="st-img"><img src="${esc(s.thumb||s.img)}" loading="lazy" alt="תצוגה של הסגנון ${esc(s.name)}"></span><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></label>`).join('')}
-        <label class="st-card"><input type="radio" name="stl" value="plain" ${styles.length?'':'checked'}><span class="st-img plain-img"><i></i></span><b>צבע אחד, בלי תמונה</b><small>בוחרים ערכת צבעים פשוטה</small></label>
+${(() => { const m = (D.styles || []).find(x => x.id === 'mine'); const thx = '<em class="st-thx">תודה לתמר על הרעיון המדליק ♥</em>'; return m
+          ? '<label class="st-card st-mine"><input type="radio" name="stl" value="mine">' + thx + '<span class="st-img"><img src="' + esc(m.img) + '" alt="השפה העיצובית שהעלית"></span><b>השפה שלי</b><small>התמונה שהעלית. <button type="button" class="st-re" id="stUpBtn">להחלפה</button></small></label>'
+          : '<button type="button" class="st-card st-up" id="stUpBtn">' + thx + '<span class="st-img plain-img"><i>+</i></span><b>מעלים שפה עיצובית משלך</b><small>תמונת רקע שלך, והעיצוב בנוי סביבה</small></button>'; })()}
+      <input type="file" id="stUp" accept="image/*" hidden>
       </div></section>
     <section class="st-sec" id="stProd" tabindex="-1"><h2 class="st-h"><i>2</i>מה רוצים להדפיס?</h2><p class="muted" style="margin:0 0 16px">הציור מראה איך ייראה הדף כפי שיודפס, עם העיצוב שבחרת.</p>
       <div class="mp-grid">${mpIds.map(i => mpCard(T.find(t => t.id === i))).join('')}</div></section>
@@ -744,6 +764,11 @@ pages.studio.after = () => {
     stripStyle(document, st ? v : '');
     const g = document.querySelector('.mp-grid'); if(g){ g.style.setProperty('--bg', st ? 'url(' + new URL(st.thumb || st.img, document.baseURI).href + ')' : 'none'); g.classList.toggle('plainbg', !st); g.querySelectorAll('.mp-card').forEach(c => c.setAttribute('href', '#/studio/' + c.dataset.tpl + (st ? '?style=' + encodeURIComponent(v) : ''))); }
   };
+  const upIn = document.getElementById('stUp'), upBtn = document.getElementById('stUpBtn');
+  if(upIn && upBtn){ upBtn.onclick = e => { e.preventDefault(); e.stopPropagation(); upIn.click(); };
+    upIn.onchange = () => { const f = upIn.files && upIn.files[0]; if(!f) return;
+      prepImage(f).then(customStyleBuild).then(c => { if(!store.set('custom_style', c)) toast('התמונה גדולה לשמירה קבועה, והיא תישמר רק עד סגירת הדף'); customStyleRegister(); render(); setTimeout(() => { const r = document.querySelector('[name=stl][value=mine]'); if(r){ r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); } toast('השפה העיצובית שלך מוכנה ✔'); }, 50); })
+        .catch(e => toast(typeof e === 'string' ? e : 'לא הצלחתי לקרוא את התמונה')); }; }
   document.querySelectorAll('[name=stl],[name=fmt]').forEach(i => i.onchange = upd); upd(); startTourSoon('studio');
   document.querySelectorAll('[name=stl]').forEach(i => i.addEventListener('change', () => { const p = document.getElementById('stProd'); if(!p) return; setTimeout(() => { window.scrollTo({top: Math.max(0, p.getBoundingClientRect().top + scrollY - 130), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'}); p.focus({preventScroll:true}); }, 120); }));
 };
