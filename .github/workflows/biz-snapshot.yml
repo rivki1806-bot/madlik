@@ -21,7 +21,7 @@ jobs:
         run: node tools/build-seo.js
       - name: העלאה אם יש שינוי
         run: |
-          if git status --porcelain js/biz-snapshot.js img/biz supplier suppliers sitemap.xml | grep -q .; then
+          if git status --porcelain js/biz-snapshot.js img/biz supplier | grep -q .; then
             node tools/bump.js js/biz-snapshot.js
             git config user.name "madlik-bot"
             git config user.email "noreply@example.com"
