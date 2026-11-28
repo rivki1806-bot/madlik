@@ -22,7 +22,7 @@ const API2 = () => String(window.MADLIK_API2 || '').trim();
 const apiPost2 = body => fetch(API2(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 const apiPost = body => fetch(API(), {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)}).then(r=>r.json());
 // טפסים ותוכן: נשמרים בשרת של גוגל כשהוא מחובר, ואחרת רק בדפדפן הזה
-const APP_V = 232; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
+const APP_V = 233; // מספר הגרסה. בכל העלאה מעלים אותו כאן וגם בקובץ version.json
 (function versionCheck(){
   const check = () => { try{ fetch('version.json?t=' + Date.now(), {cache:'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if(!j || !(+j.v > APP_V)) return;
@@ -745,7 +745,7 @@ pages.studio = () => {
         ${styles.map((s,i)=>`<label class="st-card"><input type="radio" name="stl" value="${esc(s.id)}" ${i===0?'checked':''}><span class="st-img"><img src="${esc(s.thumb||s.img)}" loading="lazy" alt="תצוגה של הסגנון ${esc(s.name)}"></span><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></label>`).join('')}
 ${(() => { const m = (D.styles || []).find(x => x.id === 'mine'); const thx = '<em class="st-thx">תודה לתמר על הרעיון המדליק ♥</em>'; return m
           ? '<label class="st-card st-mine"><input type="radio" name="stl" value="mine">' + thx + '<span class="st-img"><img src="' + esc(m.img) + '" alt="השפה העיצובית שהעלית"></span><b>השפה שלי</b><small>התמונה שהעלית. <button type="button" class="st-re" id="stUpBtn">להחלפה</button></small></label>'
-          : '<button type="button" class="st-card st-up" id="stUpBtn">' + thx + '<span class="st-img plain-img"><i>+</i></span><b>מעלים שפה עיצובית משלך</b><small>תמונת רקע שלך, והעיצוב בנוי סביבה</small></button>'; })()}
+          : '<button type="button" class="st-card st-up" id="stUpBtn">' + thx + '<span class="st-img plain-img"><i>+</i></span><b>מעלים שפה עיצובית משלך</b><small>תמונת רקע שלך, והעיצוב בנוי סביבה</small><span class="st-how"><b>איך מעלים:</b> לוחצים כאן ובוחרים תמונה מהמחשב או מהטלפון.<br>קבצים מתקבלים: JPG, PNG, WEBP, GIF ו־SVG, עד 25MB.<br>תמונת אייפון בפורמט HEIC צריך קודם לשמור כ־JPG.<br>הכי טוב: תמונה בגודל דף A4 לאורך או לרוחב, עם מקום פנוי לטקסט.</span></button>'; })()}
       <input type="file" id="stUp" accept="image/*" hidden>
       </div></section>
     <section class="st-sec" id="stProd" tabindex="-1"><h2 class="st-h"><i>2</i>מה רוצים להדפיס?</h2><p class="muted" style="margin:0 0 16px">הציור מראה איך ייראה הדף כפי שיודפס, עם העיצוב שבחרת.</p>
